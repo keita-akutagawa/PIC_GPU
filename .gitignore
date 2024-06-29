@@ -1,0 +1,15 @@
+*.png
+!*.drawio.png
+*.mp4
+pictures*/
+results*/
+*.exe
+*.out
+*.exp
+*.lib
+program
+*.o
+log*
+googletest/
+*.bin
+
