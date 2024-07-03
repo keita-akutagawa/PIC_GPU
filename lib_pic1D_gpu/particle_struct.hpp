@@ -3,42 +3,44 @@
 
 struct Particle
 {
-    double x;
-    double y;
-    double z;
-    double vx;
-    double vy; 
-    double vz;
-    double gamma;
+    float x;
+    float y;
+    float z;
+    float vx;
+    float vy; 
+    float vz;
+    float gamma;
 
+    __host__ __device__
     Particle() : 
-        x(0.0), 
-        y(0.0), 
-        z(0.0), 
-        vx(0.0), 
-        vy(0.0), 
-        vz(0.0), 
-        gamma(0.0)
+        x(0.0f), 
+        y(0.0f), 
+        z(0.0f), 
+        vx(0.0f), 
+        vy(0.0f), 
+        vz(0.0f), 
+        gamma(0.0f)
         {}
 };
 
 
 struct ParticleField
 {
-    double bx;
-    double by;
-    double bz;
-    double ex;
-    double ey; 
-    double ez;
+    float bx;
+    float by;
+    float bz;
+    float ex;
+    float ey; 
+    float ez;
 
+    __host__ __device__
     ParticleField() : 
-        bx(0.0), 
-        by(0.0), 
-        bz(0.0), 
-        ex(0.0), 
-        ey(0.0), 
-        ez(0.0)
+        bx(0.0f), 
+        by(0.0f), 
+        bz(0.0f), 
+        ex(0.0f), 
+        ey(0.0f), 
+        ez(0.0f)
         {}
 };
 
