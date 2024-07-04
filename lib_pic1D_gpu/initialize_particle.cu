@@ -1,22 +1,45 @@
 #include "initialize_particle.hpp"
-#include <random>
+#include <thrust/transform.h>
+#include <thrust/random.h>
 #include <cmath>
 
+
+struct UniformForPositionXFuctor{
+    float xmin; 
+    float xmax; 
+    int seed;
+
+    __device__ 
+    UniformForPositionXFuctor(float xmin, float xmax, int seed)
+        : xmin(xmin), xmax(xmax), seed(seed) {}
+    
+    __device__ 
+    float operator()(const int& i) const {
+        thrust::default_random_engine rng(seed + i);
+        thrust::uniform_real_distribution<float> dist(1e-20, 1.0 - 1e-20);
+        return dist(rng) * (xmax - xmin);
+    }
+};
 
 void InitializeParticle::uniformForPositionX(
     int nStart, 
     int nEnd, 
     int seed, 
-    std::vector<Particle>& particlesSpecies
+    thrust::device_vector<Particle>& particlesSpecies
 )
 {
-    std::mt19937_64 mt64(seed);
-    std::uniform_real_distribution<double> set_x(1e-20, 1.0 - 1e-20);
+    UniformForPositionXFuctor uniformForPositionXFunctor(xmin, xmax, seed);
 
-    for (int i = nStart; i < nEnd; i++) {
-        double x = set_x(mt64) * (xmax - xmin);
-        particlesSpecies[i].x = x;
-    }
+    thrust::transform(
+        thrust::make_counting_iterator(nStart),
+        thrust::make_counting_iterator(nEnd),
+        particlesSpecies.begin(), 
+        [=] __device__ (int i) {
+            Particle p;
+            p.x = uniformForPositionXFunctor(i);
+            return p;
+        }
+    );
 }
 
 
@@ -28,7 +51,7 @@ void InitializeParticle::maxwellDistributionForVelocity(
     int nStart, 
     int nEnd, 
     int seed, 
-    std::vector<Particle>& particlesSpecies
+    thrust::device_vector<Particle>& particlesSpecies
 )
 {
     std::mt19937_64 mt64Vx(seed);
