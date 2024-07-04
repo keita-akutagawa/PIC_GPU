@@ -14,7 +14,6 @@ __global__ void timeEvolutionB_kernel(
     }
 }
 
-
 void FieldSolver::timeEvolutionB(
     thrust::device_vector<MagneticField>& B, 
     const thrust::device_vector<ElectricField>& E, 
@@ -32,6 +31,7 @@ void FieldSolver::timeEvolutionB(
 
     cudaDeviceSynchronize();
 }
+
 
 
 void FieldSolver::timeEvolutionE(
