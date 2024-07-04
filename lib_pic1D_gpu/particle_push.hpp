@@ -1,5 +1,6 @@
-#include <vector>
+#include <thrust/device_vector.h>
 #include "particle_struct.hpp"
+#include "field_parameter_struct.hpp"
 #include "const.hpp"
 
 
@@ -10,36 +11,30 @@ private:
 public:
 
     void pushVelocity(
-        std::vector<Particle>& particlesIon, 
-        std::vector<Particle>& particlesElectron, 
-        const std::vector<std::vector<double>>& B, 
-        const std::vector<std::vector<double>>& E, 
+        thrust::device_vector<Particle>& particlesIon, 
+        thrust::device_vector<Particle>& particlesElectron, 
+        const thrust::device_vector<MagneticField>& B, 
+        const thrust::device_vector<ElectricField>& E, 
         double dt
     );
     void pushPosition(
-        std::vector<Particle>& particlesIon, 
-        std::vector<Particle>& particlesElectron, 
+        thrust::device_vector<Particle>& particlesIon, 
+        thrust::device_vector<Particle>& particlesElectron, 
         double dt
     );
 
 private:
 
     void pushVelocityOfOneSpecies(
-        std::vector<Particle>& particlesSpecies, 
-        const std::vector<std::vector<double>>& B, 
-        const std::vector<std::vector<double>>& E, 
+        thrust::device_vector<Particle>& particlesSpecies, 
+        const thrust::device_vector<MagneticField>& B,
+        const thrust::device_vector<ElectricField>& E, 
         double q, double m, int totalNumSpecies, 
         double dt
     );
 
-    ParticleField getParticleFields(
-        const std::vector<std::vector<double>>& B, 
-        const std::vector<std::vector<double>>& E, 
-        const Particle& particle
-    );
-
     void pushPositionOfOneSpecies(
-        std::vector<Particle>& particlesSpecies, 
+        thrust::device_vector<Particle>& particlesSpecies, 
         int totalNumSpecies, 
         double dt
     );

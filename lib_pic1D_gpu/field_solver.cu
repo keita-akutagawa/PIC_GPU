@@ -34,6 +34,21 @@ void FieldSolver::timeEvolutionB(
 
 
 
+__global__ void timeEvolutionE_kernel(
+    ElectricField* electricField, const MagneticField* magneticField, const CurrentField* currentField, const double dt
+)
+{
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (0 < i && i < device_nx) {
+        electricField[i].eX += (-currentField[i].jX / device_epsilon0) * dt;
+        electricField[i].eY += (-currentField[i].jY / device_epsilon0 
+                             - device_c * device_c * (magneticField[i].bZ - magneticField[i - 1].bZ) / device_dx) * dt;
+        electricField[i].eZ += (-currentField[i].jZ / device_epsilon0 
+                             + device_c * device_c * (magneticField[i].bY - magneticField[i - 1].bY) / device_dx) * dt;
+    }
+}
+
 void FieldSolver::timeEvolutionE(
     thrust::device_vector<ElectricField>& E, 
     const thrust::device_vector<MagneticField>& B, 
@@ -41,19 +56,17 @@ void FieldSolver::timeEvolutionE(
     const double dt
 )
 {
-    for (int i = 1; i < nx; i++) {
-        E[0][i] += (-current[0][i] / epsilon0) * dt;
-        E[1][i] += (-current[1][i] / epsilon0 
-                    - c * c * (B[2][i] - B[2][i-1]) / dx) * dt;
-        E[2][i] += (-current[2][i] / epsilon0 
-                    + c * c * (B[1][i] - B[1][i-1]) / dx) * dt;
-    }
-    //周期境界条件
-    E[0][0] += (-current[0][0] / epsilon0) * dt;
-    E[1][0] += (-current[1][0] / epsilon0 
-                - c * c * (B[2][0] - B[2][nx-1]) / dx) * dt;
-    E[2][0] += (-current[2][0] / epsilon0 
-                + c * c * (B[1][0] - B[1][nx-1]) / dx) * dt;
+    dim3 threadsPerBlock(256);
+    dim3 blocksPerGrid((nx + threadsPerBlock.x - 1) / threadsPerBlock.x);
+
+    timeEvolutionE_kernel<<<blocksPerGrid, threadsPerBlock>>>(
+        thrust::raw_pointer_cast(E.data()), 
+        thrust::raw_pointer_cast(B.data()), 
+        thrust::raw_pointer_cast(current.data()), 
+        dt
+    );
+
+    cudaDeviceSynchronize();
 }
 
 
