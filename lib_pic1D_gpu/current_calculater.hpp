@@ -1,6 +1,7 @@
-#include <vector>
+#include <thrust/device_vector.h>
 #include "const.hpp"
 #include "particle_struct.hpp"
+#include "field_parameter_struct.hpp"
 
 
 class CurrentCalculater
@@ -9,21 +10,21 @@ private:
 
 public: 
     void resetCurrent(
-        std::vector<std::vector<double>>& current
+        thrust::device_vector<CurrentField>& current
     );
 
     void calculateCurrent(
-        std::vector<std::vector<double>>& current, 
-        const std::vector<Particle>& particlesIon, 
-        const std::vector<Particle>& particlesEleectron
+        thrust::device_vector<CurrentField>& current, 
+        const thrust::device_vector<Particle>& particlesIon, 
+        const thrust::device_vector<Particle>& particlesEleectron
     );
 
 private:
 
     void calculateCurrentOfOneSpecies(
-        std::vector<std::vector<double>>& current, 
-        const std::vector<Particle>& particlesSpecies, 
-        double q, double totalNumSpecies
+        thrust::device_vector<CurrentField>& current, 
+        const thrust::device_vector<Particle>& particlesSpecies, 
+        double q, int totalNumSpecies
     );
 };
 
