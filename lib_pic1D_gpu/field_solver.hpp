@@ -1,5 +1,7 @@
-#include <vector>
+#include <thrust/device_vector.h>
+#include "field_parameter_struct.hpp"
 #include "const.hpp"
+
 
 class FieldSolver
 {
@@ -7,16 +9,16 @@ private:
 
 public:
     void timeEvolutionB(
-        std::vector<std::vector<double>>& B, 
-        const std::vector<std::vector<double>>& E, 
-        double dt
+        thrust::device_vector<MagneticField>& B, 
+        const thrust::device_vector<ElectricField>& E, 
+        const double dt
     );
 
     void timeEvolutionE(
-        std::vector<std::vector<double>>& E, 
-        const std::vector<std::vector<double>>& B, 
-        const std::vector<std::vector<double>>& current, 
-        double dt
+        thrust::device_vector<ElectricField>& E, 
+        const thrust::device_vector<MagneticField>& B, 
+        const thrust::device_vector<CurrentField>& current, 
+        const double dt
     );
 
 private:
