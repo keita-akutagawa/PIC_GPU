@@ -12,7 +12,7 @@ public:
         int nStart, 
         int nEnd, 
         int seed, 
-        std::vector<Particle>& particlesSpecies
+        thrust::device_vector<Particle>& particlesSpecies
     );
 
     void maxwellDistributionForVelocity(
@@ -23,7 +23,7 @@ public:
         int nStart, 
         int nEnd, 
         int seed, 
-        std::vector<Particle>& particlesSpecies
+        thrust::device_vector<Particle>& particlesSpecies
     );
 
 private:
