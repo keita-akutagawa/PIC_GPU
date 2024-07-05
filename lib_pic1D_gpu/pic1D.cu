@@ -3,22 +3,78 @@
 #include "pic1D.hpp"
 
 
+PIC1D::PIC1D()
+    : particlesIon(totalNumIon), 
+      particlesElectron(totalNumElectron), 
+      E(nx), 
+      B(nx), 
+      current(nx), 
+      tmpE(nx), 
+      tmpB(nx), 
+      tmpCurrent(nx), 
+
+      host_particleIon(totalNumIon), 
+      host_particleElectron(totalNumElectron), 
+      host_E(nx), 
+      host_B(nx), 
+      host_current(nx)
+{
+}
+
+
+__global__ void getCenterBE_kernel(
+    MagneticField* tmpMagneticField, ElectricField* tmpElectricField, 
+    const MagneticField* magneticField, const ElectricField* electricField
+)
+{
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (0 < i && i < device_nx) {
+        tmpMagneticField[i].bX = magneticField[i].bX;
+        tmpMagneticField[i].bY = 0.5 * (magneticField[i].bY + magneticField[i - 1].bY);
+        tmpMagneticField[i].bZ = 0.5 * (magneticField[i].bZ + magneticField[i - 1].bZ);
+        tmpElectricField[i].eX = 0.5 * (electricField[i].eX + electricField[i - 1].eX);
+        tmpElectricField[i].eY = electricField[i].eY;
+        tmpElectricField[i].eZ = electricField[i].eZ;
+    }
+}
+
+__global__ void getHalfCurrent_kernel(
+    CurrentField* currentField, const CurrentField* tmpCurrentField
+)
+{
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (i < device_nx - 1) {
+        currentField[i].jX = 0.5 * (tmpCurrentField[i].jX + tmpCurrentField[i + 1].jX);
+        currentField[i].jY = tmpCurrentField[i].jY;
+        currentField[i].jZ = tmpCurrentField[i].jZ;
+    }
+}
+
+
 void PIC1D::oneStep()
 {
     fieldSolver.timeEvolutionB(B, E, dt/2.0);
 
-    for (int i = 0; i < nx; i++) {
-        tmpB[0][i] = B[0][i];
-        tmpB[1][i] = 0.5 * (B[1][i] + B[1][(i-1+nx)%nx]);
-        tmpB[2][i] = 0.5 * (B[2][i] + B[2][(i-1+nx)%nx]);
-        tmpE[0][i] = 0.5 * (E[0][i] + E[0][(i-1+nx)%nx]);
-        tmpE[1][i] = E[1][i];
-        tmpE[2][i] = E[2][i];
-    }
+
+    dim3 threadsPerBlock(256);
+    dim3 blocksPerGrid((nx + threadsPerBlock.x - 1) / threadsPerBlock.x);
+
+    getCenterBE_kernel<<<blocksPerGrid, threadsPerBlock>>>(
+        thrust::raw_pointer_cast(tmpB.data()), 
+        thrust::raw_pointer_cast(tmpE.data()), 
+        thrust::raw_pointer_cast(B.data()), 
+        thrust::raw_pointer_cast(E.data())
+    );
+
+    cudaDeviceSynchronize();
+
 
     particlePush.pushVelocity(
         particlesIon, particlesElectron, tmpB, tmpE, dt
     );
+
 
     particlePush.pushPosition(
         particlesIon, particlesElectron, dt/2.0
@@ -27,19 +83,22 @@ void PIC1D::oneStep()
         particlesIon, particlesElectron
     );
 
+
     currentCalculater.resetCurrent(tmpCurrent);
     currentCalculater.calculateCurrent(
         tmpCurrent, particlesIon, particlesElectron
     );
-    for (int i = 0; i < nx; i++) {
-        current[0][i] = 0.5 * (tmpCurrent[0][i] + tmpCurrent[0][(i+1)%nx]);
-        current[1][i] = tmpCurrent[1][i];
-        current[2][i] = tmpCurrent[2][i];
-    }
+    getHalfCurrent_kernel<<<blocksPerGrid, threadsPerBlock>>>(
+        thrust::raw_pointer_cast(current.data()), 
+        thrust::raw_pointer_cast(tmpCurrent.data())
+    );
+
 
     fieldSolver.timeEvolutionB(B, E, dt/2.0);
 
+
     fieldSolver.timeEvolutionE(E, B, current, dt);
+
 
     particlePush.pushPosition(
         particlesIon, particlesElectron, dt/2.0
