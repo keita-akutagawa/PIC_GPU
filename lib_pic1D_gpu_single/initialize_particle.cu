@@ -49,8 +49,7 @@ __global__ void maxwellDistributionForVelocity_kernel(
     unsigned long long i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (i < nEnd - nStart) {
-        thrust::default_random_engine rng(seed + i);
-        rng.discard(i);
+        thrust::default_random_engine rng(seed + 10 * i);
         thrust::random::normal_distribution<float> dist_vx(bulkVxSpecies, vThSpecies);
         thrust::random::normal_distribution<float> dist_vy(bulkVySpecies, vThSpecies);
         thrust::random::normal_distribution<float> dist_vz(bulkVzSpecies, vThSpecies);
@@ -68,7 +67,7 @@ __global__ void maxwellDistributionForVelocity_kernel(
         particle[i + nStart].vx = vx;
         particle[i + nStart].vy = vy;
         particle[i + nStart].vz = vz;
-        particle[i + nStart].gamma = sqrt(1.0 + (vx * vx + vy * vy + vz * vz) / (device_c * device_c));
+        particle[i + nStart].gamma = sqrt(1.0f + (vx * vx + vy * vy + vz * vz) / (device_c * device_c));
     }
 }
 

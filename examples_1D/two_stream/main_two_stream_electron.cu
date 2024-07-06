@@ -159,20 +159,20 @@ void PIC1D::initialize()
         0, totalNumIon, 0, particlesIon
     );
     initializeParticle.uniformForPositionX(
-        0, totalNumElectron, 10 * totalNumParticles, particlesElectron
+        0, totalNumElectron, 1 * totalNumParticles, particlesElectron
     );
 
     initializeParticle.maxwellDistributionForVelocity(
         bulkVxIon, bulkVyIon, bulkVzIon, vThIon, 
-        0, totalNumIon, 20 * totalNumParticles, particlesIon
+        0, totalNumIon, 2 * totalNumParticles, particlesIon
     );
     initializeParticle.maxwellDistributionForVelocity(
         bulkVxElectron, bulkVyElectron, bulkVzElectron, vThElectron, 
-        0, totalNumElectronBeam1, 30 * totalNumParticles, particlesElectron
+        0, totalNumElectronBeam1, 3 * totalNumParticles, particlesElectron
     );
     initializeParticle.maxwellDistributionForVelocity(
         bulkVxElectronBeam, bulkVyElectronBeam, bulkVzElectronBeam, vThElectron, 
-        totalNumElectronBeam1, totalNumElectron, 40 * totalNumParticles, particlesElectron
+        totalNumElectronBeam1, totalNumElectron, 4 * totalNumParticles, particlesElectron
     );
 
 
