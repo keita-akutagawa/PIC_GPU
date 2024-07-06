@@ -66,8 +66,8 @@ const float bulkVxElectronBeam = 10.0 * vThIon;
 const float bulkVyElectronBeam = 0.0;
 const float bulkVzElectronBeam = 0.0;
 
-const int totalStep = 100;
-const int recordStep = 10;
+const int totalStep = 10000;
+const int recordStep = 100;
 float totalTime = 0.0;
 
 
@@ -140,7 +140,7 @@ __global__ void initializeField_kernel(
         E[i].eX = 0.0f;
         E[i].eY = 0.0f;
         E[i].eZ = 0.0f;
-        B[i].bX = 0.0f;
+        B[i].bX = device_B0;
         B[i].bY = 0.0f;
         B[i].bZ = 0.0f;
     }
