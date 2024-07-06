@@ -12,7 +12,8 @@ __global__ void uniformForPositionX_kernel(
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (i < nEnd - nStart) {
-        thrust::default_random_engine rng(i + nStart);
+        thrust::default_random_engine rng(seed);
+        rng.discard(i + nStart);
         thrust::uniform_real_distribution<float> dist(device_xmin + 1e-20f, device_xmax - 1e-20f);
         particle[i + nStart].x = dist(rng);
     }
@@ -48,7 +49,8 @@ __global__ void maxwellDistributionForVelocity_kernel(
     unsigned long long i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (i < nEnd - nStart) {
-        thrust::default_random_engine rng(nStart + i);
+        thrust::default_random_engine rng(seed);
+        rng.discard(3 * i + nStart);
         thrust::random::normal_distribution<float> dist_vx(bulkVxSpecies, vThSpecies);
         thrust::random::normal_distribution<float> dist_vy(bulkVySpecies, vThSpecies);
         thrust::random::normal_distribution<float> dist_vz(bulkVzSpecies, vThSpecies);
