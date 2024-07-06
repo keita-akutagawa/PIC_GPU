@@ -162,7 +162,7 @@ void ParticlePush::pushVelocityOfOneSpecies(
 )
 {
     dim3 threadsPerBlock(256);
-    dim3 blocksPerGrid((totalNumParticles + threadsPerBlock.x - 1) / threadsPerBlock.x);
+    dim3 blocksPerGrid((totalNumSpecies + threadsPerBlock.x - 1) / threadsPerBlock.x);
 
     pushVelocityOfOneSpecies_kernel<<<blocksPerGrid, threadsPerBlock>>>(
         thrust::raw_pointer_cast(particlesSpecies.data()), 
