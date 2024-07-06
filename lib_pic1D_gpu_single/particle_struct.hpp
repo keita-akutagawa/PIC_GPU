@@ -26,21 +26,21 @@ struct Particle
 
 struct ParticleField
 {
-    float bx;
-    float by;
-    float bz;
-    float ex;
-    float ey; 
-    float ez;
+    float bX;
+    float bY;
+    float bZ;
+    float eX;
+    float eY; 
+    float eZ;
 
     __host__ __device__
     ParticleField() : 
-        bx(0.0f), 
-        by(0.0f), 
-        bz(0.0f), 
-        ex(0.0f), 
-        ey(0.0f), 
-        ez(0.0f)
+        bX(0.0f), 
+        bY(0.0f), 
+        bZ(0.0f), 
+        eX(0.0f), 
+        eY(0.0f), 
+        eZ(0.0f)
         {}
 };
 

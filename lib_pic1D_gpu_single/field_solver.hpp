@@ -11,14 +11,14 @@ public:
     void timeEvolutionB(
         thrust::device_vector<MagneticField>& B, 
         const thrust::device_vector<ElectricField>& E, 
-        const double dt
+        const float dt
     );
 
     void timeEvolutionE(
         thrust::device_vector<ElectricField>& E, 
         const thrust::device_vector<MagneticField>& B, 
         const thrust::device_vector<CurrentField>& current, 
-        const double dt
+        const float dt
     );
 
 private:

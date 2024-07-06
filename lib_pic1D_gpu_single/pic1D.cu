@@ -23,85 +23,83 @@ PIC1D::PIC1D()
 
 
 __global__ void getCenterBE_kernel(
-    MagneticField* tmpMagneticField, ElectricField* tmpElectricField, 
-    const MagneticField* magneticField, const ElectricField* electricField
+    MagneticField* tmpB, ElectricField* tmpE, 
+    const MagneticField* B, const ElectricField* E
 )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (0 < i && i < device_nx) {
-        tmpMagneticField[i].bX = magneticField[i].bX;
-        tmpMagneticField[i].bY = 0.5 * (magneticField[i].bY + magneticField[i - 1].bY);
-        tmpMagneticField[i].bZ = 0.5 * (magneticField[i].bZ + magneticField[i - 1].bZ);
-        tmpElectricField[i].eX = 0.5 * (electricField[i].eX + electricField[i - 1].eX);
-        tmpElectricField[i].eY = electricField[i].eY;
-        tmpElectricField[i].eZ = electricField[i].eZ;
+        tmpB[i].bX = B[i].bX;
+        tmpB[i].bY = 0.5f * (B[i].bY + B[i - 1].bY);
+        tmpB[i].bZ = 0.5f * (B[i].bZ + B[i - 1].bZ);
+        tmpE[i].eX = 0.5f * (E[i].eX + E[i - 1].eX);
+        tmpE[i].eY = E[i].eY;
+        tmpE[i].eZ = E[i].eZ;
     }
 }
 
 __global__ void getHalfCurrent_kernel(
-    CurrentField* currentField, const CurrentField* tmpCurrentField
+    CurrentField* current, const CurrentField* tmpCurrent
 )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (i < device_nx - 1) {
-        currentField[i].jX = 0.5 * (tmpCurrentField[i].jX + tmpCurrentField[i + 1].jX);
-        currentField[i].jY = tmpCurrentField[i].jY;
-        currentField[i].jZ = tmpCurrentField[i].jZ;
+        current[i].jX = 0.5f * (tmpCurrent[i].jX + tmpCurrent[i + 1].jX);
+        current[i].jY = tmpCurrent[i].jY;
+        current[i].jZ = tmpCurrent[i].jZ;
     }
 }
 
 
 void PIC1D::oneStep()
 {
-    fieldSolver.timeEvolutionB(B, E, dt/2.0);
-
+    fieldSolver.timeEvolutionB(B, E, dt/2.0f);
+    boundary.periodicBoundaryBX(B);
 
     dim3 threadsPerBlock(256);
     dim3 blocksPerGrid((nx + threadsPerBlock.x - 1) / threadsPerBlock.x);
-
     getCenterBE_kernel<<<blocksPerGrid, threadsPerBlock>>>(
         thrust::raw_pointer_cast(tmpB.data()), 
         thrust::raw_pointer_cast(tmpE.data()), 
         thrust::raw_pointer_cast(B.data()), 
         thrust::raw_pointer_cast(E.data())
     );
-
     cudaDeviceSynchronize();
-
+    boundary.periodicBoundaryBX(tmpB);
+    boundary.periodicBoundaryEX(tmpE);
 
     particlePush.pushVelocity(
         particlesIon, particlesElectron, tmpB, tmpE, dt
     );
 
-
     particlePush.pushPosition(
-        particlesIon, particlesElectron, dt/2.0
+        particlesIon, particlesElectron, dt/2.0f
     );
     boundary.periodicBoundaryParticleX(
         particlesIon, particlesElectron
     );
 
-
     currentCalculater.resetCurrent(tmpCurrent);
     currentCalculater.calculateCurrent(
         tmpCurrent, particlesIon, particlesElectron
     );
+    boundary.periodicBoundaryCurrentX(tmpCurrent);
     getHalfCurrent_kernel<<<blocksPerGrid, threadsPerBlock>>>(
         thrust::raw_pointer_cast(current.data()), 
         thrust::raw_pointer_cast(tmpCurrent.data())
     );
+    boundary.periodicBoundaryCurrentX(current);
 
-
-    fieldSolver.timeEvolutionB(B, E, dt/2.0);
-
+    fieldSolver.timeEvolutionB(B, E, dt/2.0f);
+    boundary.periodicBoundaryBX(B);
 
     fieldSolver.timeEvolutionE(E, B, current, dt);
-
+    boundary.periodicBoundaryEX(E);
 
     particlePush.pushPosition(
-        particlesIon, particlesElectron, dt/2.0
+        particlesIon, particlesElectron, dt/2.0f
     );
     boundary.periodicBoundaryParticleX(
         particlesIon, particlesElectron

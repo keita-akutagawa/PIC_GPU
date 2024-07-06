@@ -1,36 +1,19 @@
 #include "boundary.hpp"
 
 
-__global__ void periodicBoundaryParticleIonX_kernel(
-    Particle* particlesIon
+__global__ void periodicBoundaryParticleX_kernel(
+    Particle* particlesSpecies, int totalNumSpecies
 )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if (i < device_totalNumIon) {
-        if (particlesIon[i].x < device_xmin) {
-            particlesIon[i].x += device_xmax - device_xmin;
+    if (i < totalNumSpecies) {
+        if (particlesSpecies[i].x < device_xmin) {
+            particlesSpecies[i].x += device_xmax - device_xmin;
         }
 
-        if (particlesIon[i].x > device_xmax) {
-            particlesIon[i].x -= device_xmax - device_xmin;
-        }
-    }
-}
-
-__global__ void periodicBoundaryParticleElectronX_kernel(
-    Particle* particlesElectron
-)
-{
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
-
-    if (i < device_totalNumElectron) {
-        if (particlesElectron[i].x < device_xmin) {
-            particlesElectron[i].x += device_xmax - device_xmin;
-        }
-
-        if (particlesElectron[i].x > device_xmax) {
-            particlesElectron[i].x -= device_xmax - device_xmin;
+        if (particlesSpecies[i].x > device_xmax) {
+            particlesSpecies[i].x -= device_xmax - device_xmin;
         }
     }
 }
@@ -41,17 +24,20 @@ void Boundary::periodicBoundaryParticleX(
     thrust::device_vector<Particle>& particlesElectron
 )
 {
-    dim3 threadsPerBlock(256);
-    dim3 blocksPerGrid((totalNumParticles + threadsPerBlock.x - 1) / threadsPerBlock.x);
+    dim3 threadsPerBlockForIon(256);
+    dim3 blocksPerGridForIon((totalNumIon + threadsPerBlockForIon.x - 1) / threadsPerBlockForIon.x);
 
-    periodicBoundaryParticleIonX_kernel<<<blocksPerGrid, threadsPerBlock>>>(
-        thrust::raw_pointer_cast(particlesIon.data())
+    periodicBoundaryParticleX_kernel<<<blocksPerGridForIon, threadsPerBlockForIon>>>(
+        thrust::raw_pointer_cast(particlesIon.data()), totalNumIon
     );
 
     cudaDeviceSynchronize();
 
-    periodicBoundaryParticleElectronX_kernel<<<blocksPerGrid, threadsPerBlock>>>(
-        thrust::raw_pointer_cast(particlesElectron.data())
+    dim3 threadsPerBlockForElectron(256);
+    dim3 blocksPerGridForElectron((totalNumElectron + threadsPerBlockForElectron.x - 1) / threadsPerBlockForElectron.x);
+
+    periodicBoundaryParticleX_kernel<<<blocksPerGridForElectron, threadsPerBlockForElectron>>>(
+        thrust::raw_pointer_cast(particlesElectron.data()), totalNumElectron
     );
 
     cudaDeviceSynchronize();

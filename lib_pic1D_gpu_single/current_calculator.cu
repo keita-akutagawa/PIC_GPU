@@ -1,9 +1,9 @@
 #include <cmath>
-#include "current_calculater.hpp"
+#include "current_calculator.hpp"
 #include <thrust/fill.h>
 
 
-void CurrentCalculater::resetCurrent(
+void CurrentCalculator::resetCurrent(
     thrust::device_vector<CurrentField>& current
 )
 {
@@ -11,17 +11,17 @@ void CurrentCalculater::resetCurrent(
 }
 
 
-void CurrentCalculater::calculateCurrent(
+void CurrentCalculator::calculateCurrent(
     thrust::device_vector<CurrentField>& current, 
     const thrust::device_vector<Particle>& particlesIon, 
-    const thrust::device_vector<Particle>& particlesEleectron
+    const thrust::device_vector<Particle>& particlesElectron
 )
 {
     calculateCurrentOfOneSpecies(
         current, particlesIon, qIon, totalNumIon
     );
     calculateCurrentOfOneSpecies(
-        current, particlesEleectron, qElectron, totalNumElectron
+        current, particlesElectron, qElectron, totalNumElectron
     );
 }
 
@@ -29,14 +29,14 @@ void CurrentCalculater::calculateCurrent(
 struct CalculateCurrent {
     CurrentField* current;
     const Particle* particlesSpecies;
-    double q;
+    const float q;
 
     __device__
     void operator()(const int& i) const {
-        double cx1, cx2; 
+        float cx1, cx2; 
         int xIndex1, xIndex2;
-        double xOverDx;
-        double qOverGamma, qVxOverGamma, qVyOverGamma, qVzOverGamma;
+        float xOverDx;
+        float qOverGamma, qVxOverGamma, qVyOverGamma, qVzOverGamma;
 
         xOverDx = particlesSpecies[i].x / device_dx;
 
@@ -45,7 +45,7 @@ struct CalculateCurrent {
         xIndex2 = (xIndex2 == device_nx) ? 0 : xIndex2;
 
         cx1 = xOverDx - xIndex1;
-        cx2 = 1.0 - cx1;
+        cx2 = 1.0f - cx1;
 
         qOverGamma = q / particlesSpecies[i].gamma;
         qVxOverGamma = qOverGamma * particlesSpecies[i].vx;
@@ -64,10 +64,10 @@ struct CalculateCurrent {
 };
 
 
-void CurrentCalculater::calculateCurrentOfOneSpecies(
+void CurrentCalculator::calculateCurrentOfOneSpecies(
     thrust::device_vector<CurrentField>& current, 
     const thrust::device_vector<Particle>& particlesSpecies, 
-    double q, int totalNumSpecies
+    float q, int totalNumSpecies
 )
 {
 

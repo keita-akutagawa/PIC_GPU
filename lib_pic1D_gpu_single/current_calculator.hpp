@@ -4,7 +4,7 @@
 #include "field_parameter_struct.hpp"
 
 
-class CurrentCalculater
+class CurrentCalculator
 {
 private: 
 
@@ -24,7 +24,7 @@ private:
     void calculateCurrentOfOneSpecies(
         thrust::device_vector<CurrentField>& current, 
         const thrust::device_vector<Particle>& particlesSpecies, 
-        double q, int totalNumSpecies
+        float q, int totalNumSpecies
     );
 };
 

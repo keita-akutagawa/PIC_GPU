@@ -7,7 +7,7 @@ void ParticlePush::pushVelocity(
     thrust::device_vector<Particle>& particlesElectron, 
     const thrust::device_vector<MagneticField>& B, 
     const thrust::device_vector<ElectricField>& E, 
-    double dt
+    float dt
 )
 {
     pushVelocityOfOneSpecies(
@@ -22,7 +22,7 @@ void ParticlePush::pushVelocity(
 void ParticlePush::pushPosition(
     thrust::device_vector<Particle>& particlesIon, 
     thrust::device_vector<Particle>& particlesElectron, 
-    double dt
+    float dt
 )
 {
     pushPositionOfOneSpecies(
@@ -38,17 +38,17 @@ void ParticlePush::pushPosition(
 
 __device__
 ParticleField getParticleFields(
-    const MagneticField* magneticField,
-    const ElectricField* electricField, 
+    const MagneticField* B,
+    const ElectricField* E, 
     const Particle& particle
 )
 {
     ParticleField particleField;
 
-    double cx1, cx2; 
+    float cx1, cx2; 
     int xIndex1, xIndex2;
 
-    double xOverDx;
+    float xOverDx;
     xOverDx = particle.x / device_dx;
 
     xIndex1 = std::floor(xOverDx);
@@ -56,25 +56,25 @@ ParticleField getParticleFields(
     xIndex2 = (xIndex2 == device_nx) ? 0 : xIndex2;
 
     cx1 = xOverDx - xIndex1;
-    cx2 = 1.0 - cx1;
+    cx2 = 1.0f - cx1;
 
-    particleField.bx += magneticField[xIndex1].bX * cx2;
-    particleField.bx += magneticField[xIndex2].bX * cx1;
+    particleField.bX += B[xIndex1].bX * cx2;
+    particleField.bX += B[xIndex2].bX * cx1;
 
-    particleField.by += magneticField[xIndex1].bY * cx2;
-    particleField.by += magneticField[xIndex2].bY * cx1;
+    particleField.bY += B[xIndex1].bY * cx2;
+    particleField.bY += B[xIndex2].bY * cx1;
 
-    particleField.bz += magneticField[xIndex1].bZ * cx2;
-    particleField.bz += magneticField[xIndex2].bZ * cx1;
+    particleField.bZ += B[xIndex1].bZ * cx2;
+    particleField.bZ += B[xIndex2].bZ * cx1;
 
-    particleField.ex += electricField[xIndex1].eX * cx2;
-    particleField.ex += electricField[xIndex2].eX * cx1;
+    particleField.eX += E[xIndex1].eX * cx2;
+    particleField.eX += E[xIndex2].eX * cx1;
 
-    particleField.ey += electricField[xIndex1].eY * cx2;
-    particleField.ey += electricField[xIndex2].eY * cx1;
+    particleField.eY += E[xIndex1].eY * cx2;
+    particleField.eY += E[xIndex2].eY * cx1;
 
-    particleField.ez += electricField[xIndex1].eZ * cx2;
-    particleField.ez += electricField[xIndex2].eZ * cx1;
+    particleField.eZ += E[xIndex1].eZ * cx2;
+    particleField.eZ += E[xIndex2].eZ * cx1;
 
 
     return particleField;
@@ -84,23 +84,23 @@ ParticleField getParticleFields(
 __global__
 void pushVelocityOfOneSpecies_kernel(
     Particle* particlesSpecies, const MagneticField* magneticField, const ElectricField* electricField, 
-    double q, double m, int totalNumSpecies, double dt
+    float q, float m, int totalNumSpecies, float dt
 )
 {
-    double qOverMTimesDtOver2;
-    double tmpForT, tmpForS, tmp1OverC2;
-    double vx, vy, vz, gamma;
-    double tx, ty, tz;
-    double sx, sy, sz;
-    double vxMinus, vyMinus, vzMinus;
-    double vx0, vy0, vz0;
-    double vxPlus, vyPlus, vzPlus; 
-    double bx, by, bz;
-    double ex, ey, ez;
+    float qOverMTimesDtOver2;
+    float tmpForT, tmpForS, tmp1OverC2;
+    float vx, vy, vz, gamma;
+    float tx, ty, tz;
+    float sx, sy, sz;
+    float vxMinus, vyMinus, vzMinus;
+    float vx0, vy0, vz0;
+    float vxPlus, vyPlus, vzPlus; 
+    float bx, by, bz;
+    float ex, ey, ez;
     ParticleField particleField;
 
-    qOverMTimesDtOver2 = q / m * dt / 2.0;
-    tmp1OverC2 = 1.0 / (device_c * device_c);
+    qOverMTimesDtOver2 = q / m * dt / 2.0f;
+    tmp1OverC2 = 1.0f / (device_c * device_c);
 
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -111,19 +111,19 @@ void pushVelocityOfOneSpecies_kernel(
         gamma = particlesSpecies[i].gamma;
 
         particleField = getParticleFields(magneticField, electricField, particlesSpecies[i]);
-        bx = particleField.bx;
-        by = particleField.by;
-        bz = particleField.bz; 
-        ex = particleField.ex;
-        ey = particleField.ey; 
-        ez = particleField.ez;
+        bx = particleField.bX;
+        by = particleField.bY;
+        bz = particleField.bZ; 
+        ex = particleField.eX;
+        ey = particleField.eY; 
+        ez = particleField.eZ;
 
         tmpForT = qOverMTimesDtOver2 / gamma;
         tx = tmpForT * bx;
         ty = tmpForT * by;
         tz = tmpForT * bz;
 
-        tmpForS = 2.0 / (1.0 + tx * tx + ty * ty + tz * tz);
+        tmpForS = 2.0f / (1.0f + tx * tx + ty * ty + tz * tz);
         sx = tmpForS * tx;
         sy = tmpForS * ty;
         sz = tmpForS * tz;
@@ -143,7 +143,7 @@ void pushVelocityOfOneSpecies_kernel(
         vx = vxPlus + qOverMTimesDtOver2 * ex;
         vy = vyPlus + qOverMTimesDtOver2 * ey;
         vz = vzPlus + qOverMTimesDtOver2 * ez;
-        gamma = sqrt(1.0 + (vx * vx + vy * vy + vz * vz) * tmp1OverC2);
+        gamma = sqrt(1.0f + (vx * vx + vy * vy + vz * vz) * tmp1OverC2);
 
         particlesSpecies[i].vx = vx;
         particlesSpecies[i].vy = vy;
@@ -157,8 +157,8 @@ void ParticlePush::pushVelocityOfOneSpecies(
     thrust::device_vector<Particle>& particlesSpecies, 
     const thrust::device_vector<MagneticField>& B,
     const thrust::device_vector<ElectricField>& E, 
-    double q, double m, int totalNumSpecies, 
-    double dt
+    float q, float m, int totalNumSpecies, 
+    float dt
 )
 {
     dim3 threadsPerBlock(256);
@@ -179,15 +179,15 @@ void ParticlePush::pushVelocityOfOneSpecies(
 
 __global__
 void pushPositionOfOneSpecies_kernel(
-    Particle* particlesSpecies, int totalNumSpecies, double dt
+    Particle* particlesSpecies, int totalNumSpecies, float dt
 )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (i < totalNumSpecies) {
-        double vx, vy, vz, gamma;
-        double x, y, z;
-        double dtOverGamma;
+        float vx, vy, vz, gamma;
+        float x, y, z;
+        float dtOverGamma;
 
         vx = particlesSpecies[i].vx;
         vy = particlesSpecies[i].vy;
@@ -212,7 +212,7 @@ void pushPositionOfOneSpecies_kernel(
 void ParticlePush::pushPositionOfOneSpecies(
     thrust::device_vector<Particle>& particlesSpecies, 
     int totalNumSpecies, 
-    double dt
+    float dt
 )
 {
     dim3 threadsPerBlock(256);

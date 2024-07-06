@@ -2,22 +2,22 @@
 
 
 __global__ void timeEvolutionB_kernel(
-    MagneticField* magneticField, const ElectricField* electricField, const double dt
+    MagneticField* B, const ElectricField* E, const float dt
 )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (i < device_nx - 1) {
-        magneticField[i].bX += 0.0f;
-        magneticField[i].bY += (electricField[i + 1].eZ - electricField[i].eZ) / device_dx * dt;
-        magneticField[i].bZ += -(electricField[i + 1].eY - electricField[i].eY) / device_dx * dt;
+        B[i].bX += 0.0f;
+        B[i].bY += (E[i + 1].eZ - E[i].eZ) / device_dx * dt;
+        B[i].bZ += -(E[i + 1].eY - E[i].eY) / device_dx * dt;
     }
 }
 
 void FieldSolver::timeEvolutionB(
     thrust::device_vector<MagneticField>& B, 
     const thrust::device_vector<ElectricField>& E, 
-    const double dt
+    const float dt
 )
 {
     dim3 threadsPerBlock(256);
@@ -35,17 +35,17 @@ void FieldSolver::timeEvolutionB(
 
 
 __global__ void timeEvolutionE_kernel(
-    ElectricField* electricField, const MagneticField* magneticField, const CurrentField* currentField, const double dt
+    ElectricField* E, const MagneticField* B, const CurrentField* current, const float dt
 )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (0 < i && i < device_nx) {
-        electricField[i].eX += (-currentField[i].jX / device_epsilon0) * dt;
-        electricField[i].eY += (-currentField[i].jY / device_epsilon0 
-                             - device_c * device_c * (magneticField[i].bZ - magneticField[i - 1].bZ) / device_dx) * dt;
-        electricField[i].eZ += (-currentField[i].jZ / device_epsilon0 
-                             + device_c * device_c * (magneticField[i].bY - magneticField[i - 1].bY) / device_dx) * dt;
+        E[i].eX += (-current[i].jX / device_epsilon0) * dt;
+        E[i].eY += (-current[i].jY / device_epsilon0 
+                 - device_c * device_c * (B[i].bZ - B[i - 1].bZ) / device_dx) * dt;
+        E[i].eZ += (-current[i].jZ / device_epsilon0 
+                 + device_c * device_c * (B[i].bY - B[i - 1].bY) / device_dx) * dt;
     }
 }
 
@@ -53,7 +53,7 @@ void FieldSolver::timeEvolutionE(
     thrust::device_vector<ElectricField>& E, 
     const thrust::device_vector<MagneticField>& B, 
     const thrust::device_vector<CurrentField>& current, 
-    const double dt
+    const float dt
 )
 {
     dim3 threadsPerBlock(256);
