@@ -83,7 +83,7 @@ ParticleField getParticleFields(
 
 __global__
 void pushVelocityOfOneSpecies_kernel(
-    Particle* particlesSpecies, const MagneticField* magneticField, const ElectricField* electricField, 
+    Particle* particlesSpecies, const MagneticField* B, const ElectricField* E, 
     float q, float m, int totalNumSpecies, float dt
 )
 {
@@ -111,7 +111,7 @@ void pushVelocityOfOneSpecies_kernel(
         vz = particlesSpecies[i].vz;
         gamma = particlesSpecies[i].gamma;
 
-        particleField = getParticleFields(magneticField, electricField, particlesSpecies[i]);
+        particleField = getParticleFields(B, E, particlesSpecies[i]);
         bx = particleField.bX;
         by = particleField.bY;
         bz = particleField.bZ; 
