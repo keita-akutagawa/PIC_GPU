@@ -12,6 +12,12 @@ __global__ void timeEvolutionB_kernel(
         B[i].bY += (E[i + 1].eZ - E[i].eZ) / device_dx * dt;
         B[i].bZ += -(E[i + 1].eY - E[i].eY) / device_dx * dt;
     }
+
+    if (i == device_nx - 1) {
+        B[i].bX += 0.0f;
+        B[i].bY += (E[0].eZ - E[i].eZ) / device_dx * dt;
+        B[i].bZ += -(E[0].eY - E[i].eY) / device_dx * dt;
+    }
 }
 
 void FieldSolver::timeEvolutionB(
@@ -46,6 +52,14 @@ __global__ void timeEvolutionE_kernel(
                  - device_c * device_c * (B[i].bZ - B[i - 1].bZ) / device_dx) * dt;
         E[i].eZ += (-current[i].jZ / device_epsilon0 
                  + device_c * device_c * (B[i].bY - B[i - 1].bY) / device_dx) * dt;
+    }
+
+    if (i == 0) {
+        E[i].eX += (-current[i].jX / device_epsilon0) * dt;
+        E[i].eY += (-current[i].jY / device_epsilon0 
+                 - device_c * device_c * (B[i].bZ - B[device_nx - 1].bZ) / device_dx) * dt;
+        E[i].eZ += (-current[i].jZ / device_epsilon0 
+                 + device_c * device_c * (B[i].bY - B[device_nx - 1].bY) / device_dx) * dt;
     }
 }
 

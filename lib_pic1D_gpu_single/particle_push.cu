@@ -51,7 +51,7 @@ ParticleField getParticleFields(
     float xOverDx;
     xOverDx = particle.x / device_dx;
 
-    xIndex1 = std::floor(xOverDx);
+    xIndex1 = floorf(xOverDx);
     xIndex2 = xIndex1 + 1;
     xIndex2 = (xIndex2 == device_nx) ? 0 : xIndex2;
 
@@ -87,24 +87,25 @@ void pushVelocityOfOneSpecies_kernel(
     float q, float m, int totalNumSpecies, float dt
 )
 {
-    float qOverMTimesDtOver2;
-    float tmpForT, tmpForS, tmp1OverC2;
-    float vx, vy, vz, gamma;
-    float tx, ty, tz;
-    float sx, sy, sz;
-    float vxMinus, vyMinus, vzMinus;
-    float vx0, vy0, vz0;
-    float vxPlus, vyPlus, vzPlus; 
-    float bx, by, bz;
-    float ex, ey, ez;
-    ParticleField particleField;
-
-    qOverMTimesDtOver2 = q / m * dt / 2.0f;
-    tmp1OverC2 = 1.0f / (device_c * device_c);
-
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (i < totalNumSpecies) {
+        float qOverMTimesDtOver2;
+        float tmpForT, tmpForS, tmp1OverC2;
+        float vx, vy, vz, gamma;
+        float tx, ty, tz;
+        float sx, sy, sz;
+        float vxMinus, vyMinus, vzMinus;
+        float vx0, vy0, vz0;
+        float vxPlus, vyPlus, vzPlus; 
+        float bx, by, bz;
+        float ex, ey, ez;
+        ParticleField particleField;
+
+        qOverMTimesDtOver2 = q / m * dt / 2.0f;
+        tmp1OverC2 = 1.0f / (device_c * device_c);
+
+
         vx = particlesSpecies[i].vx;
         vy = particlesSpecies[i].vy;
         vz = particlesSpecies[i].vz;

@@ -11,16 +11,16 @@ std::string filenameWithoutStep = "two_stream_electron";
 std::ofstream logfile("results_two_stream_electron/log_two_stream_electron.txt");
 
 
-const float c = 1.0;
-const float epsilon0 = 1.0;
-const float mu0 = 1.0;
+const float c = 1.0f;
+const float epsilon0 = 1.0f;
+const float mu0 = 1.0f;
 
 const int nx = 512;
-const float dx = 1.0;
-const float xmin = 0.0; 
+const float dx = 1.0f;
+const float xmin = 0.0f; 
 const float xmax = nx * dx;
 
-const float dt = 0.5;
+const float dt = 0.5f;
 
 const int numberDensityIon = 100;
 const int numberDensityElectron = 100;
@@ -32,18 +32,18 @@ const int totalNumElectronBeam2 = nx * numberDensityElectron / 2;
 const int totalNumElectron = totalNumElectronBeam1 + totalNumElectronBeam2;
 const int totalNumParticles = totalNumIon + totalNumElectron;
 
-const float B0 = sqrt(static_cast<float>(numberDensityElectron)) / 10.0;
+const float B0 = sqrt(static_cast<float>(numberDensityElectron)) / 10.0f;
 
-const float mRatio = 100.0;
-const float mElectron = 1.0;
+const float mRatio = 100.0f;
+const float mElectron = 1.0f;
 const float mIon = mRatio * mElectron;
 
-const float tRatio = 100.0;
-const float tElectron = 0.5 * mElectron * pow(0.01 * c, 2);
+const float tRatio = 100.0f;
+const float tElectron = 0.5f * mElectron * pow(0.01f * c, 2);
 const float tIon = tRatio * tElectron;
 
-const float qRatio = -1.0;
-const float qElectron = -1.0 * sqrt(epsilon0 * tElectron / static_cast<float>(numberDensityElectron));
+const float qRatio = -1.0f;
+const float qElectron = -1.0f * sqrt(epsilon0 * tElectron / static_cast<float>(numberDensityElectron));
 const float qIon = qRatio * qElectron;
 
 const float omegaPe = sqrt(static_cast<float>(numberDensityElectron) * pow(qElectron, 2) / mElectron / epsilon0);
@@ -53,22 +53,22 @@ const float omegaCi = qIon * B0 / mIon;
 
 const float debyeLength = sqrt(epsilon0 * tElectron / static_cast<float>(numberDensityElectron) / pow(qElectron, 2));
 
-const float vThIon = sqrt(2.0 * tIon / mIon);
-const float vThElectron = sqrt(2.0 * tElectron / mElectron);
-const float bulkVxIon = 0.0;
-const float bulkVyIon = 0.0;
-const float bulkVzIon = 0.0;
-const float bulkVxElectron = -10.0 * vThIon;
-const float bulkVyElectron = 0.0;
-const float bulkVzElectron = 0.0;
+const float vThIon = sqrt(2.0f * tIon / mIon);
+const float vThElectron = sqrt(2.0f * tElectron / mElectron);
+const float bulkVxIon = 0.0f;
+const float bulkVyIon = 0.0f;
+const float bulkVzIon = 0.0f;
+const float bulkVxElectron = -10.0f * vThIon;
+const float bulkVyElectron = 0.0f;
+const float bulkVzElectron = 0.0f;
 //追加
-const float bulkVxElectronBeam = 10.0 * vThIon;
-const float bulkVyElectronBeam = 0.0;
-const float bulkVzElectronBeam = 0.0;
+const float bulkVxElectronBeam = 10.0f * vThIon;
+const float bulkVyElectronBeam = 0.0f;
+const float bulkVzElectronBeam = 0.0f;
 
 const int totalStep = 10000;
 const int recordStep = 100;
-float totalTime = 0.0;
+float totalTime = 0.0f;
 
 
 __constant__ float device_c;
@@ -140,7 +140,7 @@ __global__ void initializeField_kernel(
         E[i].eX = 0.0f;
         E[i].eY = 0.0f;
         E[i].eZ = 0.0f;
-        B[i].bX = device_B0;
+        B[i].bX = 0.0f;
         B[i].bY = 0.0f;
         B[i].bZ = 0.0f;
     }
@@ -194,6 +194,7 @@ int main()
     std::cout << "total number of partices is " << totalNumParticles << std::endl;
     std::cout << std::setprecision(4) 
               << "omega_pe * t = " << totalStep * dt * omegaPe << std::endl;
+
 
     PIC1D pIC1D;
 

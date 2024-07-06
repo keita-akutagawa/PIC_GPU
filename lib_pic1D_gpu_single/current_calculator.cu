@@ -40,7 +40,7 @@ struct CalculateCurrent {
 
         xOverDx = particlesSpecies[i].x / device_dx;
 
-        xIndex1 = std::floor(xOverDx);
+        xIndex1 = floorf(xOverDx);
         xIndex2 = xIndex1 + 1;
         xIndex2 = (xIndex2 == device_nx) ? 0 : xIndex2;
 

@@ -37,6 +37,15 @@ __global__ void getCenterBE_kernel(
         tmpE[i].eY = E[i].eY;
         tmpE[i].eZ = E[i].eZ;
     }
+
+    if (i == 0) {
+        tmpB[i].bX = B[i].bX;
+        tmpB[i].bY = 0.5f * (B[i].bY + B[device_nx - 1].bY);
+        tmpB[i].bZ = 0.5f * (B[i].bZ + B[device_nx - 1].bZ);
+        tmpE[i].eX = 0.5f * (E[i].eX + E[device_nx - 1].eX);
+        tmpE[i].eY = E[i].eY;
+        tmpE[i].eZ = E[i].eZ;
+    }
 }
 
 __global__ void getHalfCurrent_kernel(
@@ -47,6 +56,12 @@ __global__ void getHalfCurrent_kernel(
 
     if (i < device_nx - 1) {
         current[i].jX = 0.5f * (tmpCurrent[i].jX + tmpCurrent[i + 1].jX);
+        current[i].jY = tmpCurrent[i].jY;
+        current[i].jZ = tmpCurrent[i].jZ;
+    }
+
+    if (i == device_nx - 1) {
+        current[i].jX = 0.5f * (tmpCurrent[i].jX + tmpCurrent[0].jX);
         current[i].jY = tmpCurrent[i].jY;
         current[i].jZ = tmpCurrent[i].jZ;
     }
@@ -153,7 +168,7 @@ void PIC1D::saveFields(
         ofsE.write(reinterpret_cast<const char*>(&host_E[i].eX), sizeof(float));
         ofsE.write(reinterpret_cast<const char*>(&host_E[i].eY), sizeof(float));
         ofsE.write(reinterpret_cast<const char*>(&host_E[i].eZ), sizeof(float));
-        BEnergy += host_E[i].eX * host_E[i].eX + host_E[i].eY * host_E[i].eY + host_E[i].eZ * host_E[i].eZ;
+        EEnergy += host_E[i].eX * host_E[i].eX + host_E[i].eY * host_E[i].eY + host_E[i].eZ * host_E[i].eZ;
     }
     EEnergy *= 0.5f * epsilon0;
 

@@ -45,84 +45,24 @@ void Boundary::periodicBoundaryParticleX(
 
 //////////
 
-__global__ void periodicBoundaryBX_kernel(
-    MagneticField* B
-)
-{
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
-
-    if (i < 1) {
-        B[0] = B[device_nx - 2];
-        B[device_nx - 1] = B[1];
-    }
-}
-
 void Boundary::periodicBoundaryBX(
     thrust::device_vector<MagneticField>& B
 )
 {
-    dim3 threadsPerBlock(1);
-    dim3 blocksPerGrid(1);
-
-    periodicBoundaryBX_kernel<<<blocksPerGrid, threadsPerBlock>>>(
-        thrust::raw_pointer_cast(B.data())
-    );
-
-    cudaDeviceSynchronize();
 }
 
-
-__global__ void periodicBoundaryEX_kernel(
-    ElectricField* E
-)
-{
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
-
-    if (i < 1) {
-        E[0] = E[device_nx - 2];
-        E[device_nx - 1] = E[1];
-    }
-}
 
 void Boundary::periodicBoundaryEX(
     thrust::device_vector<ElectricField>& E
 )
 {
-    dim3 threadsPerBlock(1);
-    dim3 blocksPerGrid(1);
-
-    periodicBoundaryEX_kernel<<<blocksPerGrid, threadsPerBlock>>>(
-        thrust::raw_pointer_cast(E.data())
-    );
-
-    cudaDeviceSynchronize();
 }
 
-
-__global__ void periodicBoundaryCurrentX_kernel(
-    CurrentField* current
-)
-{
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
-
-    if (i < 1) {
-        current[0] = current[device_nx - 2];
-        current[device_nx - 1] = current[1];
-    }
-}
 
 void Boundary::periodicBoundaryCurrentX(
     thrust::device_vector<CurrentField>& current
 )
 {
-    dim3 threadsPerBlock(1);
-    dim3 blocksPerGrid(1);
-
-    periodicBoundaryCurrentX_kernel<<<blocksPerGrid, threadsPerBlock>>>(
-        thrust::raw_pointer_cast(current.data())
-    );
-
-    cudaDeviceSynchronize();
 }
 
 
