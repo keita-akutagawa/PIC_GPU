@@ -81,8 +81,8 @@ void PIC1D::oneStep()
         particlesIon, particlesElectron
     );
 
-    currentCalculater.resetCurrent(tmpCurrent);
-    currentCalculater.calculateCurrent(
+    currentCalculator.resetCurrent(tmpCurrent);
+    currentCalculator.calculateCurrent(
         tmpCurrent, particlesIon, particlesElectron
     );
     boundary.periodicBoundaryCurrentX(tmpCurrent);

@@ -6,7 +6,7 @@
 #include "initialize_particle.hpp"
 #include "particle_push.hpp"
 #include "field_solver.hpp"
-#include "current_calculater.hpp"
+#include "current_calculator.hpp"
 #include "boundary.hpp"
 #include "particle_struct.hpp"
 #include "field_parameter_struct.hpp"
@@ -34,7 +34,7 @@ private:
     InitializeParticle initializeParticle;
     ParticlePush particlePush;
     FieldSolver fieldSolver;
-    CurrentCalculater currentCalculater;
+    CurrentCalculator currentCalculator;
     Boundary boundary;
 
     thrust::host_vector<Particle> host_particleIon;
