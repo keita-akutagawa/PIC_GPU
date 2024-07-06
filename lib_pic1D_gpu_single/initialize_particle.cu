@@ -6,16 +6,15 @@
 
 __global__ void uniformForPositionX_kernel(
     Particle* particle, 
-    const float xmin, const float xmax, 
     const int nStart, const int nEnd, const int seed
 )
 {
-    int i = blockIdx.x * blockDim.x + threadIdx.x + nStart;
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (i < nEnd - nStart) {
-        thrust::default_random_engine rng(i + seed);
-        thrust::uniform_real_distribution<float> dist(1e-20, 1.0 - 1e-20);
-        particle[i + nStart].x =  dist(rng) * (xmax - xmin);
+        thrust::default_random_engine rng(i + nStart);
+        thrust::uniform_real_distribution<float> dist(device_xmin + 1e-20f, device_xmax - 1e-20f);
+        particle[i + nStart].x = dist(rng);
     }
 }
 
@@ -32,7 +31,7 @@ void InitializeParticle::uniformForPositionX(
 
     uniformForPositionX_kernel<<<blocksPerGrid, threadsPerBlock>>>(
         thrust::raw_pointer_cast(particlesSpecies.data()), 
-        xmin, xmax, nStart, nEnd, seed
+        nStart, nEnd, seed
     );
 
     cudaDeviceSynchronize();
@@ -46,22 +45,22 @@ __global__ void maxwellDistributionForVelocity_kernel(
     const int nStart, const int nEnd, const int seed
 )
 {
-    int i = blockIdx.x * blockDim.x + threadIdx.x + nStart;
+    unsigned long long i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (i < nEnd - nStart) {
-        thrust::default_random_engine rng(seed + i);
-        thrust::random::normal_distribution<double> dist_vx(bulkVxSpecies, vThSpecies);
-        thrust::random::normal_distribution<double> dist_vy(bulkVySpecies, vThSpecies);
-        thrust::random::normal_distribution<double> dist_vz(bulkVzSpecies, vThSpecies);
+        thrust::default_random_engine rng(nStart + i);
+        thrust::random::normal_distribution<float> dist_vx(bulkVxSpecies, vThSpecies);
+        thrust::random::normal_distribution<float> dist_vy(bulkVySpecies, vThSpecies);
+        thrust::random::normal_distribution<float> dist_vz(bulkVzSpecies, vThSpecies);
 
-        double vx, vy, vz;
+        float vx, vy, vz;
 
         while (true) {
             vx = dist_vx(rng);
             vy = dist_vy(rng);
             vz = dist_vz(rng);
 
-            if (vx * vx + vy * vy + vz * vz < c * c) break;
+            if (vx * vx + vy * vy + vz * vz < device_c * device_c) break;
         }
 
         particle[i + nStart].vx = vx;
@@ -73,10 +72,10 @@ __global__ void maxwellDistributionForVelocity_kernel(
 
 
 void InitializeParticle::maxwellDistributionForVelocity(
-    double bulkVxSpecies, 
-    double bulkVySpecies, 
-    double bulkVzSpecies, 
-    double vThSpecies, 
+    float bulkVxSpecies, 
+    float bulkVySpecies, 
+    float bulkVzSpecies, 
+    float vThSpecies, 
     int nStart, 
     int nEnd, 
     int seed, 

@@ -31,7 +31,7 @@ struct CalculateCurrent {
     const Particle* particlesSpecies;
     double q;
 
-    __host__ __device__
+    __device__
     void operator()(const int& i) const {
         double cx1, cx2; 
         int xIndex1, xIndex2;
@@ -77,7 +77,10 @@ void CurrentCalculater::calculateCurrentOfOneSpecies(
         q
     };
 
-    thrust::for_each(0, totalNumSpecies, calcCurrent);
+    thrust::for_each(
+        thrust::counting_iterator<int>(0), 
+        thrust::counting_iterator<int>(totalNumSpecies), 
+        calcCurrent);
 }
 
 
