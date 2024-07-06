@@ -3,7 +3,7 @@
 #include <iostream>
 #include <iomanip>
 #include <cmath>
-#include "../../lib_pic1D_cpp_oop/pic1D.hpp"
+#include "../../lib_pic1D_gpu_single/pic1D.hpp"
 
 
 const double c = 1.0;
