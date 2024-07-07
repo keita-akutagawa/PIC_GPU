@@ -140,7 +140,7 @@ __global__ void initializeField_kernel(
         E[i].eX = 0.0f;
         E[i].eY = 0.0f;
         E[i].eZ = 0.0f;
-        B[i].bX = 0.0f;
+        B[i].bX = device_B0;
         B[i].bY = 0.0f;
         B[i].bZ = 0.0f;
     }
@@ -159,20 +159,20 @@ void PIC1D::initialize()
         0, totalNumIon, 0, particlesIon
     );
     initializeParticle.uniformForPositionX(
-        0, totalNumElectron, 1 * totalNumParticles, particlesElectron
+        0, totalNumElectron, 10000, particlesElectron
     );
 
     initializeParticle.maxwellDistributionForVelocity(
         bulkVxIon, bulkVyIon, bulkVzIon, vThIon, 
-        0, totalNumIon, 2 * totalNumParticles, particlesIon
+        0, totalNumIon, 20000, particlesIon
     );
     initializeParticle.maxwellDistributionForVelocity(
         bulkVxElectron, bulkVyElectron, bulkVzElectron, vThElectron, 
-        0, totalNumElectronBeam1, 3 * totalNumParticles, particlesElectron
+        0, totalNumElectronBeam1, 30000, particlesElectron
     );
     initializeParticle.maxwellDistributionForVelocity(
         bulkVxElectronBeam, bulkVyElectronBeam, bulkVzElectronBeam, vThElectron, 
-        totalNumElectronBeam1, totalNumElectron, 4 * totalNumParticles, particlesElectron
+        totalNumElectronBeam1, totalNumElectron, 40000, particlesElectron
     );
 
 

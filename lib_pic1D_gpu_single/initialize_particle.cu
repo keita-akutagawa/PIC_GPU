@@ -1,6 +1,7 @@
 #include "initialize_particle.hpp"
 #include <thrust/transform.h>
 #include <thrust/random.h>
+#include <curand_kernel.h>
 #include <cmath>
 
 
@@ -12,10 +13,10 @@ __global__ void uniformForPositionX_kernel(
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (i < nEnd - nStart) {
-        thrust::default_random_engine rng(seed);
-        rng.discard(i);
-        thrust::uniform_real_distribution<float> dist(device_xmin + 1e-20f, device_xmax - 1e-20f);
-        particle[i + nStart].x = dist(rng);
+        curandState state; 
+        curand_init(seed, i, 0, &state);
+        float x = curand_uniform(&state) * (device_xmax - device_xmin) + device_xmin;
+        particle[i + nStart].x = x;
     }
 }
 
@@ -49,17 +50,15 @@ __global__ void maxwellDistributionForVelocity_kernel(
     unsigned long long i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (i < nEnd - nStart) {
-        thrust::default_random_engine rng(seed + 10 * i);
-        thrust::random::normal_distribution<float> dist_vx(bulkVxSpecies, vThSpecies);
-        thrust::random::normal_distribution<float> dist_vy(bulkVySpecies, vThSpecies);
-        thrust::random::normal_distribution<float> dist_vz(bulkVzSpecies, vThSpecies);
+        curandState state; 
+        curand_init(seed, 1000 * i, 0, &state);
 
         float vx, vy, vz;
 
         while (true) {
-            vx = dist_vx(rng);
-            vy = dist_vy(rng);
-            vz = dist_vz(rng);
+            vx = bulkVxSpecies + curand_normal(&state) * vThSpecies;
+            vy = bulkVySpecies + curand_normal(&state) * vThSpecies;
+            vz = bulkVzSpecies + curand_normal(&state) * vThSpecies;
 
             if (vx * vx + vy * vy + vz * vz < device_c * device_c) break;
         }
@@ -93,5 +92,32 @@ void InitializeParticle::maxwellDistributionForVelocity(
     );
 
     cudaDeviceSynchronize();
+}
+
+//////////
+
+void InitializeParticle::uniformForPositionX_cpu(
+    int nStart, 
+    int nEnd, 
+    int seed, 
+    thrust::device_vector<Particle>& particlesSpecies
+)
+{
+
+}
+
+
+void maxwellDistributionForVelocity_cpu(
+        float bulkVxSpecies, 
+        float bulkVySpecies, 
+        float bulkVzSpecies, 
+        float vThSpecies, 
+        int nStart, 
+        int nEnd, 
+        int seed, 
+        thrust::device_vector<Particle>& particlesSpecies
+)
+{
+    
 }
 
