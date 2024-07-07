@@ -16,7 +16,7 @@ __global__ void uniformForPositionX_kernel(
     if (i < nEnd - nStart) {
         curandState state; 
         curand_init(seed, i, 0, &state);
-        double x = curand_uniform(&state) * (device_xmax - device_xmin) + device_xmin;
+        float x = curand_uniform(&state) * (device_xmax - device_xmin) + device_xmin;
         particle[i + nStart].x = x;
     }
 }
@@ -44,7 +44,7 @@ void InitializeParticle::uniformForPositionX(
 
 __global__ void maxwellDistributionForVelocity_kernel(
     Particle* particle, 
-    const double bulkVxSpecies, const double bulkVySpecies, const double bulkVzSpecies, const double vThSpecies, 
+    const float bulkVxSpecies, const float bulkVySpecies, const float bulkVzSpecies, const float vThSpecies, 
     const int nStart, const int nEnd, const int seed
 )
 {
@@ -54,7 +54,7 @@ __global__ void maxwellDistributionForVelocity_kernel(
         curandState state; 
         curand_init(seed, 1000 * i, 0, &state);
 
-        double vx, vy, vz;
+        float vx, vy, vz;
 
         while (true) {
             vx = bulkVxSpecies + curand_normal(&state) * vThSpecies;
@@ -67,16 +67,16 @@ __global__ void maxwellDistributionForVelocity_kernel(
         particle[i + nStart].vx = vx;
         particle[i + nStart].vy = vy;
         particle[i + nStart].vz = vz;
-        particle[i + nStart].gamma = sqrt(1.0 + (vx * vx + vy * vy + vz * vz) / (device_c * device_c));
+        particle[i + nStart].gamma = sqrt(1.0f + (vx * vx + vy * vy + vz * vz) / (device_c * device_c));
     }
 }
 
 
 void InitializeParticle::maxwellDistributionForVelocity(
-    double bulkVxSpecies, 
-    double bulkVySpecies, 
-    double bulkVzSpecies, 
-    double vThSpecies, 
+    float bulkVxSpecies, 
+    float bulkVySpecies, 
+    float bulkVzSpecies, 
+    float vThSpecies, 
     int nStart, 
     int nEnd, 
     int seed, 
@@ -106,9 +106,9 @@ void InitializeParticle::uniformForPositionX_cpu(
 )
 {
     std::mt19937_64 mt64(seed);
-    std::uniform_real_distribution<double> set_x(1e-20, 1.0 - 1e-20);
+    std::uniform_real_distribution<float> set_x(1e-20, 1.0 - 1e-20);
     for (int i = nStart; i < nEnd; i++) {
-        double x = set_x(mt64) * (xmax - xmin);
+        float x = set_x(mt64) * (xmax - xmin);
         host_particlesSpecies[i].x = x;
     }
 
@@ -116,11 +116,11 @@ void InitializeParticle::uniformForPositionX_cpu(
 }
 
 
-void maxwellDistributionForVelocity_cpu(
-        double bulkVxSpecies, 
-        double bulkVySpecies, 
-        double bulkVzSpecies, 
-        double vThSpecies, 
+void InitializeParticle::maxwellDistributionForVelocity_cpu(
+        float bulkVxSpecies, 
+        float bulkVySpecies, 
+        float bulkVzSpecies, 
+        float vThSpecies, 
         int nStart, 
         int nEnd, 
         int seed, 
@@ -129,16 +129,16 @@ void maxwellDistributionForVelocity_cpu(
 )
 {
     std::mt19937_64 mt64Vx(seed);
-    std::normal_distribution<double> set_vx(bulkVxSpecies, vThSpecies);
+    std::normal_distribution<float> set_vx(bulkVxSpecies, vThSpecies);
     std::mt19937_64 mt64Vy(seed + 10000);
-    std::normal_distribution<double> set_vy(bulkVySpecies, vThSpecies);
+    std::normal_distribution<float> set_vy(bulkVySpecies, vThSpecies);
     std::mt19937_64 mt64Vz(seed + 100000);
-    std::normal_distribution<double> set_vz(bulkVzSpecies, vThSpecies);
+    std::normal_distribution<float> set_vz(bulkVzSpecies, vThSpecies);
 
     for (int i = nStart; i < nEnd; i++) {
-        double vx;
-        double vy;
-        double vz;
+        float vx;
+        float vy;
+        float vz;
 
         while (true) {
             vx = set_vx(mt64Vx);
@@ -151,7 +151,7 @@ void maxwellDistributionForVelocity_cpu(
         host_particlesSpecies[i].vx = vx;
         host_particlesSpecies[i].vy = vy;
         host_particlesSpecies[i].vz = vz;
-        host_particlesSpecies[i].gamma = sqrt(1.0 + (vx * vx + vy * vy + vz * vz) / (c * c));
+        host_particlesSpecies[i].gamma = sqrt(1.0f + (vx * vx + vy * vy + vz * vz) / (c * c));
     }
 
     particlesSpecies = host_particlesSpecies;
