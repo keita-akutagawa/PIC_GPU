@@ -51,15 +51,19 @@ __global__ void maxwellDistributionForVelocity_kernel(
     unsigned long long i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (i < nEnd - nStart) {
-        curandState state; 
-        curand_init(seed, 1000 * i, 0, &state);
+        curandState stateVx; 
+        curandState stateVy; 
+        curandState stateVz; 
+        curand_init(seed,         100 * i, 0, &stateVx);
+        curand_init(seed + 10000, 100 * i, 0, &stateVy);
+        curand_init(seed + 20000, 100 * i, 0, &stateVz);
 
         float vx, vy, vz;
 
         while (true) {
-            vx = bulkVxSpecies + curand_normal(&state) * vThSpecies;
-            vy = bulkVySpecies + curand_normal(&state) * vThSpecies;
-            vz = bulkVzSpecies + curand_normal(&state) * vThSpecies;
+            vx = bulkVxSpecies + curand_normal(&stateVx) * vThSpecies;
+            vy = bulkVySpecies + curand_normal(&stateVy) * vThSpecies;
+            vz = bulkVzSpecies + curand_normal(&stateVz) * vThSpecies;
 
             if (vx * vx + vy * vy + vz * vz < device_c * device_c) break;
         }
