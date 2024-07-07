@@ -13,7 +13,7 @@
 #include "moment_struct.hpp"
 
 
-class PIC1D
+class PIC2D
 {
 private:
     thrust::device_vector<Particle> particlesIon;
@@ -51,7 +51,7 @@ private:
 
 
 public:
-    PIC1D();
+    PIC2D();
     
     virtual void initialize();
     

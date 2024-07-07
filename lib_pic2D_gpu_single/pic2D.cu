@@ -3,7 +3,7 @@
 #include "pic2D.hpp"
 
 
-PIC1D::PIC1D()
+PIC2D::PIC2D()
     : particlesIon(totalNumIon), 
       particlesElectron(totalNumElectron), 
       E(nx * ny), 
@@ -104,7 +104,7 @@ __global__ void getHalfCurrent_kernel(
 }
 
 
-void PIC1D::oneStep()
+void PIC2D::oneStep()
 {
     fieldSolver.timeEvolutionB(B, E, dt/2.0);
     boundary.periodicBoundaryBX(B);
@@ -170,7 +170,7 @@ void PIC1D::oneStep()
 }
 
 
-void PIC1D::saveFields(
+void PIC2D::saveFields(
     std::string directoryname, 
     std::string filenameWithoutStep, 
     int step
@@ -248,7 +248,7 @@ void PIC1D::saveFields(
 }
 
 
-void PIC1D::saveParticle(
+void PIC2D::saveParticle(
     std::string directoryname, 
     std::string filenameWithoutStep, 
     int step
