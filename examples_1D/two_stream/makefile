@@ -1,6 +1,6 @@
 CC = nvcc
 CFLAGS = -O3 -arch=sm_89 -rdc=true -Xcompiler "/wd 4819"
-SRCDIR = ../../lib_pic1D_gpu_single
+SRCDIR = ../../lib_pic1D_gpu
 SOURCES = $(wildcard $(SRCDIR)/*.cu)
 OBJS = $(patsubst $(SRCDIR)/%.cu, $(SRCDIR)/%.o, $(SOURCES))
 MAIN = main_two_stream_electron.o

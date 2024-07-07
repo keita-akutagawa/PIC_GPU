@@ -29,14 +29,14 @@ void CurrentCalculator::calculateCurrent(
 struct CalculateCurrent {
     CurrentField* current;
     const Particle* particlesSpecies;
-    const float q;
+    const double q;
 
     __device__
     void operator()(const int& i) const {
-        float cx1, cx2; 
+        double cx1, cx2; 
         int xIndex1, xIndex2;
-        float xOverDx;
-        float qOverGamma, qVxOverGamma, qVyOverGamma, qVzOverGamma;
+        double xOverDx;
+        double qOverGamma, qVxOverGamma, qVyOverGamma, qVzOverGamma;
 
         xOverDx = particlesSpecies[i].x / device_dx;
 
@@ -45,7 +45,7 @@ struct CalculateCurrent {
         xIndex2 = (xIndex2 == device_nx) ? 0 : xIndex2;
 
         cx1 = xOverDx - xIndex1;
-        cx2 = 1.0f - cx1;
+        cx2 = 1.0 - cx1;
 
         qOverGamma = q / particlesSpecies[i].gamma;
         qVxOverGamma = qOverGamma * particlesSpecies[i].vx;
@@ -67,7 +67,7 @@ struct CalculateCurrent {
 void CurrentCalculator::calculateCurrentOfOneSpecies(
     thrust::device_vector<CurrentField>& current, 
     const thrust::device_vector<Particle>& particlesSpecies, 
-    float q, int totalNumSpecies
+    double q, int totalNumSpecies
 )
 {
 

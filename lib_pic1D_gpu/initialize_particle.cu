@@ -15,7 +15,7 @@ __global__ void uniformForPositionX_kernel(
     if (i < nEnd - nStart) {
         curandState state; 
         curand_init(seed, i, 0, &state);
-        float x = curand_uniform(&state) * (device_xmax - device_xmin) + device_xmin;
+        double x = curand_uniform(&state) * (device_xmax - device_xmin) + device_xmin;
         particle[i + nStart].x = x;
     }
 }
@@ -43,7 +43,7 @@ void InitializeParticle::uniformForPositionX(
 
 __global__ void maxwellDistributionForVelocity_kernel(
     Particle* particle, 
-    const float bulkVxSpecies, const float bulkVySpecies, const float bulkVzSpecies, const float vThSpecies, 
+    const double bulkVxSpecies, const double bulkVySpecies, const double bulkVzSpecies, const double vThSpecies, 
     const int nStart, const int nEnd, const int seed
 )
 {
@@ -53,7 +53,7 @@ __global__ void maxwellDistributionForVelocity_kernel(
         curandState state; 
         curand_init(seed, 1000 * i, 0, &state);
 
-        float vx, vy, vz;
+        double vx, vy, vz;
 
         while (true) {
             vx = bulkVxSpecies + curand_normal(&state) * vThSpecies;
@@ -66,16 +66,16 @@ __global__ void maxwellDistributionForVelocity_kernel(
         particle[i + nStart].vx = vx;
         particle[i + nStart].vy = vy;
         particle[i + nStart].vz = vz;
-        particle[i + nStart].gamma = sqrt(1.0f + (vx * vx + vy * vy + vz * vz) / (device_c * device_c));
+        particle[i + nStart].gamma = sqrt(1.0 + (vx * vx + vy * vy + vz * vz) / (device_c * device_c));
     }
 }
 
 
 void InitializeParticle::maxwellDistributionForVelocity(
-    float bulkVxSpecies, 
-    float bulkVySpecies, 
-    float bulkVzSpecies, 
-    float vThSpecies, 
+    double bulkVxSpecies, 
+    double bulkVySpecies, 
+    double bulkVzSpecies, 
+    double vThSpecies, 
     int nStart, 
     int nEnd, 
     int seed, 
@@ -108,10 +108,10 @@ void InitializeParticle::uniformForPositionX_cpu(
 
 
 void maxwellDistributionForVelocity_cpu(
-        float bulkVxSpecies, 
-        float bulkVySpecies, 
-        float bulkVzSpecies, 
-        float vThSpecies, 
+        double bulkVxSpecies, 
+        double bulkVySpecies, 
+        double bulkVzSpecies, 
+        double vThSpecies, 
         int nStart, 
         int nEnd, 
         int seed, 

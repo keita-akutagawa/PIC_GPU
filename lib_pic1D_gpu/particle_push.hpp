@@ -15,12 +15,12 @@ public:
         thrust::device_vector<Particle>& particlesElectron, 
         const thrust::device_vector<MagneticField>& B, 
         const thrust::device_vector<ElectricField>& E, 
-        float dt
+        double dt
     );
     void pushPosition(
         thrust::device_vector<Particle>& particlesIon, 
         thrust::device_vector<Particle>& particlesElectron, 
-        float dt
+        double dt
     );
 
 private:
@@ -29,14 +29,14 @@ private:
         thrust::device_vector<Particle>& particlesSpecies, 
         const thrust::device_vector<MagneticField>& B,
         const thrust::device_vector<ElectricField>& E, 
-        float q, float m, int totalNumSpecies, 
-        float dt
+        double q, double m, int totalNumSpecies, 
+        double dt
     );
 
     void pushPositionOfOneSpecies(
         thrust::device_vector<Particle>& particlesSpecies, 
         int totalNumSpecies, 
-        float dt
+        double dt
     );
 };
 

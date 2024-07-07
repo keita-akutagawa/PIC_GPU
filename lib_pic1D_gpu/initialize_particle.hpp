@@ -16,10 +16,10 @@ public:
     );
 
     void maxwellDistributionForVelocity(
-        float bulkVxSpecies, 
-        float bulkVySpecies, 
-        float bulkVzSpecies, 
-        float vThSpecies, 
+        double bulkVxSpecies, 
+        double bulkVySpecies, 
+        double bulkVzSpecies, 
+        double vThSpecies, 
         int nStart, 
         int nEnd, 
         int seed, 
@@ -34,10 +34,10 @@ public:
     );
 
     void maxwellDistributionForVelocity_cpu(
-        float bulkVxSpecies, 
-        float bulkVySpecies, 
-        float bulkVzSpecies, 
-        float vThSpecies, 
+        double bulkVxSpecies, 
+        double bulkVySpecies, 
+        double bulkVzSpecies, 
+        double vThSpecies, 
         int nStart, 
         int nEnd, 
         int seed, 

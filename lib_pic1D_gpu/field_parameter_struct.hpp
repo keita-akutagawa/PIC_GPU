@@ -3,45 +3,45 @@
 
 struct MagneticField
 {
-    float bX; 
-    float bY; 
-    float bZ; 
+    double bX; 
+    double bY; 
+    double bZ; 
 
     __host__ __device__
     MagneticField() : 
-        bX(0.0f),
-        bY(0.0f),
-        bZ(0.0f)
+        bX(0.0),
+        bY(0.0),
+        bZ(0.0)
         {}
 };
 
 
 struct ElectricField
 {
-    float eX; 
-    float eY; 
-    float eZ; 
+    double eX; 
+    double eY; 
+    double eZ; 
 
     __host__ __device__
     ElectricField() : 
-        eX(0.0f),
-        eY(0.0f),
-        eZ(0.0f)
+        eX(0.0),
+        eY(0.0),
+        eZ(0.0)
         {}
 };
 
 
 struct CurrentField
 {
-    float jX; 
-    float jY; 
-    float jZ; 
+    double jX; 
+    double jY; 
+    double jZ; 
 
     __host__ __device__
     CurrentField() : 
-        jX(0.0f),
-        jY(0.0f),
-        jZ(0.0f)
+        jX(0.0),
+        jY(0.0),
+        jZ(0.0)
         {}
 };
 

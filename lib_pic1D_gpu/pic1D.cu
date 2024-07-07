@@ -31,18 +31,18 @@ __global__ void getCenterBE_kernel(
 
     if (0 < i && i < device_nx) {
         tmpB[i].bX = B[i].bX;
-        tmpB[i].bY = 0.5f * (B[i].bY + B[i - 1].bY);
-        tmpB[i].bZ = 0.5f * (B[i].bZ + B[i - 1].bZ);
-        tmpE[i].eX = 0.5f * (E[i].eX + E[i - 1].eX);
+        tmpB[i].bY = 0.5 * (B[i].bY + B[i - 1].bY);
+        tmpB[i].bZ = 0.5 * (B[i].bZ + B[i - 1].bZ);
+        tmpE[i].eX = 0.5 * (E[i].eX + E[i - 1].eX);
         tmpE[i].eY = E[i].eY;
         tmpE[i].eZ = E[i].eZ;
     }
 
     if (i == 0) {
         tmpB[i].bX = B[i].bX;
-        tmpB[i].bY = 0.5f * (B[i].bY + B[device_nx - 1].bY);
-        tmpB[i].bZ = 0.5f * (B[i].bZ + B[device_nx - 1].bZ);
-        tmpE[i].eX = 0.5f * (E[i].eX + E[device_nx - 1].eX);
+        tmpB[i].bY = 0.5 * (B[i].bY + B[device_nx - 1].bY);
+        tmpB[i].bZ = 0.5 * (B[i].bZ + B[device_nx - 1].bZ);
+        tmpE[i].eX = 0.5 * (E[i].eX + E[device_nx - 1].eX);
         tmpE[i].eY = E[i].eY;
         tmpE[i].eZ = E[i].eZ;
     }
@@ -55,13 +55,13 @@ __global__ void getHalfCurrent_kernel(
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (i < device_nx - 1) {
-        current[i].jX = 0.5f * (tmpCurrent[i].jX + tmpCurrent[i + 1].jX);
+        current[i].jX = 0.5 * (tmpCurrent[i].jX + tmpCurrent[i + 1].jX);
         current[i].jY = tmpCurrent[i].jY;
         current[i].jZ = tmpCurrent[i].jZ;
     }
 
     if (i == device_nx - 1) {
-        current[i].jX = 0.5f * (tmpCurrent[i].jX + tmpCurrent[0].jX);
+        current[i].jX = 0.5 * (tmpCurrent[i].jX + tmpCurrent[0].jX);
         current[i].jY = tmpCurrent[i].jY;
         current[i].jZ = tmpCurrent[i].jZ;
     }
@@ -70,7 +70,7 @@ __global__ void getHalfCurrent_kernel(
 
 void PIC1D::oneStep()
 {
-    fieldSolver.timeEvolutionB(B, E, dt/2.0f);
+    fieldSolver.timeEvolutionB(B, E, dt/2.0);
     boundary.periodicBoundaryBX(B);
 
     dim3 threadsPerBlock(256);
@@ -90,7 +90,7 @@ void PIC1D::oneStep()
     );
 
     particlePush.pushPosition(
-        particlesIon, particlesElectron, dt/2.0f
+        particlesIon, particlesElectron, dt/2.0
     );
     boundary.periodicBoundaryParticleX(
         particlesIon, particlesElectron
@@ -107,14 +107,14 @@ void PIC1D::oneStep()
     );
     boundary.periodicBoundaryCurrentX(current);
 
-    fieldSolver.timeEvolutionB(B, E, dt/2.0f);
+    fieldSolver.timeEvolutionB(B, E, dt/2.0);
     boundary.periodicBoundaryBX(B);
 
     fieldSolver.timeEvolutionE(E, B, current, dt);
     boundary.periodicBoundaryEX(E);
 
     particlePush.pushPosition(
-        particlesIon, particlesElectron, dt/2.0f
+        particlesIon, particlesElectron, dt/2.0
     );
     boundary.periodicBoundaryParticleX(
         particlesIon, particlesElectron
@@ -133,7 +133,7 @@ void PIC1D::saveFields(
     host_current = current;
     std::string filenameB, filenameE, filenameCurrent;
     std::string filenameBEnergy, filenameEEnergy;
-    float BEnergy = 0.0f, EEnergy = 0.0f;
+    double BEnergy = 0.0, EEnergy = 0.0;
 
     filenameB = directoryname + "/"
              + filenameWithoutStep + "_B_" + std::to_string(step)
@@ -155,38 +155,38 @@ void PIC1D::saveFields(
     std::ofstream ofsB(filenameB, std::ios::binary);
     ofsB << std::fixed << std::setprecision(6);
     for (int i = 0; i < nx; i++) {
-        ofsB.write(reinterpret_cast<const char*>(&host_B[i].bX), sizeof(float));
-        ofsB.write(reinterpret_cast<const char*>(&host_B[i].bY), sizeof(float));
-        ofsB.write(reinterpret_cast<const char*>(&host_B[i].bZ), sizeof(float));
+        ofsB.write(reinterpret_cast<const char*>(&host_B[i].bX), sizeof(double));
+        ofsB.write(reinterpret_cast<const char*>(&host_B[i].bY), sizeof(double));
+        ofsB.write(reinterpret_cast<const char*>(&host_B[i].bZ), sizeof(double));
         BEnergy += host_B[i].bX * host_B[i].bX + host_B[i].bY * host_B[i].bY + host_B[i].bZ * host_B[i].bZ;
     }
-    BEnergy *= 0.5f / mu0;
+    BEnergy *= 0.5 / mu0;
 
     std::ofstream ofsE(filenameE, std::ios::binary);
     ofsE << std::fixed << std::setprecision(6);
     for (int i = 0; i < nx; i++) {
-        ofsE.write(reinterpret_cast<const char*>(&host_E[i].eX), sizeof(float));
-        ofsE.write(reinterpret_cast<const char*>(&host_E[i].eY), sizeof(float));
-        ofsE.write(reinterpret_cast<const char*>(&host_E[i].eZ), sizeof(float));
+        ofsE.write(reinterpret_cast<const char*>(&host_E[i].eX), sizeof(double));
+        ofsE.write(reinterpret_cast<const char*>(&host_E[i].eY), sizeof(double));
+        ofsE.write(reinterpret_cast<const char*>(&host_E[i].eZ), sizeof(double));
         EEnergy += host_E[i].eX * host_E[i].eX + host_E[i].eY * host_E[i].eY + host_E[i].eZ * host_E[i].eZ;
     }
-    EEnergy *= 0.5f * epsilon0;
+    EEnergy *= 0.5 * epsilon0;
 
     std::ofstream ofsCurrent(filenameCurrent, std::ios::binary);
     ofsCurrent << std::fixed << std::setprecision(6);
     for (int i = 0; i < nx; i++) {
-        ofsCurrent.write(reinterpret_cast<const char*>(&host_current[i].jX), sizeof(float));
-        ofsCurrent.write(reinterpret_cast<const char*>(&host_current[i].jY), sizeof(float));
-        ofsCurrent.write(reinterpret_cast<const char*>(&host_current[i].jZ), sizeof(float));
+        ofsCurrent.write(reinterpret_cast<const char*>(&host_current[i].jX), sizeof(double));
+        ofsCurrent.write(reinterpret_cast<const char*>(&host_current[i].jY), sizeof(double));
+        ofsCurrent.write(reinterpret_cast<const char*>(&host_current[i].jZ), sizeof(double));
     }
 
     std::ofstream ofsBEnergy(filenameBEnergy, std::ios::binary);
     ofsBEnergy << std::fixed << std::setprecision(6);
-    ofsBEnergy.write(reinterpret_cast<const char*>(&BEnergy), sizeof(float));
+    ofsBEnergy.write(reinterpret_cast<const char*>(&BEnergy), sizeof(double));
 
     std::ofstream ofsEEnergy(filenameEEnergy, std::ios::binary);
     ofsEEnergy << std::fixed << std::setprecision(6);
-    ofsEEnergy.write(reinterpret_cast<const char*>(&EEnergy), sizeof(float));
+    ofsEEnergy.write(reinterpret_cast<const char*>(&EEnergy), sizeof(double));
 }
 
 
@@ -223,21 +223,21 @@ void PIC1D::saveParticle(
     std::ofstream ofsXIon(filenameXIon, std::ios::binary);
     ofsXIon << std::fixed << std::setprecision(6);
     for (int i = 0; i < totalNumIon; i++) {
-        ofsXIon.write(reinterpret_cast<const char*>(&host_particleIon[i].x), sizeof(float));
-        ofsXIon.write(reinterpret_cast<const char*>(&host_particleIon[i].y), sizeof(float));
-        ofsXIon.write(reinterpret_cast<const char*>(&host_particleIon[i].z), sizeof(float));
+        ofsXIon.write(reinterpret_cast<const char*>(&host_particleIon[i].x), sizeof(double));
+        ofsXIon.write(reinterpret_cast<const char*>(&host_particleIon[i].y), sizeof(double));
+        ofsXIon.write(reinterpret_cast<const char*>(&host_particleIon[i].z), sizeof(double));
     }
 
     std::ofstream ofsXElectron(filenameXElectron, std::ios::binary);
     ofsXElectron << std::fixed << std::setprecision(6);
     for (int i = 0; i < totalNumElectron; i++) {
-        ofsXElectron.write(reinterpret_cast<const char*>(&host_particleElectron[i].x), sizeof(float));
-        ofsXElectron.write(reinterpret_cast<const char*>(&host_particleElectron[i].y), sizeof(float));
-        ofsXElectron.write(reinterpret_cast<const char*>(&host_particleElectron[i].z), sizeof(float));
+        ofsXElectron.write(reinterpret_cast<const char*>(&host_particleElectron[i].x), sizeof(double));
+        ofsXElectron.write(reinterpret_cast<const char*>(&host_particleElectron[i].y), sizeof(double));
+        ofsXElectron.write(reinterpret_cast<const char*>(&host_particleElectron[i].z), sizeof(double));
     }
 
 
-    float vx, vy, vz, KineticEnergy = 0.0f;
+    double vx, vy, vz, KineticEnergy = 0.0;
 
     std::ofstream ofsVIon(filenameVIon, std::ios::binary);
     ofsVIon << std::fixed << std::setprecision(6);
@@ -246,11 +246,11 @@ void PIC1D::saveParticle(
         vy = host_particleIon[i].vy;
         vz = host_particleIon[i].vz;
 
-        ofsVIon.write(reinterpret_cast<const char*>(&vx), sizeof(float));
-        ofsVIon.write(reinterpret_cast<const char*>(&vy), sizeof(float));
-        ofsVIon.write(reinterpret_cast<const char*>(&vz), sizeof(float));
+        ofsVIon.write(reinterpret_cast<const char*>(&vx), sizeof(double));
+        ofsVIon.write(reinterpret_cast<const char*>(&vy), sizeof(double));
+        ofsVIon.write(reinterpret_cast<const char*>(&vz), sizeof(double));
 
-        KineticEnergy += 0.5f * mIon * (vx * vx + vy * vy + vz * vz);
+        KineticEnergy += 0.5 * mIon * (vx * vx + vy * vy + vz * vz);
     }
 
     std::ofstream ofsVElectron(filenameVElectron, std::ios::binary);
@@ -260,15 +260,15 @@ void PIC1D::saveParticle(
         vy = host_particleElectron[i].vy;
         vz = host_particleElectron[i].vz;
 
-        ofsVElectron.write(reinterpret_cast<const char*>(&vx), sizeof(float));
-        ofsVElectron.write(reinterpret_cast<const char*>(&vy), sizeof(float));
-        ofsVElectron.write(reinterpret_cast<const char*>(&vz), sizeof(float));
+        ofsVElectron.write(reinterpret_cast<const char*>(&vx), sizeof(double));
+        ofsVElectron.write(reinterpret_cast<const char*>(&vy), sizeof(double));
+        ofsVElectron.write(reinterpret_cast<const char*>(&vz), sizeof(double));
         
-        KineticEnergy += 0.5f * mElectron * (vx * vx + vy * vy + vz * vz);
+        KineticEnergy += 0.5 * mElectron * (vx * vx + vy * vy + vz * vz);
     }
 
     std::ofstream ofsKineticEnergy(filenameKineticEnergy, std::ios::binary);
     ofsKineticEnergy << std::fixed << std::setprecision(6);
-    ofsKineticEnergy.write(reinterpret_cast<const char*>(&KineticEnergy), sizeof(float));
+    ofsKineticEnergy.write(reinterpret_cast<const char*>(&KineticEnergy), sizeof(double));
 }
 

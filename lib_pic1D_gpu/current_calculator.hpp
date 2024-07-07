@@ -24,7 +24,7 @@ private:
     void calculateCurrentOfOneSpecies(
         thrust::device_vector<CurrentField>& current, 
         const thrust::device_vector<Particle>& particlesSpecies, 
-        float q, int totalNumSpecies
+        double q, int totalNumSpecies
     );
 };
 
