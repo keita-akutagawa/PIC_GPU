@@ -6,9 +6,9 @@
 #include "../../lib_pic1D_gpu_single/pic1D.hpp"
 
 
-std::string directoryname = "/cfca-work/akutagawakt/PIC/results_two_stream_electron";
+std::string directoryname = "results_two_stream_electron";
 std::string filenameWithoutStep = "two_stream_electron";
-std::ofstream logfile("/cfca-work/akutagawakt/PIC/results_two_stream_electron/log_two_stream_electron.txt");
+std::ofstream logfile("results_two_stream_electron/log_two_stream_electron.txt");
 
 
 const float c = 1.0f;
@@ -159,20 +159,20 @@ void PIC1D::initialize()
         0, totalNumIon, 0, host_particlesIon, particlesIon
     );
     initializeParticle.uniformForPositionX_cpu(
-        0, totalNumElectron, 100, host_particlesElectron, particlesElectron
+        0, totalNumElectron, 100000, host_particlesElectron, particlesElectron
     );
 
     initializeParticle.maxwellDistributionForVelocity_cpu(
         bulkVxIon, bulkVyIon, bulkVzIon, vThIon, 
-        0, totalNumIon, 200, host_particlesIon, particlesIon
+        0, totalNumIon, 200000, host_particlesIon, particlesIon
     );
     initializeParticle.maxwellDistributionForVelocity_cpu(
         bulkVxElectron, bulkVyElectron, bulkVzElectron, vThElectron, 
-        0, totalNumElectronBeam1, 300, host_particlesElectron, particlesElectron
+        0, totalNumElectronBeam1, 300000, host_particlesElectron, particlesElectron
     );
     initializeParticle.maxwellDistributionForVelocity_cpu(
         bulkVxElectronBeam, bulkVyElectronBeam, bulkVzElectronBeam, vThElectron, 
-        totalNumElectronBeam1, totalNumElectron, 400, host_particlesElectron, particlesElectron
+        totalNumElectronBeam1, totalNumElectron, 400000, host_particlesElectron, particlesElectron
     );
 
 
