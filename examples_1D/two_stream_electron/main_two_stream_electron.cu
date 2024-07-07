@@ -155,24 +155,24 @@ void PIC1D::initialize()
     cudaMemcpyToSymbol(device_bulkVxElectronBeam, &bulkVxElectronBeam, sizeof(float));
 
 
-    initializeParticle.uniformForPositionX_cpu(
-        0, totalNumIon, 0, host_particlesIon, particlesIon
+    initializeParticle.uniformForPositionX(
+        0, totalNumIon, 0, particlesIon
     );
-    initializeParticle.uniformForPositionX_cpu(
-        0, totalNumElectron, 100000, host_particlesElectron, particlesElectron
+    initializeParticle.uniformForPositionX(
+        0, totalNumElectron, 100, particlesElectron
     );
 
-    initializeParticle.maxwellDistributionForVelocity_cpu(
+    initializeParticle.maxwellDistributionForVelocity(
         bulkVxIon, bulkVyIon, bulkVzIon, vThIon, 
-        0, totalNumIon, 200000, host_particlesIon, particlesIon
+        0, totalNumIon, 200, particlesIon
     );
-    initializeParticle.maxwellDistributionForVelocity_cpu(
+    initializeParticle.maxwellDistributionForVelocity(
         bulkVxElectron, bulkVyElectron, bulkVzElectron, vThElectron, 
-        0, totalNumElectronBeam1, 300000, host_particlesElectron, particlesElectron
+        0, totalNumElectronBeam1, 300, particlesElectron
     );
-    initializeParticle.maxwellDistributionForVelocity_cpu(
+    initializeParticle.maxwellDistributionForVelocity(
         bulkVxElectronBeam, bulkVyElectronBeam, bulkVzElectronBeam, vThElectron, 
-        totalNumElectronBeam1, totalNumElectron, 400000, host_particlesElectron, particlesElectron
+        totalNumElectronBeam1, totalNumElectron, 400, particlesElectron
     );
 
 
