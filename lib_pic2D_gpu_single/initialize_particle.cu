@@ -55,7 +55,7 @@ __global__ void uniformForPositionY_kernel(
     }
 }
 
-void InitializeParticle::uniformForPositionX(
+void InitializeParticle::uniformForPositionY(
     int nStart, 
     int nEnd, 
     int seed, 

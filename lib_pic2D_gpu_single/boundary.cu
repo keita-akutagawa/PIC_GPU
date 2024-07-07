@@ -60,7 +60,7 @@ __global__ void periodicBoundaryParticleY_kernel(
     }
 }
 
-void Boundary::periodicBoundaryParticleX(
+void Boundary::periodicBoundaryParticleY(
     thrust::device_vector<Particle>& particlesIon,
     thrust::device_vector<Particle>& particlesElectron
 )

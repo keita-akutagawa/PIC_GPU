@@ -204,12 +204,12 @@ void PIC2D::saveFields(
     ofsB << std::fixed << std::setprecision(6);
     for (int i = 0; i < nx; i++) {
         for (int j = 0; j < ny; j++) {
-            ofsB.write(reinterpret_cast<const char*>(&host_B[j + device_ny * i].bX), sizeof(float));
-            ofsB.write(reinterpret_cast<const char*>(&host_B[j + device_ny * i].bY), sizeof(float));
-            ofsB.write(reinterpret_cast<const char*>(&host_B[j + device_ny * i].bZ), sizeof(float));
-            BEnergy += host_B[j + device_ny * i].bX * host_B[j + device_ny * i].bX 
-                     + host_B[j + device_ny * i].bY * host_B[j + device_ny * i].bY
-                     + host_B[j + device_ny * i].bZ * host_B[j + device_ny * i].bZ;
+            ofsB.write(reinterpret_cast<const char*>(&host_B[j + ny * i].bX), sizeof(float));
+            ofsB.write(reinterpret_cast<const char*>(&host_B[j + ny * i].bY), sizeof(float));
+            ofsB.write(reinterpret_cast<const char*>(&host_B[j + ny * i].bZ), sizeof(float));
+            BEnergy += host_B[j + ny * i].bX * host_B[j + ny * i].bX 
+                     + host_B[j + ny * i].bY * host_B[j + ny * i].bY
+                     + host_B[j + ny * i].bZ * host_B[j + ny * i].bZ;
         }
     }
     BEnergy *= 0.5f / mu0;
@@ -218,12 +218,12 @@ void PIC2D::saveFields(
     ofsE << std::fixed << std::setprecision(6);
     for (int i = 0; i < nx; i++) {
         for (int j = 0; j < ny; j++) {
-            ofsE.write(reinterpret_cast<const char*>(&host_E[j + device_ny * i].eX), sizeof(float));
-            ofsE.write(reinterpret_cast<const char*>(&host_E[j + device_ny * i].eY), sizeof(float));
-            ofsE.write(reinterpret_cast<const char*>(&host_E[j + device_ny * i].eZ), sizeof(float));
-            EEnergy += host_E[j + device_ny * i].eX * host_E[j + device_ny * i].eX
-                     + host_E[j + device_ny * i].eY * host_E[j + device_ny * i].eY
-                     + host_E[j + device_ny * i].eZ * host_E[j + device_ny * i].eZ;
+            ofsE.write(reinterpret_cast<const char*>(&host_E[j + ny * i].eX), sizeof(float));
+            ofsE.write(reinterpret_cast<const char*>(&host_E[j + ny * i].eY), sizeof(float));
+            ofsE.write(reinterpret_cast<const char*>(&host_E[j + ny * i].eZ), sizeof(float));
+            EEnergy += host_E[j + ny * i].eX * host_E[j + ny * i].eX
+                     + host_E[j + ny * i].eY * host_E[j + ny * i].eY
+                     + host_E[j + ny * i].eZ * host_E[j + ny * i].eZ;
         }
     }
     EEnergy *= 0.5f * epsilon0;
@@ -232,9 +232,9 @@ void PIC2D::saveFields(
     ofsCurrent << std::fixed << std::setprecision(6);
     for (int i = 0; i < nx; i++) {
         for (int j = 0; j < ny; j++) {
-            ofsCurrent.write(reinterpret_cast<const char*>(&host_current[j + device_ny * i].jX), sizeof(float));
-            ofsCurrent.write(reinterpret_cast<const char*>(&host_current[j + device_ny * i].jY), sizeof(float));
-            ofsCurrent.write(reinterpret_cast<const char*>(&host_current[j + device_ny * i].jZ), sizeof(float));
+            ofsCurrent.write(reinterpret_cast<const char*>(&host_current[j + ny * i].jX), sizeof(float));
+            ofsCurrent.write(reinterpret_cast<const char*>(&host_current[j + ny * i].jY), sizeof(float));
+            ofsCurrent.write(reinterpret_cast<const char*>(&host_current[j + ny * i].jZ), sizeof(float));
         }
     }
 

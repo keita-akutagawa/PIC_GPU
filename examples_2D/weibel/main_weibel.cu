@@ -41,8 +41,8 @@ const float mElectron = 1.0f;
 const float mIon = mRatio * mElectron;
 
 const float tRatio = 100.0f;
-const double tElectron = 0.5 * mElectron * pow(0.1 * c, 2);
-const double tIon = 0.5 * mIon * pow(0.1 * c, 2);
+const float tElectron = 0.5 * mElectron * pow(0.1f * c, 2);
+const float tIon = 0.5 * mIon * pow(0.1f * c, 2);
 
 const float qRatio = -1.0f;
 const float qElectron = -1.0f * sqrt(epsilon0 * tElectron / static_cast<float>(numberDensityElectron));
@@ -151,14 +151,20 @@ void PIC2D::initialize()
     initializeParticle.uniformForPositionX(
         0, totalNumElectron, 100, particlesElectron
     );
+    initializeParticle.uniformForPositionY(
+        0, totalNumIon, 200, particlesIon
+    );
+    initializeParticle.uniformForPositionY(
+        0, totalNumElectron, 300, particlesElectron
+    );
 
     initializeParticle.maxwellDistributionForVelocity(
         bulkVxIon, bulkVyIon, bulkVzIon, vThIon, vThIon, 5.0f * vThIon, 
-        0, totalNumIon, 200, particlesIon
+        0, totalNumIon, 400, particlesIon
     );
     initializeParticle.maxwellDistributionForVelocity(
         bulkVxElectron, bulkVyElectron, bulkVzElectron, vThElectron, vThElectron, 5.0f * vThElectron, 
-        0, totalNumElectron, 300, particlesElectron
+        0, totalNumElectron, 500, particlesElectron
     );
 
 
