@@ -11,6 +11,11 @@ extern const float dx;
 extern const float xmin; 
 extern const float xmax;
 
+extern const int ny;
+extern const float dy;
+extern const float ymin; 
+extern const float ymax;
+
 extern const float dt;
 
 extern const int numberDensityIon;
@@ -63,6 +68,11 @@ extern __constant__ int device_nx;
 extern __constant__ float device_dx;
 extern __constant__ float device_xmin; 
 extern __constant__ float device_xmax;
+
+extern __constant__ int device_ny;
+extern __constant__ float device_dy;
+extern __constant__ float device_ymin; 
+extern __constant__ float device_ymax;
 
 extern __constant__ float device_dt;
 

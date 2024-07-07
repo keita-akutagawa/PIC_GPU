@@ -16,6 +16,13 @@ public:
         thrust::device_vector<Particle>& particlesSpecies
     );
 
+    void uniformForPositionY(
+        int nStart, 
+        int nEnd, 
+        int seed, 
+        thrust::device_vector<Particle>& particlesSpecies
+    );
+
     void maxwellDistributionForVelocity(
         float bulkVxSpecies, 
         float bulkVySpecies, 
@@ -24,26 +31,6 @@ public:
         int nStart, 
         int nEnd, 
         int seed, 
-        thrust::device_vector<Particle>& particlesSpecies
-    );
-
-    void uniformForPositionX_cpu(
-        int nStart, 
-        int nEnd, 
-        int seed, 
-        thrust::host_vector<Particle>& host_particlesSpecies,
-        thrust::device_vector<Particle>& particlesSpecies
-    );
-
-    void maxwellDistributionForVelocity_cpu(
-        float bulkVxSpecies, 
-        float bulkVySpecies, 
-        float bulkVzSpecies, 
-        float vThSpecies, 
-        int nStart, 
-        int nEnd, 
-        int seed, 
-        thrust::host_vector<Particle>& host_particlesSpecies,
         thrust::device_vector<Particle>& particlesSpecies
     );
 

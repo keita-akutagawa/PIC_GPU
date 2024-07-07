@@ -21,7 +21,6 @@ __global__ void uniformForPositionX_kernel(
     }
 }
 
-
 void InitializeParticle::uniformForPositionX(
     int nStart, 
     int nEnd, 
@@ -33,6 +32,40 @@ void InitializeParticle::uniformForPositionX(
     dim3 blocksPerGrid((nEnd - nStart + threadsPerBlock.x - 1) / threadsPerBlock.x);
 
     uniformForPositionX_kernel<<<blocksPerGrid, threadsPerBlock>>>(
+        thrust::raw_pointer_cast(particlesSpecies.data()), 
+        nStart, nEnd, seed
+    );
+
+    cudaDeviceSynchronize();
+}
+
+
+__global__ void uniformForPositionY_kernel(
+    Particle* particle, 
+    const int nStart, const int nEnd, const int seed
+)
+{
+    unsigned long long i = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (i < nEnd - nStart) {
+        curandState state; 
+        curand_init(seed, i, 0, &state);
+        float y = curand_uniform(&state) * (device_ymax - device_ymin) + device_ymin;
+        particle[i + nStart].y = y;
+    }
+}
+
+void InitializeParticle::uniformForPositionX(
+    int nStart, 
+    int nEnd, 
+    int seed, 
+    thrust::device_vector<Particle>& particlesSpecies
+)
+{
+    dim3 threadsPerBlock(256);
+    dim3 blocksPerGrid((nEnd - nStart + threadsPerBlock.x - 1) / threadsPerBlock.x);
+
+    uniformForPositionY_kernel<<<blocksPerGrid, threadsPerBlock>>>(
         thrust::raw_pointer_cast(particlesSpecies.data()), 
         nStart, nEnd, seed
     );
