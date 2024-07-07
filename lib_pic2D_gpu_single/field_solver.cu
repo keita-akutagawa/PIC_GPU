@@ -15,14 +15,14 @@ __global__ void timeEvolutionB_kernel(
                                  + (E[j + 1 + device_ny * i].eX - E[j + device_ny * i].eX) / device_dy) * dt;
     }
 
-    if (i == device_nx - 1) {
+    if (i == device_nx - 1 && j < device_ny - 1) {
         B[j + device_ny * i].bX += -(E[j + 1 * device_ny * i].eZ - E[j + device_ny * i].eZ) / device_dy * dt;
         B[j + device_ny * i].bY += (E[j + device_ny * 0].eZ - E[j + device_ny * i].eZ) / device_dx * dt;
         B[j + device_ny * i].bZ += (-(E[j * device_ny * 0].eY - E[j + device_ny * i].eY) / device_dx
                                  + (E[j + 1 + device_ny * i].eX - E[j + device_ny * i].eX) / device_dy) * dt;
     }
 
-    if (j == device_ny - 1) {
+    if (i < device_nx - 1 && j == device_ny - 1) {
         B[j + device_ny * i].bX += -(E[0 * device_ny * i].eZ - E[j + device_ny * i].eZ) / device_dy * dt;
         B[j + device_ny * i].bY += (E[j + device_ny * (i + 1)].eZ - E[j + device_ny * i].eZ) / device_dx * dt;
         B[j + device_ny * i].bZ += (-(E[j * device_ny * (i + 1)].eY - E[j + device_ny * i].eY) / device_dx
@@ -65,7 +65,7 @@ __global__ void timeEvolutionE_kernel(
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     int j = blockIdx.y * blockDim.y + threadIdx.y;
 
-    if (0 < i && i < device_nx) {
+    if ((0 < i) && (i < device_nx) && (0 < j) && (j < device_ny)) {
         E[j + device_ny * i].eX += (-current[j + device_ny * i].jX / device_epsilon0
                                  + device_c * device_c * (B[j + device_ny * i].bZ - B[j - 1 + device_ny * i].bZ) / device_dy) * dt;
         E[j + device_ny * i].eY += (-current[j + device_ny * i].jY / device_epsilon0 
@@ -75,7 +75,7 @@ __global__ void timeEvolutionE_kernel(
                                  - (B[j + device_ny * i].bX - B[j - 1 + device_ny * i].bX) / device_dy)) * dt;
     }
 
-    if (i == 0) {
+    if ((i == 0) && (0 < j) && (j < device_ny)) {
         E[j + device_ny * i].eX += (-current[j + device_ny * i].jX / device_epsilon0
                                  + device_c * device_c * (B[j + device_ny * i].bZ - B[j - 1 + device_ny * i].bZ) / device_dy) * dt;
         E[j + device_ny * i].eY += (-current[j + device_ny * i].jY / device_epsilon0 
@@ -85,7 +85,7 @@ __global__ void timeEvolutionE_kernel(
                                  - (B[j + device_ny * i].bX - B[j - 1 + device_ny * i].bX) / device_dy)) * dt;
     }
 
-    if (j == 0) {
+    if ((0 < i) && (i < device_nx) && (j == 0)) {
         E[j + device_ny * i].eX += (-current[j + device_ny * i].jX / device_epsilon0
                                  + device_c * device_c * (B[j + device_ny * i].bZ - B[device_ny - 1 + device_ny * i].bZ) / device_dy) * dt;
         E[j + device_ny * i].eY += (-current[j + device_ny * i].jY / device_epsilon0 

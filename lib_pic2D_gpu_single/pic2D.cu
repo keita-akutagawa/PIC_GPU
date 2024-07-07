@@ -40,7 +40,7 @@ __global__ void getCenterBE_kernel(
         tmpE[j + device_ny * i].eZ = E[j + device_ny * i].eZ;
     }
 
-    if (i == 0) {
+    if ((i == 0) && (0 < j) && (j < device_ny)) {
         tmpB[j + device_ny * i].bX = 0.5f * (B[j + device_ny * i].bX + B[j - 1 + device_ny * i].bX);
         tmpB[j + device_ny * i].bY = 0.5f * (B[j + device_ny * i].bY + B[j + device_ny * (device_nx - 1)].bY);
         tmpB[j + device_ny * i].bZ = 0.25f * (B[j + device_ny * i].bZ + B[j + device_ny * (device_nx - 1)].bZ
@@ -50,7 +50,7 @@ __global__ void getCenterBE_kernel(
         tmpE[j + device_ny * i].eZ = E[j + device_ny * i].eZ;
     }
 
-    if (j == 0) {
+    if ((0 < i) && (i < device_nx) && (j == 0)) {
         tmpB[j + device_ny * i].bX = 0.5f * (B[j + device_ny * i].bX + B[device_ny - 1 + device_ny * i].bX);
         tmpB[j + device_ny * i].bY = 0.5f * (B[j + device_ny * i].bY + B[j + device_ny * (i - 1)].bY);
         tmpB[j + device_ny * i].bZ = 0.25f * (B[j + device_ny * i].bZ + B[j + device_ny * (i - 1)].bZ
@@ -81,25 +81,25 @@ __global__ void getHalfCurrent_kernel(
     if (i < device_nx - 1 && j < device_ny - 1) {
         current[j + device_ny * i].jX = 0.5f * (tmpCurrent[j + device_ny * i].jX + tmpCurrent[j + device_ny * (i + 1)].jX);
         current[j + device_ny * i].jY = 0.5f * (tmpCurrent[j + device_ny * i].jY + tmpCurrent[j + 1 + device_ny * i].jY);
-        current[j + device_ny * i].jZ = tmpCurrent[i].jZ;
+        current[j + device_ny * i].jZ = tmpCurrent[j + device_ny * i].jZ;
     }
 
-    if (i == device_nx - 1) {
+    if (i == device_nx - 1 && j < device_ny - 1) {
         current[j + device_ny * i].jX = 0.5f * (tmpCurrent[j + device_ny * i].jX + tmpCurrent[j + device_ny * 0].jX);
         current[j + device_ny * i].jY = 0.5f * (tmpCurrent[j + device_ny * i].jY + tmpCurrent[j + 1 + device_ny * i].jY);
-        current[j + device_ny * i].jZ = tmpCurrent[i].jZ;
+        current[j + device_ny * i].jZ = tmpCurrent[j + device_ny * i].jZ;
     }
 
-    if (j == device_ny - 1) {
+    if (i < device_nx - 1 && j == device_ny - 1) {
         current[j + device_ny * i].jX = 0.5f * (tmpCurrent[j + device_ny * i].jX + tmpCurrent[j + device_ny * (i + 1)].jX);
         current[j + device_ny * i].jY = 0.5f * (tmpCurrent[j + device_ny * i].jY + tmpCurrent[0 + device_ny * i].jY);
-        current[j + device_ny * i].jZ = tmpCurrent[i].jZ;
+        current[j + device_ny * i].jZ = tmpCurrent[j + device_ny * i].jZ;
     }
 
     if (i == device_nx - 1 && j == device_ny - 1) {
         current[j + device_ny * i].jX = 0.5f * (tmpCurrent[j + device_ny * i].jX + tmpCurrent[j + device_ny * 0].jX);
         current[j + device_ny * i].jY = 0.5f * (tmpCurrent[j + device_ny * i].jY + tmpCurrent[0 + device_ny * i].jY);
-        current[j + device_ny * i].jZ = tmpCurrent[i].jZ;
+        current[j + device_ny * i].jZ = tmpCurrent[j + device_ny * i].jZ;
     }
 }
 
@@ -109,7 +109,7 @@ void PIC2D::oneStep()
     fieldSolver.timeEvolutionB(B, E, dt/2.0);
     boundary.periodicBoundaryBX(B);
     boundary.periodicBoundaryBY(B);
-
+    
     dim3 threadsPerBlock(16, 16);
     dim3 blocksPerGrid((nx + threadsPerBlock.x - 1) / threadsPerBlock.x,
                        (ny + threadsPerBlock.y - 1) / threadsPerBlock.y);

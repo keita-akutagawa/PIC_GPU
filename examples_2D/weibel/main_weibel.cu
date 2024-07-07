@@ -206,7 +206,7 @@ int main()
                 directoryname, filenameWithoutStep, step
             );
         }
-
+        
         pIC2D.oneStep();
 
         totalTime += dt;
