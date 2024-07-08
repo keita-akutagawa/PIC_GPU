@@ -244,9 +244,11 @@ __global__ void conductingWallBoundaryBY_kernel(
         B[0 + device_ny * i].bY = 0.0f;
         B[0 + device_ny * i].bZ = B[1 + device_ny * i].bZ;
 
-        B[device_ny - 1 + device_ny * i].bX = B[device_ny - 3 + device_ny * i].bX;
-        B[device_ny - 1 + device_ny * i].bY = 0.0f;
-        B[device_ny - 1 + device_ny * i].bZ = B[device_ny - 3 + device_ny * i].bZ;
+        B[device_ny - 2 + device_ny * i].bX = B[device_ny - 3 + device_ny * i].bX;
+        B[device_ny - 1 + device_ny * i].bX = B[device_ny - 2 + device_ny * i].bX;
+        B[device_ny - 1 + device_ny * i].bY = -1.0f * B[device_ny - 2 + device_ny * i].bY;
+        B[device_ny - 2 + device_ny * i].bZ = B[device_ny - 3 + device_ny * i].bZ;
+        B[device_ny - 1 + device_ny * i].bZ = B[device_ny - 2 + device_ny * i].bZ;
     }
 }
 
@@ -344,11 +346,12 @@ __global__ void conductingWallBoundaryEY_kernel(
 
     if (i < device_nx) {
         E[0 + device_ny * i].eX = E[2 + device_ny * i].eX;
-        E[device_ny - 1 + device_ny * i].eX = E[device_ny - 2 + device_ny * i].eX;
         E[0 + device_ny * i].eY = -1.0f * E[1 + device_ny * i].eY;
+        E[0 + device_ny * i].eZ = E[2 + device_ny * i].eZ;
+
+        E[device_ny - 1 + device_ny * i].eX = E[device_ny - 2 + device_ny * i].eX;
         E[device_ny - 1 + device_ny * i].eY = 0.0f;
         E[device_ny - 2 + device_ny * i].eY = 0.0f;
-        E[0 + device_ny * i].eZ = E[2 + device_ny * i].eZ;
         E[device_ny - 1 + device_ny * i].eZ = E[device_ny - 2 + device_ny * i].eZ;
     }
 }
@@ -448,10 +451,12 @@ __global__ void conductingWallBoundaryCurrentY_kernel(
         current[0 + device_ny * i].jY = 0.0f;
         current[0 + device_ny * i].jZ = 0.0f;
         current[1 + device_ny * i].jZ = 0.0f;
-        current[device_ny - 1 + device_ny * i].jX = -1.0f * current[device_ny - 2 + device_ny * i].jX;
+        current[device_ny - 1 + device_ny * i].jX = 0.0f;
+        current[device_ny - 2 + device_ny * i].jX = 0.0f;
         current[device_ny - 1 + device_ny * i].jY = 0.0f;
         current[device_ny - 2 + device_ny * i].jY = 0.0f;
-        current[device_ny - 1 + device_ny * i].jZ = -1.0f * current[device_ny - 2 + device_ny * i].jZ;
+        current[device_ny - 1 + device_ny * i].jZ = 0.0f;
+        current[device_ny - 2 + device_ny * i].jZ = 0.0f;
     }
 }
 
