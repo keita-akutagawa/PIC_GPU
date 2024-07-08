@@ -11,7 +11,7 @@ std::string directoryname = "results_mr2008";
 std::string filenameWithoutStep = "mr2008";
 std::ofstream logfile("results_mr2008/log_mr2008.txt");
 
-const int totalStep = 5000;
+const int totalStep = 10000;
 const int fieldRecordStep = 100;
 const int particleRecordStep = 1000;
 float totalTime = 0.0f;
