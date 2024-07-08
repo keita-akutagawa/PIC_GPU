@@ -21,6 +21,12 @@ struct Particle
         vz(0.0f), 
         gamma(0.0f)
         {}
+    
+    __host__ __device__
+    bool operator<(const Particle& other) const
+    {
+        return y < other.y;
+    }
 };
 
 

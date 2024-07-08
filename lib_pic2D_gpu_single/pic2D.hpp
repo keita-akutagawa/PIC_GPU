@@ -8,6 +8,7 @@
 #include "field_solver.hpp"
 #include "current_calculator.hpp"
 #include "boundary.hpp"
+#include "sort_particle.hpp"
 #include "particle_struct.hpp"
 #include "field_parameter_struct.hpp"
 #include "moment_struct.hpp"
@@ -36,6 +37,7 @@ private:
     FieldSolver fieldSolver;
     CurrentCalculator currentCalculator;
     Boundary boundary;
+    ParticleSorter particleSorter;
 
     thrust::host_vector<Particle> host_particlesIon;
     thrust::host_vector<Particle> host_particlesElectron;
@@ -56,6 +58,8 @@ public:
     virtual void initialize();
     
     void oneStep();
+
+    void sortParticle();
 
     void saveFields(
         std::string directoryname, 

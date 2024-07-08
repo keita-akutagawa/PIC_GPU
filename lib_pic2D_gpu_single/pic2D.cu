@@ -175,6 +175,12 @@ void PIC2D::oneStep()
 }
 
 
+void PIC2D::sortParticle()
+{
+    particleSorter.sortParticle(particlesIon, particlesElectron);
+}
+
+
 void PIC2D::saveFields(
     std::string directoryname, 
     std::string filenameWithoutStep, 
