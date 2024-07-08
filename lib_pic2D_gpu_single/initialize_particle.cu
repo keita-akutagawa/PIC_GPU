@@ -74,7 +74,6 @@ void InitializeParticle::uniformForPositionY(
 }
 
 
-
 __global__ void maxwellDistributionForVelocity_kernel(
     Particle* particle, 
     const float bulkVxSpecies, const float bulkVySpecies, const float bulkVzSpecies, 
@@ -130,6 +129,43 @@ void InitializeParticle::maxwellDistributionForVelocity(
         thrust::raw_pointer_cast(particlesSpecies.data()), 
         bulkVxSpecies, bulkVySpecies, bulkVzSpecies, 
         vxThSpecies, vyThSpecies, vzThSpecies, 
+        nStart, nEnd, seed
+    );
+
+    cudaDeviceSynchronize();
+}
+
+
+__global__ void harrisForPositionY_kernel(
+    Particle* particle, float sheatThickness, 
+    const int nStart, const int nEnd, const int seed
+)
+{
+    unsigned long long i = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (i < nEnd - nStart) {
+        curandState state; 
+        curand_init(seed, i, 0, &state);
+        float randomValue = curand_uniform(&state);
+        float yCenter = 0.5f * (device_ymax - device_ymin) + device_ymin;
+        float y = yCenter + sheatThickness * atanh(2.0f * randomValue - 1.0f);
+        particle[i + nStart].y = y;
+    }
+}
+
+void InitializeParticle::harrisForPositionY(
+    int nStart, 
+    int nEnd, 
+    int seed, 
+    float sheatThickness, 
+    thrust::device_vector<Particle>& particlesSpecies
+)
+{
+    dim3 threadsPerBlock(256);
+    dim3 blocksPerGrid((nEnd - nStart + threadsPerBlock.x - 1) / threadsPerBlock.x);
+
+    harrisForPositionY_kernel<<<blocksPerGrid, threadsPerBlock>>>(
+        thrust::raw_pointer_cast(particlesSpecies.data()), sheatThickness, 
         nStart, nEnd, seed
     );
 

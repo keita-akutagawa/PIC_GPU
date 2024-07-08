@@ -177,7 +177,7 @@ void PIC2D::oneStepPeriodicXY()
 }
 
 
-void PIC2D::oneStepSymmetricXWallY()
+void PIC2D::oneStepSymmerticXWallY()
 {
     fieldSolver.timeEvolutionB(B, E, dt/2.0f);
     boundary.symmetricBoundaryBX(B);
@@ -196,7 +196,7 @@ void PIC2D::oneStepSymmetricXWallY()
     boundary.symmetricBoundaryBX(tmpB);
     boundary.conductingWallBoundaryBY(tmpB);
     boundary.symmetricBoundaryEX(tmpE);
-    boundary.conductingWallBoundaryEX(tmpE);
+    boundary.conductingWallBoundaryEY(tmpE);
 
 
     particlePush.pushVelocity(
