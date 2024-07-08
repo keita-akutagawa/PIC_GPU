@@ -20,8 +20,8 @@ const float c = 1.0f;
 const float epsilon0 = 1.0f;
 const float mu0 = 1.0f;
 
-const int numberDensityIon = 100;
-const int numberDensityElectron = 100;
+const int numberDensityIon = 10;
+const int numberDensityElectron = 10;
 
 const float B0 = sqrt(static_cast<float>(numberDensityElectron)) / 1.0;
 
@@ -49,12 +49,12 @@ const float ionInertialLength = c / omegaPi;
 const int nx = int(200.0f * ionInertialLength);
 const float dx = 1.0f;
 const float xmin = 0.5f * dx; 
-const float xmax = nx * dx - 1.0f * dx;
+const float xmax = nx * dx - 1.5f * dx;
 
 const int ny = int(50.0f * ionInertialLength);
 const float dy = 1.0f;
-const float ymin = 0.5f * dy; 
-const float ymax = ny * dy - 1.0f * dy;
+const float ymin = 1.0f * dy; 
+const float ymax = ny * dy - 1.5f * dy;
 
 const float dt = 0.5f;
 
