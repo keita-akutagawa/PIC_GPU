@@ -7,12 +7,13 @@
 #include <cuda_runtime.h>
 
 
-std::string directoryname = "/cfca-work/akutagawakt/PIC/results_mr2008";
+std::string directoryname = "results_mr2008";
 std::string filenameWithoutStep = "mr2008";
-std::ofstream logfile("/cfca-work/akutagawakt/PIC/results_mr2008/log_mr2008.txt");
+std::ofstream logfile("results_mr2008/log_mr2008.txt");
 
-const int totalStep = 10000;
-const int recordStep = 1000;
+const int totalStep = 5000;
+const int fieldRecordStep = 100;
+const int particleRecordStep = 1000;
 float totalTime = 0.0f;
 
 const float c = 1.0f;
@@ -259,7 +260,7 @@ int main()
 
     std::cout << "total number of partices is " << totalNumParticles << std::endl;
     std::cout << std::setprecision(4) 
-              << "omega_pe * t = " << totalStep * dt * omegaPe << std::endl;
+              << "Omega_ci * t = " << totalStep * dt * omegaCi << std::endl;
 
 
     PIC2D pIC2D;
@@ -268,14 +269,17 @@ int main()
 
 
     for (int step = 0; step < totalStep+1; step++) {
-        if (step % recordStep == 0) {
+        if (step % fieldRecordStep == 0) {
             std::cout << std::to_string(step) << " step done : total time is "
-                      << std::setprecision(4) << totalTime
+                      << std::setprecision(4) << step * dt * omegaCi
+                      << " [Omega_ci * t]"
                       << std::endl;
             logfile << std::setprecision(6) << totalTime << std::endl;
             pIC2D.saveFields(
                 directoryname, filenameWithoutStep, step
             );
+        }
+        if (step % particleRecordStep == 0) {
             pIC2D.saveParticle(
                 directoryname, filenameWithoutStep, step
             );
