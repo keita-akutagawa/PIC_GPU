@@ -57,7 +57,9 @@ public:
     
     virtual void initialize();
     
-    void oneStep();
+    void oneStepPeriodicXY();
+
+    void oneStepSymmerticXWallY();
 
     void sortParticle();
 

@@ -30,36 +30,66 @@ public:
 
 
     void periodicBoundaryBX(
-        thrust::device_vector<MagneticField>& magneticField
+        thrust::device_vector<MagneticField>& B
     );
-    void conductingWallBoundaryBX();
+    void conductingWallBoundaryBX(
+        thrust::device_vector<MagneticField>& B
+    );
+    void symmetricBoundaryBX(
+        thrust::device_vector<MagneticField>& B
+    );
 
     void periodicBoundaryBY(
-        thrust::device_vector<MagneticField>& magneticField
+        thrust::device_vector<MagneticField>& B
     );
-    void conductingWallBoundaryBY();
+    void conductingWallBoundaryBY(
+        thrust::device_vector<MagneticField>& B
+    );
+    void symmetricBoundaryBY(
+        thrust::device_vector<MagneticField>& B
+    );
 
 
     void periodicBoundaryEX(
-        thrust::device_vector<ElectricField>& electricField
+        thrust::device_vector<ElectricField>& E
     );
-    void conductingWallBoundaryEX();
+    void conductingWallBoundaryEX(
+        thrust::device_vector<ElectricField>& E
+    );
+    void symmetricBoundaryEX(
+        thrust::device_vector<ElectricField>& E
+    );
 
     void periodicBoundaryEY(
-        thrust::device_vector<ElectricField>& electricField
+        thrust::device_vector<ElectricField>& E
     );
-    void conductingWallBoundaryEY();
+    void conductingWallBoundaryEY(
+        thrust::device_vector<ElectricField>& E
+    );
+    void symmetricBoundaryEY(
+        thrust::device_vector<ElectricField>& E
+    );
 
 
     void periodicBoundaryCurrentX(
-        thrust::device_vector<CurrentField>& currentField
+        thrust::device_vector<CurrentField>& current
     );
-    void conductingWallBoundaryCurrentX();
+    void conductingWallBoundaryCurrentX(
+        thrust::device_vector<CurrentField>& current
+    );
+    void symmetricBoundaryCurrentX(
+        thrust::device_vector<CurrentField>& current
+    );
 
     void periodicBoundaryCurrentY(
-        thrust::device_vector<CurrentField>& currentField
+        thrust::device_vector<CurrentField>& current
     );
-    void conductingWallBoundaryCurrentY();
+    void conductingWallBoundaryCurrentY(
+        thrust::device_vector<CurrentField>& current
+    );
+    void symmetricBoundaryCurrentY(
+        thrust::device_vector<CurrentField>& current
+    );
 
 private:
 
