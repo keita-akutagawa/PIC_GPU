@@ -49,7 +49,7 @@ ParticleField getParticleFields(
     int xIndex1, xIndex2;
     float cy1, cy2; 
     int yIndex1, yIndex2;
-
+    
     float xOverDx;
     xOverDx = particle.x / device_dx;
     float yOverDy;
@@ -87,10 +87,10 @@ ParticleField getParticleFields(
     particleField.eX += E[yIndex1 + device_ny * xIndex2].eX * cx1 * cy2;
     particleField.eX += E[yIndex2 + device_ny * xIndex2].eX * cx1 * cy1;
 
-    particleField.eX += E[yIndex1 + device_ny * xIndex1].eY * cx2 * cy2;
-    particleField.eX += E[yIndex2 + device_ny * xIndex1].eY * cx2 * cy1;
-    particleField.eX += E[yIndex1 + device_ny * xIndex2].eY * cx1 * cy2;
-    particleField.eX += E[yIndex2 + device_ny * xIndex2].eY * cx1 * cy1;
+    particleField.eY += E[yIndex1 + device_ny * xIndex1].eY * cx2 * cy2;
+    particleField.eY += E[yIndex2 + device_ny * xIndex1].eY * cx2 * cy1;
+    particleField.eY += E[yIndex1 + device_ny * xIndex2].eY * cx1 * cy2;
+    particleField.eY += E[yIndex2 + device_ny * xIndex2].eY * cx1 * cy1;
 
     particleField.eZ += E[yIndex1 + device_ny * xIndex1].eZ * cx2 * cy2;
     particleField.eZ += E[yIndex2 + device_ny * xIndex1].eZ * cx2 * cy1;
