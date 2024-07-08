@@ -108,7 +108,7 @@ __global__ void getHalfCurrent_kernel(
 
 void PIC2D::oneStep()
 {
-    fieldSolver.timeEvolutionB(B, E, dt/2.0);
+    fieldSolver.timeEvolutionB(B, E, dt/2.0f);
     boundary.periodicBoundaryBX(B);
     boundary.periodicBoundaryBY(B);
     
