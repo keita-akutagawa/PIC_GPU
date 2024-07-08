@@ -85,7 +85,6 @@ void CurrentCalculator::calculateCurrentOfOneSpecies(
     float q, int totalNumSpecies
 )
 {
-
     CalculateCurrent calcCurrent{
         thrust::raw_pointer_cast(current.data()), 
         thrust::raw_pointer_cast(particlesSpecies.data()), 

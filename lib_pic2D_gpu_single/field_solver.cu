@@ -9,30 +9,30 @@ __global__ void timeEvolutionB_kernel(
     int j = blockIdx.y * blockDim.y + threadIdx.y;
 
     if (i < device_nx - 1 && j < device_ny - 1) {
-        B[j + device_ny * i].bX += -(E[j + 1 * device_ny * i].eZ - E[j + device_ny * i].eZ) / device_dy * dt;
+        B[j + device_ny * i].bX += -(E[j + 1 + device_ny * i].eZ - E[j + device_ny * i].eZ) / device_dy * dt;
         B[j + device_ny * i].bY += (E[j + device_ny * (i + 1)].eZ - E[j + device_ny * i].eZ) / device_dx * dt;
-        B[j + device_ny * i].bZ += (-(E[j * device_ny * (i + 1)].eY - E[j + device_ny * i].eY) / device_dx
+        B[j + device_ny * i].bZ += (-(E[j + device_ny * (i + 1)].eY - E[j + device_ny * i].eY) / device_dx
                                  + (E[j + 1 + device_ny * i].eX - E[j + device_ny * i].eX) / device_dy) * dt;
     }
 
     if (i == device_nx - 1 && j < device_ny - 1) {
-        B[j + device_ny * i].bX += -(E[j + 1 * device_ny * i].eZ - E[j + device_ny * i].eZ) / device_dy * dt;
+        B[j + device_ny * i].bX += -(E[j + 1 + device_ny * i].eZ - E[j + device_ny * i].eZ) / device_dy * dt;
         B[j + device_ny * i].bY += (E[j + device_ny * 0].eZ - E[j + device_ny * i].eZ) / device_dx * dt;
-        B[j + device_ny * i].bZ += (-(E[j * device_ny * 0].eY - E[j + device_ny * i].eY) / device_dx
+        B[j + device_ny * i].bZ += (-(E[j + device_ny * 0].eY - E[j + device_ny * i].eY) / device_dx
                                  + (E[j + 1 + device_ny * i].eX - E[j + device_ny * i].eX) / device_dy) * dt;
     }
 
     if (i < device_nx - 1 && j == device_ny - 1) {
-        B[j + device_ny * i].bX += -(E[0 * device_ny * i].eZ - E[j + device_ny * i].eZ) / device_dy * dt;
+        B[j + device_ny * i].bX += -(E[0 + device_ny * i].eZ - E[j + device_ny * i].eZ) / device_dy * dt;
         B[j + device_ny * i].bY += (E[j + device_ny * (i + 1)].eZ - E[j + device_ny * i].eZ) / device_dx * dt;
-        B[j + device_ny * i].bZ += (-(E[j * device_ny * (i + 1)].eY - E[j + device_ny * i].eY) / device_dx
+        B[j + device_ny * i].bZ += (-(E[j + device_ny * (i + 1)].eY - E[j + device_ny * i].eY) / device_dx
                                  + (E[0 + device_ny * i].eX - E[j + device_ny * i].eX) / device_dy) * dt;
     }
 
     if (i == device_nx - 1 && j == device_ny - 1) {
-        B[j + device_ny * i].bX += -(E[0 * device_ny * i].eZ - E[j + device_ny * i].eZ) / device_dy * dt;
+        B[j + device_ny * i].bX += -(E[0 + device_ny * i].eZ - E[j + device_ny * i].eZ) / device_dy * dt;
         B[j + device_ny * i].bY += (E[j + device_ny * 0].eZ - E[j + device_ny * i].eZ) / device_dx * dt;
-        B[j + device_ny * i].bZ += (-(E[j * device_ny * 0].eY - E[j + device_ny * i].eY) / device_dx
+        B[j + device_ny * i].bZ += (-(E[j + device_ny * 0].eY - E[j + device_ny * i].eY) / device_dx
                                  + (E[0 + device_ny * i].eX - E[j + device_ny * i].eX) / device_dy) * dt;
     }
 }

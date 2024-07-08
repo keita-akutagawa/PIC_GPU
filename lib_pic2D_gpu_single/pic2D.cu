@@ -1,5 +1,7 @@
 #include <fstream>
 #include <iomanip>
+#include <iostream>
+#include <cstdio>
 #include "pic2D.hpp"
 
 
@@ -7,10 +9,10 @@ PIC2D::PIC2D()
     : particlesIon(totalNumIon), 
       particlesElectron(totalNumElectron), 
       E(nx * ny), 
-      B(nx * ny), 
-      current(nx * ny), 
       tmpE(nx * ny), 
+      B(nx * ny), 
       tmpB(nx * ny), 
+      current(nx * ny), 
       tmpCurrent(nx * ny), 
 
       host_particlesIon(totalNumIon), 
@@ -123,9 +125,11 @@ void PIC2D::oneStep()
     boundary.periodicBoundaryBX(tmpB);
     boundary.periodicBoundaryEX(tmpE);
 
+
     particlePush.pushVelocity(
         particlesIon, particlesElectron, tmpB, tmpE, dt
     );
+
 
     particlePush.pushPosition(
         particlesIon, particlesElectron, dt/2.0f
@@ -136,6 +140,7 @@ void PIC2D::oneStep()
     boundary.periodicBoundaryParticleY(
         particlesIon, particlesElectron
     );
+
 
     currentCalculator.resetCurrent(tmpCurrent);
     currentCalculator.calculateCurrent(
