@@ -247,6 +247,7 @@ void PIC2D::oneStepSymmerticXWallY()
     fieldSolver.timeEvolutionE(E, B, current, dt);
     boundary.symmetricBoundaryEX(E);
     boundary.conductingWallBoundaryEY(E);
+    filter.langdonMarderTypeCorrection(E, particlesIon, particlesElectron, dt);
 
     particlePush.pushPosition(
         particlesIon, particlesElectron, dt/2.0f
@@ -346,13 +347,6 @@ void PIC2D::saveFields(
 
 void PIC2D::calculateMoments()
 {
-    momentCalculater.resetZerothMomentOfOneSpecies(zerothMomentIon);
-    momentCalculater.resetZerothMomentOfOneSpecies(zerothMomentElectron);
-    momentCalculater.resetFirstMomentOfOneSpecies(firstMomentIon);
-    momentCalculater.resetFirstMomentOfOneSpecies(firstMomentElectron);
-    momentCalculater.resetSecondMomentOfOneSpecies(secondMomentIon);
-    momentCalculater.resetSecondMomentOfOneSpecies(secondMomentElectron);
-
     momentCalculater.calculateZerothMomentOfOneSpecies(
         zerothMomentIon, particlesIon, totalNumIon
     );

@@ -5,6 +5,7 @@
 extern const float c;
 extern const float epsilon0;
 extern const float mu0;
+extern const float dOfLangdonMarderTypeCorrection;
 
 extern const int nx;
 extern const float dx;
@@ -63,6 +64,7 @@ extern float totalTime;
 extern __constant__ float device_c;
 extern __constant__ float device_epsilon0;
 extern __constant__ float device_mu0;
+extern __constant__ float device_dOfLangdonMarderTypeCorrection;
 
 extern __constant__ int device_nx;
 extern __constant__ float device_dx;

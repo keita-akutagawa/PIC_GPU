@@ -9,18 +9,6 @@ class MomentCalculater
 private:
 
 public:
-    void resetZerothMomentOfOneSpecies(
-        thrust::device_vector<ZerothMoment>& zerothMomentOfOneSpecies
-    );
-
-    void resetFirstMomentOfOneSpecies(
-        thrust::device_vector<FirstMoment>& firstMomentOfOneSpecies
-    );
-
-    void resetSecondMomentOfOneSpecies(
-        thrust::device_vector<SecondMoment>& secondMomentOfOneSpecies
-    );
-
 
     void calculateZerothMomentOfOneSpecies(
         thrust::device_vector<ZerothMoment>& zerothMomentOfOneSpecies, 
@@ -41,6 +29,17 @@ public:
     );
 
 private:
+    void resetZerothMomentOfOneSpecies(
+        thrust::device_vector<ZerothMoment>& zerothMomentOfOneSpecies
+    );
+
+    void resetFirstMomentOfOneSpecies(
+        thrust::device_vector<FirstMoment>& firstMomentOfOneSpecies
+    );
+
+    void resetSecondMomentOfOneSpecies(
+        thrust::device_vector<SecondMoment>& secondMomentOfOneSpecies
+    );
 };
 
 

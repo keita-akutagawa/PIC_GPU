@@ -10,6 +10,7 @@
 #include "boundary.hpp"
 #include "sort_particle.hpp"
 #include "moment_calculater.hpp"
+#include "filter.hpp"
 #include "particle_struct.hpp"
 #include "field_parameter_struct.hpp"
 #include "moment_struct.hpp"
@@ -40,6 +41,7 @@ private:
     Boundary boundary;
     ParticleSorter particleSorter;
     MomentCalculater momentCalculater;
+    Filter filter;
 
     thrust::host_vector<Particle> host_particlesIon;
     thrust::host_vector<Particle> host_particlesElectron;

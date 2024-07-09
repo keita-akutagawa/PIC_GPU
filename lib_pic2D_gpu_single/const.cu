@@ -6,6 +6,7 @@ void initializeDeviceConstants()
     cudaMemcpyToSymbol(device_c, &c, sizeof(float));
     cudaMemcpyToSymbol(device_epsilon0, &epsilon0, sizeof(float));
     cudaMemcpyToSymbol(device_mu0, &mu0, sizeof(float));
+    cudaMemcpyToSymbol(device_dOfLangdonMarderTypeCorrection, &dOfLangdonMarderTypeCorrection, sizeof(float));
 
     cudaMemcpyToSymbol(device_nx, &nx, sizeof(int));
     cudaMemcpyToSymbol(device_dx, &dx, sizeof(float));

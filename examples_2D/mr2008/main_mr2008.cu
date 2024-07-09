@@ -19,6 +19,7 @@ float totalTime = 0.0f;
 const float c = 1.0f;
 const float epsilon0 = 1.0f;
 const float mu0 = 1.0f;
+const float dOfLangdonMarderTypeCorrection = 0.01f;
 
 const int numberDensityIon = 10;
 const int numberDensityElectron = 10;
@@ -81,8 +82,8 @@ const float bulkVxIon = -bulkVxElectron / tRatio;
 const float bulkVyIon = -bulkVyElectron / tRatio;
 const float bulkVzIon = -bulkVzElectron / tRatio;
 
-const float vThIonB = sqrt(2.0f * tIon / 10.0f / mIon);
-const float vThElectronB = sqrt(2.0f * tElectron / 10.0f / mElectron);
+const float vThIonB = sqrt(2.0f * tIon / 1.0f / mIon);
+const float vThElectronB = sqrt(2.0f * tElectron / 1.0f / mElectron);
 const float bulkVxElectronB = 0.0f;
 const float bulkVyElectronB = 0.0f;
 const float bulkVzElectronB = 0.0f;
@@ -98,6 +99,7 @@ __device__ float device_totalTime;
 __constant__ float device_c;
 __constant__ float device_epsilon0;
 __constant__ float device_mu0;
+__constant__ float device_dOfLangdonMarderTypeCorrection;
 
 __constant__ int device_numberDensityIon;
 __constant__ int device_numberDensityElectron;

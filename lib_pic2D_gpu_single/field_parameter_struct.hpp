@@ -45,4 +45,15 @@ struct CurrentField
         {}
 };
 
+
+struct RhoField
+{
+    float rho; 
+
+    __host__ __device__
+    RhoField() : 
+        rho(0.0f)
+        {}
+};
+
 #endif

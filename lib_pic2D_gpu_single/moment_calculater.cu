@@ -1,4 +1,6 @@
+#include <thrust/fill.h>
 #include "moment_calculater.hpp"
+
 
 
 void MomentCalculater::resetZerothMomentOfOneSpecies(
@@ -78,6 +80,8 @@ void MomentCalculater::calculateZerothMomentOfOneSpecies(
     int totalNumSpecies
 )
 {
+    resetZerothMomentOfOneSpecies(zerothMomentOfOneSpecies);
+
     CalculateZerothMomentOfOneSpeciesFunctor calculateZerothMomentOfOneSpeciesFunctor{
         thrust::raw_pointer_cast(zerothMomentOfOneSpecies.data()), 
         thrust::raw_pointer_cast(particlesSpecies.data())
@@ -149,6 +153,8 @@ void MomentCalculater::calculateFirstMomentOfOneSpecies(
     int totalNumSpecies
 )
 {
+    resetFirstMomentOfOneSpecies(firstMomentOfOneSpecies);
+
     CalculateFirstMomentOfOneSpeciesFunctor calculateFirstMomentOfOneSpeciesFunctor{
         thrust::raw_pointer_cast(firstMomentOfOneSpecies.data()), 
         thrust::raw_pointer_cast(particlesSpecies.data())
@@ -235,6 +241,8 @@ void MomentCalculater::calculateSecondMomentOfOneSpecies(
     int totalNumSpecies
 )
 {
+    resetSecondMomentOfOneSpecies(secondMomentOfOneSpecies);
+
     CalculateSecondMomentOfOneSpeciesFunctor calculateSecondMomentOfOneSpeciesFunctor{
         thrust::raw_pointer_cast(secondMomentOfOneSpecies.data()), 
         thrust::raw_pointer_cast(particlesSpecies.data())
