@@ -21,10 +21,10 @@ private:
     thrust::device_vector<Particle> particlesIon;
     thrust::device_vector<Particle> particlesElectron;
     thrust::device_vector<ElectricField> E;
-    thrust::device_vector<MagneticField> B;
-    thrust::device_vector<CurrentField> current;
     thrust::device_vector<ElectricField> tmpE;
+    thrust::device_vector<MagneticField> B;
     thrust::device_vector<MagneticField> tmpB;
+    thrust::device_vector<CurrentField> current;
     thrust::device_vector<CurrentField> tmpCurrent;
     thrust::device_vector<ZerothMoment> zerothMomentIon;
     thrust::device_vector<ZerothMoment> zerothMomentElectron;

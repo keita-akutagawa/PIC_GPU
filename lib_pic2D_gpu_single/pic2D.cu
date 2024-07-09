@@ -14,12 +14,24 @@ PIC2D::PIC2D()
       tmpB(nx * ny), 
       current(nx * ny), 
       tmpCurrent(nx * ny), 
+      zerothMomentIon(nx * ny), 
+      zerothMomentElectron(nx * ny), 
+      firstMomentIon(nx * ny), 
+      firstMomentElectron(nx * ny), 
+      secondMomentIon(nx * ny), 
+      secondMomentElectron(nx * ny),
 
       host_particlesIon(totalNumIon), 
       host_particlesElectron(totalNumElectron), 
       host_E(nx * ny), 
       host_B(nx * ny), 
-      host_current(nx * ny)
+      host_current(nx * ny), 
+      host_zerothMomentIon(nx * ny), 
+      host_zerothMomentElectron(nx * ny), 
+      host_firstMomentIon(nx * ny), 
+      host_firstMomentElectron(nx * ny), 
+      host_secondMomentIon(nx * ny), 
+      host_secondMomentElectron(nx * ny)
 {
 }
 
