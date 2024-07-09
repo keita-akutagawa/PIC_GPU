@@ -19,10 +19,10 @@ float totalTime = 0.0f;
 const float c = 1.0f;
 const float epsilon0 = 1.0f;
 const float mu0 = 1.0f;
-const float dOfLangdonMarderTypeCorrection = 0.1f;
+const float dOfLangdonMarderTypeCorrection = 0.001f;
 
-const int numberDensityIon = 10;
-const int numberDensityElectron = 10;
+const int numberDensityIon = 100;
+const int numberDensityElectron = 100;
 
 const float B0 = sqrt(static_cast<float>(numberDensityElectron)) / 1.0;
 
@@ -66,10 +66,10 @@ const float xPointPosition = 20.0f * ionInertialLength;
 
 //追加
 const int harrisNumIon = int(nx * numberDensityIon * 2.0f * sheatThickness);
-const int backgroundNumIon = int(0.2f * nx * ny * numberDensityIon);
+const int backgroundNumIon = int(0.05f * nx * ny * numberDensityIon);
 const int totalNumIon = harrisNumIon + backgroundNumIon;
 const int harrisNumElectron = int(nx * numberDensityElectron * 2.0f * sheatThickness);
-const int backgroundNumElectron = int(0.2f * nx * ny * numberDensityElectron);
+const int backgroundNumElectron = int(0.05f * nx * ny * numberDensityElectron);
 const int totalNumElectron = harrisNumElectron + backgroundNumElectron;
 const int totalNumParticles = totalNumIon + totalNumElectron;
 
@@ -82,8 +82,8 @@ const float bulkVxIon = -bulkVxElectron / tRatio;
 const float bulkVyIon = -bulkVyElectron / tRatio;
 const float bulkVzIon = -bulkVzElectron / tRatio;
 
-const float vThIonB = sqrt(2.0f * tIon / 1.0f / mIon);
-const float vThElectronB = sqrt(2.0f * tElectron / 1.0f / mElectron);
+const float vThIonB = sqrt(2.0f * tIon / 20.0f / mIon);
+const float vThElectronB = sqrt(2.0f * tElectron / 20.0f / mElectron);
 const float bulkVxElectronB = 0.0f;
 const float bulkVyElectronB = 0.0f;
 const float bulkVzElectronB = 0.0f;
@@ -263,6 +263,7 @@ int main()
     std::cout << "total number of partices is " << totalNumParticles << std::endl;
     std::cout << std::setprecision(4) 
               << "Omega_ci * t = " << totalStep * dt * omegaCi << std::endl;
+    std::cout << "box size is " << nx << " X " << ny << std::endl;
 
 
     PIC2D pIC2D;
