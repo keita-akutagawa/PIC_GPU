@@ -9,6 +9,7 @@
 #include "current_calculator.hpp"
 #include "boundary.hpp"
 #include "sort_particle.hpp"
+#include "moment_calculater.hpp"
 #include "particle_struct.hpp"
 #include "field_parameter_struct.hpp"
 #include "moment_struct.hpp"
@@ -38,6 +39,7 @@ private:
     CurrentCalculator currentCalculator;
     Boundary boundary;
     ParticleSorter particleSorter;
+    MomentCalculater momentCalculater;
 
     thrust::host_vector<Particle> host_particlesIon;
     thrust::host_vector<Particle> host_particlesElectron;
@@ -63,7 +65,15 @@ public:
 
     void sortParticle();
 
+    void calculateMoments();
+
     void saveFields(
+        std::string directoryname, 
+        std::string filenameWithoutStep, 
+        int step
+    );
+
+    void saveMoments(
         std::string directoryname, 
         std::string filenameWithoutStep, 
         int step

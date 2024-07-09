@@ -26,7 +26,7 @@ void CurrentCalculator::calculateCurrent(
 }
 
 
-struct CalculateCurrent {
+struct CalculateCurrentFunctor {
     CurrentField* current;
     const Particle* particlesSpecies;
     const float q;
@@ -85,7 +85,7 @@ void CurrentCalculator::calculateCurrentOfOneSpecies(
     float q, int totalNumSpecies
 )
 {
-    CalculateCurrent calcCurrent{
+    CalculateCurrentFunctor calculateCurrentFunctor{
         thrust::raw_pointer_cast(current.data()), 
         thrust::raw_pointer_cast(particlesSpecies.data()), 
         q
@@ -94,7 +94,7 @@ void CurrentCalculator::calculateCurrentOfOneSpecies(
     thrust::for_each(
         thrust::counting_iterator<int>(0), 
         thrust::counting_iterator<int>(totalNumSpecies), 
-        calcCurrent
+        calculateCurrentFunctor
     );
 }
 

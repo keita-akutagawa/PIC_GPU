@@ -202,12 +202,15 @@ int main()
             pIC2D.saveFields(
                 directoryname, filenameWithoutStep, step
             );
+            pIC2D.saveMoments(
+                directoryname, filenameWithoutStep, step
+            );
             pIC2D.saveParticle(
                 directoryname, filenameWithoutStep, step
             );
         }
         
-        pIC2D.oneStep();
+        pIC2D.oneStepPeriodicXY();
 
         totalTime += dt;
     }

@@ -278,6 +278,9 @@ int main()
             pIC2D.saveFields(
                 directoryname, filenameWithoutStep, step
             );
+            pIC2D.saveMoments(
+                directoryname, filenameWithoutStep, step
+            );
         }
         if (step % particleRecordStep == 0) {
             pIC2D.saveParticle(

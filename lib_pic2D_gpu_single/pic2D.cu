@@ -332,6 +332,179 @@ void PIC2D::saveFields(
 }
 
 
+void PIC2D::calculateMoments()
+{
+    momentCalculater.resetZerothMomentOfOneSpecies(zerothMomentIon);
+    momentCalculater.resetZerothMomentOfOneSpecies(zerothMomentElectron);
+    momentCalculater.resetFirstMomentOfOneSpecies(firstMomentIon);
+    momentCalculater.resetFirstMomentOfOneSpecies(firstMomentElectron);
+    momentCalculater.resetSecondMomentOfOneSpecies(secondMomentIon);
+    momentCalculater.resetSecondMomentOfOneSpecies(secondMomentElectron);
+
+    momentCalculater.calculateZerothMomentOfOneSpecies(
+        zerothMomentIon, particlesIon, totalNumIon
+    );
+    momentCalculater.calculateZerothMomentOfOneSpecies(
+        zerothMomentElectron, particlesElectron, totalNumElectron
+    );
+    momentCalculater.calculateFirstMomentOfOneSpecies(
+        firstMomentIon, particlesIon, totalNumIon
+    );
+    momentCalculater.calculateFirstMomentOfOneSpecies(
+        firstMomentElectron, particlesElectron, totalNumElectron
+    );
+    momentCalculater.calculateSecondMomentOfOneSpecies(
+        secondMomentIon, particlesIon, totalNumIon
+    );
+    momentCalculater.calculateSecondMomentOfOneSpecies(
+        secondMomentElectron, particlesElectron, totalNumElectron
+    );
+}
+
+
+void PIC2D::saveMoments(
+    std::string directoryname, 
+    std::string filenameWithoutStep, 
+    int step
+)
+{
+    calculateMoments();
+
+    host_zerothMomentIon = zerothMomentIon;
+    host_zerothMomentElectron = zerothMomentElectron;
+    host_firstMomentIon = firstMomentIon;
+    host_firstMomentElectron = firstMomentElectron;
+    host_secondMomentIon = secondMomentIon;
+    host_secondMomentElectron = secondMomentElectron;
+
+    std::string filenameZerothMomentIon, filenameZerothMomentElectron;
+    std::string filenameFirstMomentIon, filenameFirstMomentElectron;
+    std::string filenameSecondMomentIon, filenameSecondMomentElectron;
+
+    filenameZerothMomentIon = directoryname + "/"
+                            + filenameWithoutStep + "_zeroth_moment_ion_" + std::to_string(step)
+                            + ".bin";
+    filenameZerothMomentElectron = directoryname + "/"
+                                 + filenameWithoutStep + "_zeroth_moment_electron_" + std::to_string(step)
+                                 + ".bin";
+    filenameFirstMomentIon = directoryname + "/"
+                           + filenameWithoutStep + "_first_moment_ion_" + std::to_string(step)
+                           + ".bin";
+    filenameFirstMomentElectron = directoryname + "/"
+                                + filenameWithoutStep + "_first_moment_electron_" + std::to_string(step)
+                                + ".bin";
+    filenameSecondMomentIon = directoryname + "/"
+                            + filenameWithoutStep + "_second_moment_ion_" + std::to_string(step)
+                            + ".bin";
+    filenameSecondMomentElectron = directoryname + "/"
+                                 + filenameWithoutStep + "_second_moment_electron_" + std::to_string(step)
+                                 + ".bin";
+    
+
+    std::ofstream ofsZerothMomentIon(filenameZerothMomentIon, std::ios::binary);
+    ofsZerothMomentIon << std::fixed << std::setprecision(6);
+    for (int i = 0; i < nx; i++) {
+        for (int j = 0; j < ny; j++) {
+            ofsZerothMomentIon.write(reinterpret_cast<const char*>(
+                &host_zerothMomentIon[j + ny * i].n), sizeof(float)
+            );
+        }
+    }
+
+    std::ofstream ofsZerothMomentElectron(filenameZerothMomentElectron, std::ios::binary);
+    ofsZerothMomentElectron << std::fixed << std::setprecision(6);
+    for (int i = 0; i < nx; i++) {
+        for (int j = 0; j < ny; j++) {
+            ofsZerothMomentElectron.write(reinterpret_cast<const char*>(
+                &host_zerothMomentElectron[j + ny * i].n), sizeof(float)
+            );
+        }
+    }
+
+    std::ofstream ofsFirstMomentIon(filenameFirstMomentIon, std::ios::binary);
+    ofsFirstMomentIon << std::fixed << std::setprecision(6);
+    for (int i = 0; i < nx; i++) {
+        for (int j = 0; j < ny; j++) {
+            ofsFirstMomentIon.write(reinterpret_cast<const char*>(
+                &host_firstMomentIon[j + ny * i].x), sizeof(float)
+            );
+            ofsFirstMomentIon.write(reinterpret_cast<const char*>(
+                &host_firstMomentIon[j + ny * i].y), sizeof(float)
+            );
+            ofsFirstMomentIon.write(reinterpret_cast<const char*>(
+                &host_firstMomentIon[j + ny * i].z), sizeof(float)
+            );
+        }
+    }
+
+    std::ofstream ofsFirstMomentElectron(filenameFirstMomentElectron, std::ios::binary);
+    ofsFirstMomentElectron << std::fixed << std::setprecision(6);
+    for (int i = 0; i < nx; i++) {
+        for (int j = 0; j < ny; j++) {
+            ofsFirstMomentElectron.write(reinterpret_cast<const char*>(
+                &host_firstMomentElectron[j + ny * i].x), sizeof(float)
+            );
+            ofsFirstMomentElectron.write(reinterpret_cast<const char*>(
+                &host_firstMomentElectron[j + ny * i].y), sizeof(float)
+            );
+            ofsFirstMomentElectron.write(reinterpret_cast<const char*>(
+                &host_firstMomentElectron[j + ny * i].z), sizeof(float)
+            );
+        }
+    }
+
+    std::ofstream ofsSecondMomentIon(filenameSecondMomentIon, std::ios::binary);
+    ofsSecondMomentIon << std::fixed << std::setprecision(6);
+    for (int i = 0; i < nx; i++) {
+        for (int j = 0; j < ny; j++) {
+            ofsSecondMomentIon.write(reinterpret_cast<const char*>(
+                &host_secondMomentIon[j + ny * i].xx), sizeof(float)
+            );
+            ofsSecondMomentIon.write(reinterpret_cast<const char*>(
+                &host_secondMomentIon[j + ny * i].yy), sizeof(float)
+            );
+            ofsSecondMomentIon.write(reinterpret_cast<const char*>(
+                &host_secondMomentIon[j + ny * i].zz), sizeof(float)
+            );
+            ofsSecondMomentIon.write(reinterpret_cast<const char*>(
+                &host_secondMomentIon[j + ny * i].xy), sizeof(float)
+            );
+            ofsSecondMomentIon.write(reinterpret_cast<const char*>(
+                &host_secondMomentIon[j + ny * i].xz), sizeof(float)
+            );
+            ofsSecondMomentIon.write(reinterpret_cast<const char*>(
+                &host_secondMomentIon[j + ny * i].yz), sizeof(float)
+            );
+        }
+    }
+
+    std::ofstream ofsSecondMomentElectron(filenameSecondMomentElectron, std::ios::binary);
+    ofsSecondMomentElectron << std::fixed << std::setprecision(6);
+    for (int i = 0; i < nx; i++) {
+        for (int j = 0; j < ny; j++) {
+            ofsSecondMomentElectron.write(reinterpret_cast<const char*>(
+                &host_secondMomentElectron[j + ny * i].xx), sizeof(float)
+            );
+            ofsSecondMomentElectron.write(reinterpret_cast<const char*>(
+                &host_secondMomentElectron[j + ny * i].yy), sizeof(float)
+            );
+            ofsSecondMomentElectron.write(reinterpret_cast<const char*>(
+                &host_secondMomentElectron[j + ny * i].zz), sizeof(float)
+            );
+            ofsSecondMomentElectron.write(reinterpret_cast<const char*>(
+                &host_secondMomentElectron[j + ny * i].xy), sizeof(float)
+            );
+            ofsSecondMomentElectron.write(reinterpret_cast<const char*>(
+                &host_secondMomentElectron[j + ny * i].xz), sizeof(float)
+            );
+            ofsSecondMomentElectron.write(reinterpret_cast<const char*>(
+                &host_secondMomentElectron[j + ny * i].yz), sizeof(float)
+            );
+        }
+    }
+}
+
+
 void PIC2D::saveParticle(
     std::string directoryname, 
     std::string filenameWithoutStep, 
