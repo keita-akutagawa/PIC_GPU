@@ -63,6 +63,8 @@ public:
     
     void oneStepPeriodicXY();
 
+    void oneStepPeriodicXWallY();
+
     void oneStepSymmerticXWallY();
 
     void sortParticle();

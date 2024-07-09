@@ -263,6 +263,83 @@ void PIC2D::oneStepSymmerticXWallY()
 }
 
 
+void PIC2D::oneStepPeriodicXWallY()
+{
+    std::cout << "AAA";
+    fieldSolver.timeEvolutionB(B, E, dt/2.0f);
+    boundary.periodicBoundaryBX(B);
+    boundary.conductingWallBoundaryBY(B);
+    
+    std::cout << "AAA";
+    dim3 threadsPerBlock(16, 16);
+    dim3 blocksPerGrid((nx + threadsPerBlock.x - 1) / threadsPerBlock.x,
+                       (ny + threadsPerBlock.y - 1) / threadsPerBlock.y);
+    getCenterBE_kernel<<<blocksPerGrid, threadsPerBlock>>>(
+        thrust::raw_pointer_cast(tmpB.data()), 
+        thrust::raw_pointer_cast(tmpE.data()), 
+        thrust::raw_pointer_cast(B.data()), 
+        thrust::raw_pointer_cast(E.data())
+    );
+    cudaDeviceSynchronize();
+    boundary.periodicBoundaryBX(tmpB);
+    boundary.conductingWallBoundaryBY(tmpB);
+    boundary.periodicBoundaryEX(tmpE);
+    boundary.conductingWallBoundaryEY(tmpE);
+
+    std::cout << "AAA";
+    particlePush.pushVelocity(
+        particlesIon, particlesElectron, tmpB, tmpE, dt
+    );
+
+    std::cout << "AAA";
+    particlePush.pushPosition(
+        particlesIon, particlesElectron, dt/2.0f
+    );
+    boundary.periodicBoundaryParticleX(
+        particlesIon, particlesElectron
+    );
+    boundary.conductingWallBoundaryParticleY(
+        particlesIon, particlesElectron
+    );
+    std::cout << "AAA";
+
+
+    currentCalculator.resetCurrent(tmpCurrent);
+    currentCalculator.calculateCurrent(
+        tmpCurrent, particlesIon, particlesElectron
+    );
+    boundary.periodicBoundaryCurrentX(tmpCurrent);
+    boundary.conductingWallBoundaryCurrentY(tmpCurrent);
+    getHalfCurrent_kernel<<<blocksPerGrid, threadsPerBlock>>>(
+        thrust::raw_pointer_cast(current.data()), 
+        thrust::raw_pointer_cast(tmpCurrent.data())
+    );
+    boundary.periodicBoundaryCurrentX(current);
+    boundary.conductingWallBoundaryCurrentY(current);
+
+    fieldSolver.timeEvolutionB(B, E, dt/2.0f);
+    boundary.periodicBoundaryBX(B);
+    boundary.conductingWallBoundaryBY(B);
+
+    fieldSolver.timeEvolutionE(E, B, current, dt);
+    boundary.periodicBoundaryEX(E);
+    boundary.conductingWallBoundaryEY(E);
+    filter.langdonMarderTypeCorrection(E, particlesIon, particlesElectron, dt);
+    boundary.periodicBoundaryEX(E);
+    boundary.conductingWallBoundaryEY(E);
+
+    particlePush.pushPosition(
+        particlesIon, particlesElectron, dt/2.0f
+    );
+    boundary.periodicBoundaryParticleX(
+        particlesIon, particlesElectron
+    );
+    boundary.conductingWallBoundaryParticleY(
+        particlesIon, particlesElectron
+    );
+}
+
+
 void PIC2D::sortParticle()
 {
     particleSorter.sortParticle(particlesIon, particlesElectron);
@@ -355,18 +432,18 @@ void PIC2D::calculateMoments()
     momentCalculater.calculateZerothMomentOfOneSpecies(
         zerothMomentElectron, particlesElectron, totalNumElectron
     );
-    momentCalculater.calculateFirstMomentOfOneSpecies(
-        firstMomentIon, particlesIon, totalNumIon
-    );
-    momentCalculater.calculateFirstMomentOfOneSpecies(
-        firstMomentElectron, particlesElectron, totalNumElectron
-    );
-    momentCalculater.calculateSecondMomentOfOneSpecies(
-        secondMomentIon, particlesIon, totalNumIon
-    );
-    momentCalculater.calculateSecondMomentOfOneSpecies(
-        secondMomentElectron, particlesElectron, totalNumElectron
-    );
+    //momentCalculater.calculateFirstMomentOfOneSpecies(
+    //    firstMomentIon, particlesIon, totalNumIon
+    //);
+    //momentCalculater.calculateFirstMomentOfOneSpecies(
+    //    firstMomentElectron, particlesElectron, totalNumElectron
+    //);
+    //momentCalculater.calculateSecondMomentOfOneSpecies(
+    //    secondMomentIon, particlesIon, totalNumIon
+    //);
+    //momentCalculater.calculateSecondMomentOfOneSpecies(
+    //    secondMomentElectron, particlesElectron, totalNumElectron
+    //);
 }
 
 
@@ -376,7 +453,9 @@ void PIC2D::saveMoments(
     int step
 )
 {
+    std::cout << "BBB";
     calculateMoments();
+    std::cout << "BBB";
 
     host_zerothMomentIon = zerothMomentIon;
     host_zerothMomentElectron = zerothMomentElectron;
