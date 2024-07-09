@@ -16,7 +16,6 @@ __global__ void calculateF_kernel(
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     int j = blockIdx.y * blockDim.y + threadIdx.y;
 
-    //境界は0.0fに設定する
     if ((0 < i) && (i < device_nx - 1) && (0 < j) && (j < device_ny - 1)) {
         F[j + device_ny * i].F = ((E[j + device_ny * i].eX - E[j + device_ny * (i - 1)].eX) / device_dx 
                                + (E[j + device_ny * i].eY - E[j - 1 + device_ny * i].eY) / device_dy)

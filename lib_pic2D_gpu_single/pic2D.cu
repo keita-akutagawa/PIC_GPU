@@ -248,6 +248,8 @@ void PIC2D::oneStepSymmerticXWallY()
     boundary.symmetricBoundaryEX(E);
     boundary.conductingWallBoundaryEY(E);
     filter.langdonMarderTypeCorrection(E, particlesIon, particlesElectron, dt);
+    boundary.symmetricBoundaryEX(E);
+    boundary.conductingWallBoundaryEY(E);
 
     particlePush.pushPosition(
         particlesIon, particlesElectron, dt/2.0f

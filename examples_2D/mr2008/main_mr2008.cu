@@ -19,7 +19,7 @@ float totalTime = 0.0f;
 const float c = 1.0f;
 const float epsilon0 = 1.0f;
 const float mu0 = 1.0f;
-const float dOfLangdonMarderTypeCorrection = 0.01f;
+const float dOfLangdonMarderTypeCorrection = 0.1f;
 
 const int numberDensityIon = 10;
 const int numberDensityElectron = 10;
