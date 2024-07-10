@@ -15,8 +15,8 @@ const float PI = 3.1415926535f;
 const float theta = PI / 90.0f * 30.0f;
 __constant__ float device_theta;
 
-const int totalStep = 30000;
-const int fieldRecordStep = 100;
+const int totalStep = 100000;
+const int fieldRecordStep = 1000;
 const bool isParticleRecord = false;
 const int particleRecordStep = 1000;
 float totalTime = 0.0f;
@@ -30,7 +30,7 @@ const int numberDensityIon = 100;
 const int numberDensityElectron = 100;
 
 const float tRatio = 1.0f;
-const float B0 = sqrt(static_cast<float>(numberDensityElectron)) / 4.0f / sqrt(2.0f / (1.0f + tRatio));
+const float B0 = sqrt(static_cast<float>(numberDensityElectron)) / 2.0f / sqrt(2.0f / (1.0f + tRatio));
 
 const float mRatio = 25.0f;
 const float mElectron = 1.0f;
