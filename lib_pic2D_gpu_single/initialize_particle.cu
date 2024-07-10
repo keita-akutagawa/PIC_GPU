@@ -145,10 +145,18 @@ __global__ void harrisForPositionY_kernel(
 
     if (i < nEnd - nStart) {
         curandState state; 
-        curand_init(seed, i, 0, &state);
-        float randomValue = curand_uniform(&state);
+        curand_init(seed, 10 * i, 0, &state);
         float yCenter = 0.5f * (device_ymax - device_ymin) + device_ymin;
-        float y = yCenter + sheatThickness * atanh(2.0f * randomValue - 1.0f);
+
+        float randomValue;
+        float y;
+        while (true) {
+            randomValue = curand_uniform(&state);
+            y = yCenter + sheatThickness * atanh(2.0f * randomValue - 1.0f);
+
+            if (device_ymin < y && y < device_ymax) break;
+        }
+        
         particle[i + nStart].y = y;
     }
 }

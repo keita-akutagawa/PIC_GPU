@@ -265,12 +265,10 @@ void PIC2D::oneStepSymmerticXWallY()
 
 void PIC2D::oneStepPeriodicXWallY()
 {
-    std::cout << "AAA";
     fieldSolver.timeEvolutionB(B, E, dt/2.0f);
     boundary.periodicBoundaryBX(B);
     boundary.conductingWallBoundaryBY(B);
     
-    std::cout << "AAA";
     dim3 threadsPerBlock(16, 16);
     dim3 blocksPerGrid((nx + threadsPerBlock.x - 1) / threadsPerBlock.x,
                        (ny + threadsPerBlock.y - 1) / threadsPerBlock.y);
@@ -286,12 +284,10 @@ void PIC2D::oneStepPeriodicXWallY()
     boundary.periodicBoundaryEX(tmpE);
     boundary.conductingWallBoundaryEY(tmpE);
 
-    std::cout << "AAA";
     particlePush.pushVelocity(
         particlesIon, particlesElectron, tmpB, tmpE, dt
     );
 
-    std::cout << "AAA";
     particlePush.pushPosition(
         particlesIon, particlesElectron, dt/2.0f
     );
@@ -301,7 +297,6 @@ void PIC2D::oneStepPeriodicXWallY()
     boundary.conductingWallBoundaryParticleY(
         particlesIon, particlesElectron
     );
-    std::cout << "AAA";
 
 
     currentCalculator.resetCurrent(tmpCurrent);
@@ -432,18 +427,18 @@ void PIC2D::calculateMoments()
     momentCalculater.calculateZerothMomentOfOneSpecies(
         zerothMomentElectron, particlesElectron, totalNumElectron
     );
-    //momentCalculater.calculateFirstMomentOfOneSpecies(
-    //    firstMomentIon, particlesIon, totalNumIon
-    //);
-    //momentCalculater.calculateFirstMomentOfOneSpecies(
-    //    firstMomentElectron, particlesElectron, totalNumElectron
-    //);
-    //momentCalculater.calculateSecondMomentOfOneSpecies(
-    //    secondMomentIon, particlesIon, totalNumIon
-    //);
-    //momentCalculater.calculateSecondMomentOfOneSpecies(
-    //    secondMomentElectron, particlesElectron, totalNumElectron
-    //);
+    momentCalculater.calculateFirstMomentOfOneSpecies(
+        firstMomentIon, particlesIon, totalNumIon
+    );
+    momentCalculater.calculateFirstMomentOfOneSpecies(
+        firstMomentElectron, particlesElectron, totalNumElectron
+    );
+    momentCalculater.calculateSecondMomentOfOneSpecies(
+        secondMomentIon, particlesIon, totalNumIon
+    );
+    momentCalculater.calculateSecondMomentOfOneSpecies(
+        secondMomentElectron, particlesElectron, totalNumElectron
+    );
 }
 
 
@@ -453,9 +448,7 @@ void PIC2D::saveMoments(
     int step
 )
 {
-    std::cout << "BBB";
     calculateMoments();
-    std::cout << "BBB";
 
     host_zerothMomentIon = zerothMomentIon;
     host_zerothMomentElectron = zerothMomentElectron;

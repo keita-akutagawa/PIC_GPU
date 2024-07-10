@@ -17,6 +17,7 @@ __constant__ float device_theta;
 
 const int totalStep = 30000;
 const int fieldRecordStep = 100;
+const bool isParticleRecord = false;
 const int particleRecordStep = 1000;
 float totalTime = 0.0f;
 
@@ -269,18 +270,17 @@ int main()
 
     PIC2D pIC2D;
 
+    size_t free_mem = 0;
+    size_t total_mem = 0;
+    cudaError_t status = cudaMemGetInfo(&free_mem, &total_mem);
+
+    std::cout << "Free memory: " << free_mem / (1024 * 1024) << " MB" << std::endl;
+    std::cout << "Total memory: " << total_mem / (1024 * 1024) << " MB" << std::endl;
+
+
     pIC2D.initialize();
 
-
     for (int step = 0; step < totalStep+1; step++) {
-        if (step == 0) {
-            size_t free_mem = 0;
-            size_t total_mem = 0;
-            cudaError_t status = cudaMemGetInfo(&free_mem, &total_mem);
-
-            std::cout << "Free memory: " << free_mem / (1024 * 1024) << " MB" << std::endl;
-            std::cout << "Total memory: " << total_mem / (1024 * 1024) << " MB" << std::endl;
-        }
 
         if (step % fieldRecordStep == 0) {
             std::cout << std::to_string(step) << " step done : total time is "
@@ -295,7 +295,7 @@ int main()
                 directoryname, filenameWithoutStep, step
             );
         }
-        if (step % particleRecordStep == 0) {
+        if (isParticleRecord && step % particleRecordStep == 0) {
             pIC2D.saveParticle(
                 directoryname, filenameWithoutStep, step
             );
