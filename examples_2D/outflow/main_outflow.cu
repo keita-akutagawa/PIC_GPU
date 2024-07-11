@@ -12,7 +12,7 @@ std::string filenameWithoutStep = "outflow";
 std::ofstream logfile("results_outflow/log_outflow.txt");
 
 const float PI = 3.1415926535f;
-const float theta = PI / 90.0f * 30.0f;
+const float theta = PI / 2.0f / 90.0f * 50.0f;
 __constant__ float device_theta;
 
 const int totalStep = 100000;
@@ -26,11 +26,11 @@ const float epsilon0 = 1.0f;
 const float mu0 = 1.0f;
 const float dOfLangdonMarderTypeCorrection = 0.01f;
 
-const int numberDensityIon = 100;
-const int numberDensityElectron = 100;
+const int numberDensityIon = 10;
+const int numberDensityElectron = 10;
 
 const float tRatio = 1.0f;
-const float B0 = sqrt(static_cast<float>(numberDensityElectron)) / 2.0f / sqrt(2.0f / (1.0f + tRatio));
+const float B0 = sqrt(static_cast<float>(numberDensityElectron)) / 1.0f / sqrt(2.0f / (1.0f + tRatio));
 
 const float mRatio = 25.0f;
 const float mElectron = 1.0f;
@@ -52,17 +52,17 @@ const float debyeLength = sqrt(epsilon0 * tElectron / static_cast<float>(numberD
 //追加
 const float ionInertialLength = c / omegaPi;
 
-const int nx = int(50.0f * ionInertialLength);
+const int nx = int(100.0f * ionInertialLength);
 const float dx = 1.0f;
 const float xmin = 0.0f * dx; 
 const float xmax = nx * dx;
 
-const int ny = int(10.0f * ionInertialLength);
+const int ny = int(20.0f * ionInertialLength);
 const float dy = 1.0f;
 const float ymin = 1.0f * dy; 
 const float ymax = ny * dy - 1.5f * dy;
 
-const float dt = 0.5f;
+const float dt = 0.25f;
 
 //追加
 const float sheatThickness = 1.0f * ionInertialLength;
@@ -71,10 +71,10 @@ const float xPointPosition = 20.0f * ionInertialLength;
 
 //追加
 const int harrisNumIon = int(nx * numberDensityIon * 2.0f * sheatThickness);
-const int backgroundNumIon = int(0.1f * nx * ny * numberDensityIon);
+const int backgroundNumIon = int(1.0f * nx * ny * numberDensityIon);
 const int totalNumIon = harrisNumIon + backgroundNumIon;
 const int harrisNumElectron = int(nx * numberDensityElectron * 2.0f * sheatThickness);
-const int backgroundNumElectron = int(0.1f * nx * ny * numberDensityElectron);
+const int backgroundNumElectron = int(1.0f * nx * ny * numberDensityElectron);
 const int totalNumElectron = harrisNumElectron + backgroundNumElectron;
 const int totalNumParticles = totalNumIon + totalNumElectron;
 
