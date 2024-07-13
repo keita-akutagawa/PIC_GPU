@@ -1,6 +1,8 @@
 #ifndef PARTICLE_STRUCT_H
 #define PARTICLE_STRUCT_H
 
+#include "const.hpp"
+
 struct Particle
 {
     float x;
@@ -22,9 +24,10 @@ struct Particle
         gamma(0.0f)
         {}
     
-    __host__ __device__
+    __device__
     bool operator<(const Particle& other) const
     {
+        //return int(y) + device_ny * int(x) < int(other.y) + device_ny * int(other.x);
         return y < other.y;
     }
 };

@@ -26,13 +26,16 @@ void CurrentCalculator::calculateCurrent(
 }
 
 
-struct CalculateCurrentFunctor {
-    CurrentField* current;
-    const Particle* particlesSpecies;
-    const float q;
+__global__ void calculateCurrentOfOneSpecies_kernel(
+    CurrentField* current,
+    const Particle* particlesSpecies, 
+    const float q, const int totalNumSpecies
+)
+{
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
 
-    __device__
-    void operator()(const int& i) const {
+    if (i < totalNumSpecies) {
+    
         float cx1, cx2; 
         int xIndex1, xIndex2;
         float xOverDx;
@@ -85,17 +88,16 @@ void CurrentCalculator::calculateCurrentOfOneSpecies(
     float q, int totalNumSpecies
 )
 {
-    CalculateCurrentFunctor calculateCurrentFunctor{
+    dim3 threadsPerBlock(256);
+    dim3 blocksPerGrid((totalNumSpecies + threadsPerBlock.x - 1) / threadsPerBlock.x);
+
+    calculateCurrentOfOneSpecies_kernel<<<blocksPerGrid, threadsPerBlock>>>(
         thrust::raw_pointer_cast(current.data()), 
         thrust::raw_pointer_cast(particlesSpecies.data()), 
-        q
-    };
-
-    thrust::for_each(
-        thrust::counting_iterator<int>(0), 
-        thrust::counting_iterator<int>(totalNumSpecies), 
-        calculateCurrentFunctor
+        q, totalNumSpecies
     );
+
+    cudaDeviceSynchronize();
 }
 
 

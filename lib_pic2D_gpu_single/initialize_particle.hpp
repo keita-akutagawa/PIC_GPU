@@ -44,6 +44,14 @@ public:
         thrust::device_vector<Particle>& particlesSpecies
     );
 
+    void harrisBackgroundForPositionY(
+        int nStart, 
+        int nEnd, 
+        int seed, 
+        float sheatThickness, 
+        thrust::device_vector<Particle>& particlesSpecies
+    );
+
 private:
 
 };

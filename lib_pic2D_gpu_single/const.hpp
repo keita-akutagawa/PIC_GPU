@@ -22,9 +22,9 @@ extern const float dt;
 extern const int numberDensityIon;
 extern const int numberDensityElectron;
 
-extern const int totalNumIon;
-extern const int totalNumElectron;
-extern const int totalNumParticles;
+extern const long long totalNumIon;
+extern const long long totalNumElectron;
+extern const long long totalNumParticles;
 
 extern const float B0;
 
@@ -81,9 +81,9 @@ extern __constant__ float device_dt;
 extern __constant__ int device_numberDensityIon;
 extern __constant__ int device_numberDensityElectron;
 
-extern __constant__ int device_totalNumIon;
-extern __constant__ int device_totalNumElectron;
-extern __constant__ int device_totalNumParticles;
+extern __constant__ long long device_totalNumIon;
+extern __constant__ long long device_totalNumElectron;
+extern __constant__ long long device_totalNumParticles;
 
 extern __constant__ float device_B0;
 
