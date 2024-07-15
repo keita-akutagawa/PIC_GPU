@@ -33,8 +33,6 @@ private:
     thrust::device_vector<FirstMoment> firstMomentElectron;
     thrust::device_vector<SecondMoment> secondMomentIon;
     thrust::device_vector<SecondMoment> secondMomentElectron;
-    thrust::device_vector<unsigned long long> particlesIndexIon;
-    thrust::device_vector<unsigned long long> particlesIndexElectron;
 
     InitializeParticle initializeParticle;
     ParticlePush particlePush;

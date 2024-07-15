@@ -180,3 +180,48 @@ void InitializeParticle::harrisForPositionY(
     cudaDeviceSynchronize();
 }
 
+
+__global__ void harrisBackgroundForPositionY_kernel(
+    Particle* particle, float sheatThickness, 
+    const int nStart, const int nEnd, const int seed
+)
+{
+    unsigned long long i = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (i < nEnd - nStart) {
+        curandState state; 
+        curand_init(seed, 10 * i, 0, &state);
+        float yCenter = 0.5f * (device_ymax - device_ymin) + device_ymin;
+
+        float randomValue;
+        float y;
+        while (true) {
+            randomValue = curand_uniform(&state);
+            y = randomValue * (device_ymax - device_ymin);
+
+            if (randomValue < (1.0f - 1.0f / cosh((y - yCenter) / sheatThickness))) break;
+        } 
+        
+        particle[i + nStart].y = y;
+    }
+}
+
+void InitializeParticle::harrisBackgroundForPositionY(
+    int nStart, 
+    int nEnd, 
+    int seed, 
+    float sheatThickness, 
+    thrust::device_vector<Particle>& particlesSpecies
+)
+{
+    dim3 threadsPerBlock(256);
+    dim3 blocksPerGrid((nEnd - nStart + threadsPerBlock.x - 1) / threadsPerBlock.x);
+
+    harrisBackgroundForPositionY_kernel<<<blocksPerGrid, threadsPerBlock>>>(
+        thrust::raw_pointer_cast(particlesSpecies.data()), sheatThickness, 
+        nStart, nEnd, seed
+    );
+
+    cudaDeviceSynchronize();
+}
+

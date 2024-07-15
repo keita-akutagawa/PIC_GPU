@@ -14,16 +14,14 @@ void CurrentCalculator::resetCurrent(
 void CurrentCalculator::calculateCurrent(
     thrust::device_vector<CurrentField>& current, 
     const thrust::device_vector<Particle>& particlesIon, 
-    const thrust::device_vector<Particle>& particlesElectron, 
-    const thrust::device_vector<unsigned long long>& particleIndexIon, 
-    const thrust::device_vector<unsigned long long>& particleIndexElectron
+    const thrust::device_vector<Particle>& particlesElectron
 )
 {
     calculateCurrentOfOneSpecies(
-        current, particlesIon, particleIndexIon, qIon, totalNumIon
+        current, particlesIon, qIon, totalNumIon
     );
     calculateCurrentOfOneSpecies(
-        current, particlesElectron, particleIndexElectron, qElectron, totalNumElectron
+        current, particlesElectron, qElectron, totalNumElectron
     );
 }
 
@@ -61,34 +59,30 @@ __device__ void cudaAssert(bool condition, const char *message) {
     }
 }
 
-__device__ void cudaAssertInt(bool condition, const int message) {
+__device__ void cudaAssertInt(bool condition, const int number) {
     if (!condition) {
-        printf("Assertion failed: %d\n", message);
+        printf("Assertion failed: %d\n", number);
     }
 }
 
+
 __global__ void calculateCurrentOfOneSpecies_kernel(
     CurrentField* current,
-    const Particle* particlesSpecies, 
+    const Particle* particlesSpecies,
     const float q, const int totalNumSpecies
 )
 {
+    extern __shared__ IndexCurrent sharedCurrent[];
+
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     int tid = threadIdx.x;
-
     const int invalidIndex = -1;
-    extern __shared__ IndexCurrent sharedCurrent1[];
-    extern __shared__ IndexCurrent sharedCurrent2[];
-    extern __shared__ IndexCurrent sharedCurrent3[];
-    extern __shared__ IndexCurrent sharedCurrent4[];
-
 
     if (i < totalNumSpecies) {
-
-        float cx1, cx2; 
+        float cx1, cx2;
         int xIndex1, xIndex2;
         float xOverDx;
-        float cy1, cy2; 
+        float cy1, cy2;
         int yIndex1, yIndex2;
         float yOverDy;
         float qOverGamma, qVxOverGamma, qVyOverGamma, qVzOverGamma;
@@ -113,151 +107,70 @@ __global__ void calculateCurrentOfOneSpecies_kernel(
         qVyOverGamma = qOverGamma * particlesSpecies[i].vy;
         qVzOverGamma = qOverGamma * particlesSpecies[i].vz;
 
-        sharedCurrent1[tid].index = yIndex1 + device_ny * xIndex1;
-        sharedCurrent2[tid].index = yIndex2 + device_ny * xIndex1;
-        sharedCurrent3[tid].index = yIndex1 + device_ny * xIndex2;
-        sharedCurrent4[tid].index = yIndex2 + device_ny * xIndex2;
+        sharedCurrent[4 * tid + 0].index = yIndex1 + device_ny * xIndex1;
+        sharedCurrent[4 * tid + 1].index = yIndex2 + device_ny * xIndex1;
+        sharedCurrent[4 * tid + 2].index = yIndex1 + device_ny * xIndex2;
+        sharedCurrent[4 * tid + 3].index = yIndex2 + device_ny * xIndex2;
 
-        sharedCurrent1[tid].jX = qVxOverGamma * cx2 * cy2;
-        sharedCurrent2[tid].jX = qVxOverGamma * cx2 * cy1;
-        sharedCurrent3[tid].jX = qVxOverGamma * cx1 * cy2;
-        sharedCurrent4[tid].jX = qVxOverGamma * cx1 * cy1;
+        sharedCurrent[4 * tid + 0].jX = qVxOverGamma * cx2 * cy2;
+        sharedCurrent[4 * tid + 1].jX = qVxOverGamma * cx2 * cy1;
+        sharedCurrent[4 * tid + 2].jX = qVxOverGamma * cx1 * cy2;
+        sharedCurrent[4 * tid + 3].jX = qVxOverGamma * cx1 * cy1;
 
-        sharedCurrent1[tid].jY = qVyOverGamma * cx2 * cy2;
-        sharedCurrent2[tid].jY = qVyOverGamma * cx2 * cy1;
-        sharedCurrent3[tid].jY = qVyOverGamma * cx1 * cy2;
-        sharedCurrent4[tid].jY = qVyOverGamma * cx1 * cy1;
+        sharedCurrent[4 * tid + 0].jY = qVyOverGamma * cx2 * cy2;
+        sharedCurrent[4 * tid + 1].jY = qVyOverGamma * cx2 * cy1;
+        sharedCurrent[4 * tid + 2].jY = qVyOverGamma * cx1 * cy2;
+        sharedCurrent[4 * tid + 3].jY = qVyOverGamma * cx1 * cy1;
 
-        sharedCurrent1[tid].jZ = qVzOverGamma * cx2 * cy2;
-        sharedCurrent2[tid].jZ = qVzOverGamma * cx2 * cy1;
-        sharedCurrent3[tid].jZ = qVzOverGamma * cx1 * cy2;
-        sharedCurrent4[tid].jZ = qVzOverGamma * cx1 * cy1;
-    } 
-
+        sharedCurrent[4 * tid + 0].jZ = qVzOverGamma * cx2 * cy2;
+        sharedCurrent[4 * tid + 1].jZ = qVzOverGamma * cx2 * cy1;
+        sharedCurrent[4 * tid + 2].jZ = qVzOverGamma * cx1 * cy2;
+        sharedCurrent[4 * tid + 3].jZ = qVzOverGamma * cx1 * cy1;
+    }
     __syncthreads();
+    
 
-
-    /*        
-    for (int reductionCount = 1; reductionCount < min(blockDim.x, 3); reductionCount *= 2) {
-        if (tid % (2 * reductionCount) == 0) {
-            int index1, index2;
-
-            index1 = sharedCurrent1[tid].index;
-            index2 = sharedCurrent1[tid + reductionCount].index;
-            if (index1 == index2) {
-                sharedCurrent1[tid].jX += sharedCurrent1[tid + reductionCount].jX;
-                sharedCurrent1[tid].jY += sharedCurrent1[tid + reductionCount].jY;
-                sharedCurrent1[tid].jZ += sharedCurrent1[tid + reductionCount].jZ;
-                sharedCurrent1[tid + reductionCount].index = invalidIndex;
+    int reductionWidth = 8;
+    if (tid % reductionWidth == 0 && tid < 256) {
+        for (int k = 1; k < reductionWidth; k++) {
+            if (sharedCurrent[4 * tid + 0].index == sharedCurrent[4 * (tid + k) + 0].index) {
+                sharedCurrent[4 * tid + 0].jX += sharedCurrent[4 * (tid + k) + 0].jX;
+                sharedCurrent[4 * tid + 0].jY += sharedCurrent[4 * (tid + k) + 0].jY;
+                sharedCurrent[4 * tid + 0].jZ += sharedCurrent[4 * (tid + k) + 0].jZ;
+                sharedCurrent[4 * (tid + k) + 0].index = invalidIndex;
             }
-
-            index1 = sharedCurrent2[tid].index;
-            index2 = sharedCurrent2[tid + reductionCount].index;
-            if (index1 == index2) {
-                sharedCurrent2[tid].jX += sharedCurrent2[tid + reductionCount].jX;
-                sharedCurrent2[tid].jY += sharedCurrent2[tid + reductionCount].jY;
-                sharedCurrent2[tid].jZ += sharedCurrent2[tid + reductionCount].jZ;
-                sharedCurrent2[tid + reductionCount].index = invalidIndex;
-            }
-
-            index1 = sharedCurrent3[tid].index;
-            index2 = sharedCurrent3[tid + reductionCount].index;
-            if (index1 == index2) {
-                sharedCurrent3[tid].jX += sharedCurrent3[tid + reductionCount].jX;
-                sharedCurrent3[tid].jY += sharedCurrent3[tid + reductionCount].jY;
-                sharedCurrent3[tid].jZ += sharedCurrent3[tid + reductionCount].jZ;
-                sharedCurrent3[tid + reductionCount].index = invalidIndex;
-            }
-
-            index1 = sharedCurrent4[tid].index;
-            index2 = sharedCurrent4[tid + reductionCount].index;
-            if (index1 == index2) {
-                sharedCurrent4[tid].jX += sharedCurrent4[tid + reductionCount].jX;
-                sharedCurrent4[tid].jY += sharedCurrent4[tid + reductionCount].jY;
-                sharedCurrent4[tid].jZ += sharedCurrent4[tid + reductionCount].jZ;
-                sharedCurrent4[tid + reductionCount].index = invalidIndex;
-            }
-            
         }
-        __syncthreads();
     }
-    */
+    __syncthreads();
+    
 
 
-    if (sharedCurrent1[tid].index != invalidIndex) {
-        int index;
-        float jX, jY, jZ;
-
-        index = sharedCurrent1[tid].index;
-        jX = sharedCurrent1[tid].jX;
-        jY = sharedCurrent1[tid].jY;
-        jZ = sharedCurrent1[tid].jZ;
-        atomicAdd(&(current[index].jX), jX);
-        atomicAdd(&(current[index].jY), jY);
-        atomicAdd(&(current[index].jZ), jZ);
-
-        sharedCurrent1[tid].initialize();
-    }
-
-    if (sharedCurrent2[tid].index != invalidIndex) {
-        int index;
-        float jX, jY, jZ;
-
-        index = sharedCurrent2[tid].index;
-        jX = sharedCurrent2[tid].jX;
-        jY = sharedCurrent2[tid].jY;
-        jZ = sharedCurrent2[tid].jZ;
-        atomicAdd(&(current[index].jX), jX);
-        atomicAdd(&(current[index].jY), jY);
-        atomicAdd(&(current[index].jZ), jZ);
-
-        sharedCurrent2[tid].initialize();
-    }
-
-    if (sharedCurrent3[tid].index != invalidIndex) {
-        int index;
-        float jX, jY, jZ;
-
-        index = sharedCurrent3[tid].index;
-        jX = sharedCurrent3[tid].jX;
-        jY = sharedCurrent3[tid].jY;
-        jZ = sharedCurrent3[tid].jZ;
-        atomicAdd(&(current[index].jX), jX);
-        atomicAdd(&(current[index].jY), jY);
-        atomicAdd(&(current[index].jZ), jZ);
-
-        sharedCurrent3[tid].initialize();
-    }
-
-    if (sharedCurrent4[tid].index != invalidIndex) {
-        int index;
-        float jX, jY, jZ;
-
-        index = sharedCurrent4[tid].index;
-        jX = sharedCurrent4[tid].jX;
-        jY = sharedCurrent4[tid].jY;
-        jZ = sharedCurrent4[tid].jZ;
-        atomicAdd(&(current[index].jX), jX);
-        atomicAdd(&(current[index].jY), jY);
-        atomicAdd(&(current[index].jZ), jZ);
-
-        sharedCurrent4[tid].initialize();
+    if (sharedCurrent[4 * tid + 0].index != invalidIndex) {
+        for(int j = 0; j < 4; j++) {
+            int validIndex = sharedCurrent[4 * tid + j].index;
+            atomicAdd(&(current[validIndex].jX), sharedCurrent[4 * tid + j].jX);
+            atomicAdd(&(current[validIndex].jY), sharedCurrent[4 * tid + j].jY);
+            atomicAdd(&(current[validIndex].jZ), sharedCurrent[4 * tid + j].jZ);
+        }
     }
     __syncthreads();
 
-};
+    for (int j = 0; j < 4; j++) {
+        sharedCurrent[4 * tid + j].initialize();
+    }
+}
+
 
 
 void CurrentCalculator::calculateCurrentOfOneSpecies(
     thrust::device_vector<CurrentField>& current, 
     const thrust::device_vector<Particle>& particlesSpecies, 
-    const thrust::device_vector<unsigned long long>& particlesIndexSpecies, 
     float q, int totalNumSpecies
 )
 {
     dim3 threadsPerBlock(256);
     dim3 blocksPerGrid((totalNumSpecies + threadsPerBlock.x - 1) / threadsPerBlock.x);
-    int sharedMemorySize = 256 * sizeof(IndexCurrent);
+    int sharedMemorySize = threadsPerBlock.x * sizeof(IndexCurrent) * 4;
 
     calculateCurrentOfOneSpecies_kernel<<<blocksPerGrid, threadsPerBlock, sharedMemorySize>>>(
         thrust::raw_pointer_cast(current.data()), 

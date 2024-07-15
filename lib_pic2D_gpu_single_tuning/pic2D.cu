@@ -20,8 +20,6 @@ PIC2D::PIC2D()
       firstMomentElectron(nx * ny), 
       secondMomentIon(nx * ny), 
       secondMomentElectron(nx * ny),
-      particlesIndexIon(totalNumIon), 
-      particlesIndexElectron(totalNumElectron), 
 
       host_particlesIon(totalNumIon), 
       host_particlesElectron(totalNumElectron), 
@@ -160,7 +158,7 @@ void PIC2D::oneStepPeriodicXY()
 
     currentCalculator.resetCurrent(tmpCurrent);
     currentCalculator.calculateCurrent(
-        tmpCurrent, particlesIon, particlesElectron, particlesIndexIon, particlesIndexElectron
+        tmpCurrent, particlesIon, particlesElectron
     );
     boundary.periodicBoundaryCurrentX(tmpCurrent);
     boundary.periodicBoundaryCurrentY(tmpCurrent);
@@ -231,7 +229,7 @@ void PIC2D::oneStepSymmerticXWallY()
 
     currentCalculator.resetCurrent(tmpCurrent);
     currentCalculator.calculateCurrent(
-        tmpCurrent, particlesIon, particlesElectron, particlesIndexIon, particlesIndexElectron
+        tmpCurrent, particlesIon, particlesElectron
     );
     boundary.symmetricBoundaryCurrentX(tmpCurrent);
     boundary.conductingWallBoundaryCurrentY(tmpCurrent);
@@ -303,7 +301,7 @@ void PIC2D::oneStepPeriodicXWallY()
 
     currentCalculator.resetCurrent(tmpCurrent);
     currentCalculator.calculateCurrent(
-        tmpCurrent, particlesIon, particlesElectron, particlesIndexIon, particlesIndexElectron
+        tmpCurrent, particlesIon, particlesElectron
     );
     boundary.periodicBoundaryCurrentX(tmpCurrent);
     boundary.conductingWallBoundaryCurrentY(tmpCurrent);
