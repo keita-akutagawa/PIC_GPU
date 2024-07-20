@@ -8,11 +8,11 @@
 
 
 std::string directoryname = "results_tearing";
-std::string filenameWithoutStep = "mr";
-std::ofstream logfile("results_tearing/log_mr.txt");
+std::string filenameWithoutStep = "tearing";
+std::ofstream logfile("results_tearing/log_tearing.txt");
 
-const int totalStep = 1000 * 100;
-const int fieldRecordStep = 1000;
+const int totalStep = 100 * 100;
+const int fieldRecordStep = 100;
 const bool isParticleRecord = false;
 const int particleRecordStep = totalStep;
 float totalTime = 0.0f;
@@ -36,7 +36,7 @@ const float tElectron = (B0 * B0 / 2.0 / mu0) / (numberDensityIon + numberDensit
 const float tIon = tRatio * tElectron;
 
 const float qRatio = -1.0f;
-const float qElectron = -1.0f * sqrt(epsilon0 * tElectron / static_cast<float>(numberDensityElectron)) / 5.0f;
+const float qElectron = -1.0f * sqrt(epsilon0 * tElectron / static_cast<float>(numberDensityElectron)) / 1.0f;
 const float qIon = qRatio * qElectron;
 
 const float omegaPe = sqrt(static_cast<float>(numberDensityElectron) * pow(qElectron, 2) / mElectron / epsilon0);
@@ -55,7 +55,7 @@ const float xmax = nx * dx - 0.0f * dx;
 //const float xmin = 0.5f * dx; 
 //const float xmax = nx * dx - 1.5f * dx;
 
-const int ny = int(50.0f * ionInertialLength);
+const int ny = int(20.0f * ionInertialLength);
 const float dy = 1.0f;
 const float ymin = 1.0f * dy; 
 const float ymax = ny * dy - 1.5f * dy;
