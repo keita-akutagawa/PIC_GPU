@@ -7,9 +7,9 @@
 #include <cuda_runtime.h>
 
 
-std::string directoryname = "/cfca-work/akutagawakt/PIC_triple/results_0:20:20";
-std::string filenameWithoutStep = "mr2008";
-std::ofstream logfile("/cfca-work/akutagawakt/PIC_triple/results_0:20:20/log_mr2008.txt");
+std::string directoryname = "results_mr_triple";
+std::string filenameWithoutStep = "mr";
+std::ofstream logfile("results_mr_triple/log_mr.txt");
 
 const int totalStep = 12000;
 const int fieldRecordStep = 80;
