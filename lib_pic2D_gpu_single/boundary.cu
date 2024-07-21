@@ -198,13 +198,13 @@ __global__ void symmetricBoundaryBX_kernel(
     if (j < device_ny) {
         B[j + device_ny * 0].bX = B[j + device_ny * 1].bX;
         B[j + device_ny * 0].bY = 0.0f;
-        B[j + device_ny * 0].bZ = 0.0f;
+        B[j + device_ny * 0].bZ = B[j + device_ny * 1].bZ;
 
         B[j + device_ny * (device_nx - 1)].bX = B[j + device_ny * (device_nx - 2)].bX;
         B[j + device_ny * (device_nx - 2)].bY = 0.0f;
         B[j + device_ny * (device_nx - 1)].bY = 0.0f;
-        B[j + device_ny * (device_nx - 2)].bZ = 0.0f;
-        B[j + device_ny * (device_nx - 1)].bZ = 0.0f;
+        B[j + device_ny * (device_nx - 2)].bZ = B[j + device_ny * (device_nx - 3)].bZ;
+        B[j + device_ny * (device_nx - 1)].bZ = B[j + device_ny * (device_nx - 2)].bZ;
     }
 }
 
@@ -276,6 +276,39 @@ void Boundary::symmetricBoundaryBY(
     std::cout << "Not writtern yet. Finish your calculation now!" << std::endl;
 }
 
+
+__global__ void freeBoundaryBY_kernel(
+    MagneticField* B
+)
+{
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (i < device_nx) {
+        B[0 + device_ny * i].bX = B[1 + device_ny * i].bX;
+        B[0 + device_ny * i].bY = B[2 + device_ny * i].bY;
+        B[0 + device_ny * i].bZ = B[1 + device_ny * i].bZ;
+
+        B[device_ny - 1 + device_ny * i].bX = B[device_ny - 3 + device_ny * i].bX;
+        B[device_ny - 1 + device_ny * i].bY = B[device_ny - 2 + device_ny * i].bY;
+        B[device_ny - 1 + device_ny * i].bZ = B[device_ny - 3 + device_ny * i].bZ;
+    }
+}
+
+void Boundary::freeBoundaryBY(
+    thrust::device_vector<MagneticField>& B
+)
+{
+    dim3 threadsPerBlock(16, 16);
+    dim3 blocksPerGrid((nx + threadsPerBlock.x - 1) / threadsPerBlock.x,
+                       (ny + threadsPerBlock.y - 1) / threadsPerBlock.y);
+
+    freeBoundaryBY_kernel<<<blocksPerGrid, threadsPerBlock>>>(
+        thrust::raw_pointer_cast(B.data())
+    );
+
+    cudaDeviceSynchronize();
+}
+
 //////////
 
 
@@ -345,14 +378,16 @@ __global__ void conductingWallBoundaryEY_kernel(
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (i < device_nx) {
-        E[0 + device_ny * i].eX = E[2 + device_ny * i].eX;
+        E[0 + device_ny * i].eX = 0.0f;
+        E[1 + device_ny * i].eX = 0.0f;
         E[0 + device_ny * i].eY = -1.0f * E[1 + device_ny * i].eY;
-        E[0 + device_ny * i].eZ = E[2 + device_ny * i].eZ;
+        E[0 + device_ny * i].eZ = 0.0f;
+        E[1 + device_ny * i].eZ = 0.0f;
 
-        E[device_ny - 1 + device_ny * i].eX = E[device_ny - 2 + device_ny * i].eX;
+        E[device_ny - 1 + device_ny * i].eX = -1.0f * E[device_ny - 2 + device_ny * i].eX;
         E[device_ny - 1 + device_ny * i].eY = 0.0f;
         E[device_ny - 2 + device_ny * i].eY = 0.0f;
-        E[device_ny - 1 + device_ny * i].eZ = E[device_ny - 2 + device_ny * i].eZ;
+        E[device_ny - 1 + device_ny * i].eZ = -1.0f * E[device_ny - 2 + device_ny * i].eZ;
     }
 }
 
@@ -378,6 +413,42 @@ void Boundary::symmetricBoundaryEY(
 )
 {
     std::cout << "Not writtern yet. Finish your calculation now!" << std::endl;
+}
+
+
+__global__ void freeBoundaryEY_kernel(
+    ElectricField* E
+)
+{
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (i < device_nx) {
+        E[0 + device_ny * i].eX = 0.0f;
+        E[1 + device_ny * i].eX = 0.0f;
+        E[0 + device_ny * i].eY = -1.0f * E[1 + device_ny * i].eY;
+        E[0 + device_ny * i].eZ = 0.0f;
+        E[1 + device_ny * i].eZ = 0.0f;
+
+        E[device_ny - 1 + device_ny * i].eX = -1.0f * E[device_ny - 2 + device_ny * i].eX;
+        E[device_ny - 1 + device_ny * i].eY = 0.0f;
+        E[device_ny - 2 + device_ny * i].eY = 0.0f;
+        E[device_ny - 1 + device_ny * i].eZ = -1.0f * E[device_ny - 2 + device_ny * i].eZ;
+    }
+}
+
+void Boundary::freeBoundaryEY(
+    thrust::device_vector<ElectricField>& E
+)
+{
+    dim3 threadsPerBlock(16, 16);
+    dim3 blocksPerGrid((nx + threadsPerBlock.x - 1) / threadsPerBlock.x,
+                       (ny + threadsPerBlock.y - 1) / threadsPerBlock.y);
+
+    freeBoundaryEY_kernel<<<blocksPerGrid, threadsPerBlock>>>(
+        thrust::raw_pointer_cast(E.data())
+    );
+
+    cudaDeviceSynchronize();
 }
 
 //////////
@@ -482,5 +553,38 @@ void Boundary::symmetricBoundaryCurrentY(
 )
 {
     std::cout << "Not writtern yet. Finish your calculation now!" << std::endl;
+}
+
+
+__global__ void freeBoundaryCurrentY_kernel(
+    CurrentField* current
+)
+{
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (i < device_nx) {
+        current[0 + device_ny * i].jX = current[2 + device_ny * i].jX;
+        current[0 + device_ny * i].jY = current[1 + device_ny * i].jY;
+        current[0 + device_ny * i].jZ = current[2 + device_ny * i].jZ;
+
+        current[device_ny - 1 + device_ny * i].jX = current[device_ny - 2 + device_ny * i].jX;
+        current[device_ny - 1 + device_ny * i].jY = current[device_ny - 3 + device_ny * i].jY;
+        current[device_ny - 1 + device_ny * i].jZ = current[device_ny - 2 + device_ny * i].jZ;
+    }
+}
+
+void Boundary::freeBoundaryCurrentY(
+    thrust::device_vector<CurrentField>& current
+)
+{
+    dim3 threadsPerBlock(16, 16);
+    dim3 blocksPerGrid((nx + threadsPerBlock.x - 1) / threadsPerBlock.x,
+                       (ny + threadsPerBlock.y - 1) / threadsPerBlock.y);
+
+    freeBoundaryCurrentY_kernel<<<blocksPerGrid, threadsPerBlock>>>(
+        thrust::raw_pointer_cast(current.data())
+    );
+
+    cudaDeviceSynchronize();
 }
 

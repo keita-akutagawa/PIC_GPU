@@ -48,6 +48,9 @@ public:
     void symmetricBoundaryBY(
         thrust::device_vector<MagneticField>& B
     );
+    void freeBoundaryBY(
+        thrust::device_vector<MagneticField>& B
+    );
 
 
     void periodicBoundaryEX(
@@ -69,6 +72,9 @@ public:
     void symmetricBoundaryEY(
         thrust::device_vector<ElectricField>& E
     );
+    void freeBoundaryEY(
+        thrust::device_vector<ElectricField>& E
+    );
 
 
     void periodicBoundaryCurrentX(
@@ -88,6 +94,9 @@ public:
         thrust::device_vector<CurrentField>& current
     );
     void symmetricBoundaryCurrentY(
+        thrust::device_vector<CurrentField>& current
+    );
+    void freeBoundaryCurrentY(
         thrust::device_vector<CurrentField>& current
     );
 

@@ -56,4 +56,15 @@ struct RhoField
         {}
 };
 
+
+struct FilterField
+{
+    float F;
+
+    __host__ __device__
+    FilterField() : 
+        F(0.0f)
+        {}
+};
+
 #endif

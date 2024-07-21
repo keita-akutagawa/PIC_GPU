@@ -23,6 +23,15 @@ public:
         thrust::device_vector<Particle>& particlesSpecies
     );
 
+    void uniformForPositionYDetail(
+        int nStart, 
+        int nEnd, 
+        int seed, 
+        float ymin, 
+        float ymax, 
+        thrust::device_vector<Particle>& particlesSpecies
+    );
+
     void maxwellDistributionForVelocity(
         float bulkVxSpecies, 
         float bulkVySpecies, 

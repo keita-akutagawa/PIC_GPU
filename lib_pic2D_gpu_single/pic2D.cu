@@ -189,7 +189,7 @@ void PIC2D::oneStepPeriodicXY()
 }
 
 
-void PIC2D::oneStepSymmerticXWallY()
+void PIC2D::oneStepSymmetricXWallY()
 {
     fieldSolver.timeEvolutionB(B, E, dt/2.0f);
     boundary.symmetricBoundaryBX(B);
@@ -322,6 +322,78 @@ void PIC2D::oneStepPeriodicXWallY()
     filter.langdonMarderTypeCorrection(E, particlesIon, particlesElectron, dt);
     boundary.periodicBoundaryEX(E);
     boundary.conductingWallBoundaryEY(E);
+
+    particlePush.pushPosition(
+        particlesIon, particlesElectron, dt/2.0f
+    );
+    boundary.periodicBoundaryParticleX(
+        particlesIon, particlesElectron
+    );
+    boundary.conductingWallBoundaryParticleY(
+        particlesIon, particlesElectron
+    );
+}
+
+
+void PIC2D::oneStepPeriodicXFreeWallY()
+{
+    fieldSolver.timeEvolutionB(B, E, dt/2.0f);
+    boundary.periodicBoundaryBX(B);
+    boundary.freeBoundaryBY(B);
+    
+    dim3 threadsPerBlock(16, 16);
+    dim3 blocksPerGrid((nx + threadsPerBlock.x - 1) / threadsPerBlock.x,
+                       (ny + threadsPerBlock.y - 1) / threadsPerBlock.y);
+    getCenterBE_kernel<<<blocksPerGrid, threadsPerBlock>>>(
+        thrust::raw_pointer_cast(tmpB.data()), 
+        thrust::raw_pointer_cast(tmpE.data()), 
+        thrust::raw_pointer_cast(B.data()), 
+        thrust::raw_pointer_cast(E.data())
+    );
+    cudaDeviceSynchronize();
+    boundary.periodicBoundaryBX(tmpB);
+    boundary.freeBoundaryBY(tmpB);
+    boundary.periodicBoundaryEX(tmpE);
+    boundary.freeBoundaryEY(tmpE);
+
+    particlePush.pushVelocity(
+        particlesIon, particlesElectron, tmpB, tmpE, dt
+    );
+
+    particlePush.pushPosition(
+        particlesIon, particlesElectron, dt/2.0f
+    );
+    boundary.periodicBoundaryParticleX(
+        particlesIon, particlesElectron
+    );
+    boundary.conductingWallBoundaryParticleY(
+        particlesIon, particlesElectron
+    );
+
+
+    currentCalculator.resetCurrent(tmpCurrent);
+    currentCalculator.calculateCurrent(
+        tmpCurrent, particlesIon, particlesElectron
+    );
+    boundary.periodicBoundaryCurrentX(tmpCurrent);
+    boundary.freeBoundaryCurrentY(tmpCurrent);
+    getHalfCurrent_kernel<<<blocksPerGrid, threadsPerBlock>>>(
+        thrust::raw_pointer_cast(current.data()), 
+        thrust::raw_pointer_cast(tmpCurrent.data())
+    );
+    boundary.periodicBoundaryCurrentX(current);
+    boundary.freeBoundaryCurrentY(current);
+
+    fieldSolver.timeEvolutionB(B, E, dt/2.0f);
+    boundary.periodicBoundaryBX(B);
+    boundary.freeBoundaryBY(B);
+
+    fieldSolver.timeEvolutionE(E, B, current, dt);
+    boundary.periodicBoundaryEX(E);
+    boundary.freeBoundaryEY(E);
+    filter.langdonMarderTypeCorrection(E, particlesIon, particlesElectron, dt);
+    boundary.periodicBoundaryEX(E);
+    boundary.freeBoundaryEY(E);
 
     particlePush.pushPosition(
         particlesIon, particlesElectron, dt/2.0f

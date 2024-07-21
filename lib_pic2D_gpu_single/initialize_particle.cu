@@ -74,6 +74,42 @@ void InitializeParticle::uniformForPositionY(
 }
 
 
+__global__ void uniformForPositionYDetail_kernel(
+    Particle* particle, 
+    const int nStart, const int nEnd, const int seed, const float ymin, const float ymax
+)
+{
+    unsigned long long i = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (i < nEnd - nStart) {
+        curandState state; 
+        curand_init(seed, i, 0, &state);
+        float y = curand_uniform(&state) * (ymax - ymin) + ymin;
+        particle[i + nStart].y = y;
+    }
+}
+
+void InitializeParticle::uniformForPositionYDetail(
+    int nStart, 
+    int nEnd, 
+    int seed, 
+    float ymin, 
+    float ymax, 
+    thrust::device_vector<Particle>& particlesSpecies
+)
+{
+    dim3 threadsPerBlock(256);
+    dim3 blocksPerGrid((nEnd - nStart + threadsPerBlock.x - 1) / threadsPerBlock.x);
+
+    uniformForPositionYDetail_kernel<<<blocksPerGrid, threadsPerBlock>>>(
+        thrust::raw_pointer_cast(particlesSpecies.data()), 
+        nStart, nEnd, seed, ymin, ymax
+    );
+
+    cudaDeviceSynchronize();
+}
+
+
 __global__ void maxwellDistributionForVelocity_kernel(
     Particle* particle, 
     const float bulkVxSpecies, const float bulkVySpecies, const float bulkVzSpecies, 
