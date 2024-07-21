@@ -7,23 +7,23 @@
 #include <cuda_runtime.h>
 
 
-std::string directoryname = "results_mr_triple";
+std::string directoryname = "results_mr_triple_10-10-20";
 std::string filenameWithoutStep = "mr";
-std::ofstream logfile("results_mr_triple/log_mr.txt");
+std::ofstream logfile("results_mr_triple_10-10-20/log_mr.txt");
 
 const int totalStep = 12000;
 const int fieldRecordStep = 80;
 const bool isParticleRecord = false;
-const int particleRecordStep = 1000000;
+const int particleRecordStep = totalStep;
 float totalTime = 0.0f;
 
 const float c = 1.0f;
 const float epsilon0 = 1.0f;
 const float mu0 = 1.0f;
-const float dOfLangdonMarderTypeCorrection = 0.001f;
+const float dOfLangdonMarderTypeCorrection = 0.005f;
 
 const int numberDensityIon = 100;
-const int numberDensityHeavyIon = 0; //backgroundでの数密度を設定すること
+const int numberDensityHeavyIon = 10; //backgroundでの数密度を設定すること
 const int numberDensityElectron = 100;
 
 const float B0 = sqrt(static_cast<float>(numberDensityElectron)) / 1.0f;
@@ -67,13 +67,13 @@ const float ymax = ny * dy - 1.5f * dy;
 const float dt = 0.25f;
 
 //追加
-const float sheatThickness = 10.0f * ionInertialLength;
-const float triggerRatio = 0.1f;
-const float xPointPosition = 500.0f * ionInertialLength;
+const float sheatThickness = 2.0f * ionInertialLength;
+const float triggerRatio = 0.0f;
+const float xPointPosition = 250.0f * ionInertialLength;
 
 //追加
 const int harrisNumIon = int(nx * numberDensityIon * 2.0f * sheatThickness);
-const int backgroundNumIon = int(0.2f * nx * ny * numberDensityIon);
+const int backgroundNumIon = int(0.10f * nx * ny * numberDensityIon);
 const long long totalNumIon = harrisNumIon + backgroundNumIon;
 const int harrisNumElectron = int(nx * numberDensityElectron * 2.0f * sheatThickness);
 const int backgroundNumElectron = int(0.2f * nx * ny * numberDensityElectron);
