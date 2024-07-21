@@ -7,11 +7,11 @@
 #include <cuda_runtime.h>
 
 
-std::string directoryname = "results_tearing_By";
+std::string directoryname = "results_tearing_By=0.01";
 std::string filenameWithoutStep = "tearing_By";
-std::ofstream logfile("results_tearing_By/log_tearing_By.txt");
+std::ofstream logfile("results_tearing_By=0.01/log_tearing_By.txt");
 
-const int totalStep = 100 * 100;
+const int totalStep = 50 * 100;
 const int fieldRecordStep = 100;
 const bool isParticleRecord = false;
 const int particleRecordStep = totalStep;
@@ -20,7 +20,7 @@ float totalTime = 0.0f;
 const float c = 1.0f;
 const float epsilon0 = 1.0f;
 const float mu0 = 1.0f;
-const float dOfLangdonMarderTypeCorrection = 0.001f;
+const float dOfLangdonMarderTypeCorrection = 0.005f;
 
 const int numberDensityIon = 100;
 const int numberDensityElectron = 100;
@@ -188,7 +188,7 @@ __global__ void initializeField_kernel(
         E[j + device_ny * i].eY = 0.0f;
         E[j + device_ny * i].eZ = 0.0f;
         B[j + device_ny * i].bX = device_B0 * tanh((j * device_dy - yCenter) / device_sheatThickness);
-        B[j + device_ny * i].bY = 0.0f; 
+        B[j + device_ny * i].bY = 0.01f * device_B0; 
         B[j + device_ny * i].bZ = 0.0f * device_B0;
     }
 }
@@ -295,7 +295,7 @@ int main()
             );
         }
         
-        pIC2D.oneStepPeriodicXWallY();
+        pIC2D.oneStepPeriodicXFreeWallY();
 
         if (step % 100 == 0) {
             pIC2D.sortParticle();
