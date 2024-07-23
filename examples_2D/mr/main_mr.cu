@@ -7,12 +7,12 @@
 #include <cuda_runtime.h>
 
 
-std::string directoryname = "results_mr";
+std::string directoryname = "results_mr_mr1";
 std::string filenameWithoutStep = "mr";
-std::ofstream logfile("results_mr/log_mr.txt");
+std::ofstream logfile("results_mr_mr1/log_mr.txt");
 
-const int totalStep = 50 * 100;
-const int fieldRecordStep = 100;
+const int totalStep = 100 * 4;
+const int fieldRecordStep = 4;
 const bool isParticleRecord = false;
 const int particleRecordStep = totalStep;
 float totalTime = 0.0f;
@@ -28,7 +28,7 @@ const int numberDensityElectron = 100;
 
 const float B0 = sqrt(static_cast<float>(numberDensityElectron)) / 1.0;
 
-const float mRatio = 25.0f;
+const float mRatio = 1.0f;
 const float mElectron = 1.0f;
 const float mIon = mRatio * mElectron;
 
@@ -49,14 +49,14 @@ const float debyeLength = sqrt(epsilon0 * tElectron / static_cast<float>(numberD
 //追加
 const float ionInertialLength = c / omegaPi;
 
-const int nx = int(50.0f * ionInertialLength);
+const int nx = int(100.0f * ionInertialLength);
 const float dx = 1.0f;
 const float xmin = 0.0f * dx; 
 const float xmax = nx * dx - 0.0f * dx;
 //const float xmin = 0.5f * dx; 
 //const float xmax = nx * dx - 1.5f * dx;
 
-const int ny = int(20.0f * ionInertialLength);
+const int ny = int(50.0f * ionInertialLength);
 const float dy = 1.0f;
 const float ymin = 1.0f * dy; 
 const float ymax = ny * dy - 1.5f * dy;
@@ -66,14 +66,14 @@ const float dt = 0.5f;
 //追加
 const float sheatThickness = 1.0f * ionInertialLength;
 const float triggerRatio = 0.1f;
-const float xPointPosition = 25.0f * ionInertialLength;
+const float xPointPosition = 50.0f * ionInertialLength;
 
 //追加
 const unsigned long long harrisNumIon = int(nx * numberDensityIon * 2.0f * sheatThickness);
-const unsigned long long backgroundNumIon = int(0.1f * nx * ny * numberDensityIon);
+const unsigned long long backgroundNumIon = int(0.2f * nx * ny * numberDensityIon);
 const unsigned long long totalNumIon = harrisNumIon + backgroundNumIon;
 const unsigned long long harrisNumElectron = int(nx * numberDensityElectron * 2.0f * sheatThickness);
-const unsigned long long backgroundNumElectron = int(0.1f * nx * ny * numberDensityElectron);
+const unsigned long long backgroundNumElectron = int(0.2f * nx * ny * numberDensityElectron);
 const unsigned long long totalNumElectron = harrisNumElectron + backgroundNumElectron;
 const unsigned long long totalNumParticles = totalNumIon + totalNumElectron;
 
@@ -86,8 +86,8 @@ const float bulkVxIon = -bulkVxElectron / tRatio;
 const float bulkVyIon = -bulkVyElectron / tRatio;
 const float bulkVzIon = -bulkVzElectron / tRatio;
 
-const float vThIonB = sqrt(2.0f * tIon * 0.1f / mIon);
-const float vThElectronB = sqrt(2.0f * tElectron * 0.1f / mElectron);
+const float vThIonB = sqrt(2.0f * tIon * 0.2f / mIon);
+const float vThElectronB = sqrt(2.0f * tElectron * 0.2f / mElectron);
 const float bulkVxElectronB = 0.0f;
 const float bulkVyElectronB = 0.0f;
 const float bulkVzElectronB = 0.0f;
@@ -189,8 +189,13 @@ __global__ void initializeField_kernel(
         E[j + device_ny * i].eX = 0.0f;
         E[j + device_ny * i].eY = 0.0f;
         E[j + device_ny * i].eZ = 0.0f;
-        B[j + device_ny * i].bX = device_B0 * tanh((j * device_dy - yCenter) / device_sheatThickness);
-        B[j + device_ny * i].bY = 0.0f; 
+        B[j + device_ny * i].bX = device_B0 * tanh((j * device_dy - yCenter) / device_sheatThickness)
+                                - device_B0 * device_triggerRatio * (j * device_dy - yCenter) / device_sheatThickness
+                                * exp(-(pow((i * device_dx - device_xPointPosition), 2) + pow((j * device_dy - yCenter), 2))
+                                / pow(2.0f * device_sheatThickness, 2));
+        B[j + device_ny * i].bY = device_B0 * device_triggerRatio * (i * device_dx - device_xPointPosition) / device_sheatThickness
+                                * exp(-(pow((i * device_dx - device_xPointPosition), 2) + pow((j * device_dy - yCenter), 2))
+                                / pow(2.0f * device_sheatThickness, 2)); 
         B[j + device_ny * i].bZ = 0.0f * device_B0;
     }
 }
