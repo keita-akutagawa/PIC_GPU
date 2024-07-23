@@ -94,7 +94,7 @@ struct CalculateRhoOfOneSpeciesFunctor {
     const float q;
 
     __device__
-    void operator()(const int& i) const {
+    void operator()(const unsigned long long& i) const {
         float cx1, cx2; 
         int xIndex1, xIndex2;
         float xOverDx;
@@ -137,10 +137,12 @@ void Filter::calculateRhoOfOneSpecies(
     };
 
     thrust::for_each(
-        thrust::counting_iterator<int>(0), 
-        thrust::counting_iterator<int>(totalNumSpecies), 
+        thrust::counting_iterator<unsigned long long>(0), 
+        thrust::counting_iterator<unsigned long long>(totalNumSpecies), 
         calculateRhoOfOneSpeciesFunctor
     );
+
+    cudaDeviceSynchronize();
 }
 
 

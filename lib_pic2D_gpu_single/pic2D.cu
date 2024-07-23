@@ -491,7 +491,15 @@ void PIC2D::saveFields(
 }
 
 
-void PIC2D::calculateMoments()
+void PIC2D::calculateFullMoments()
+{
+    calculateZerothMoments();
+    calculateFirstMoments();
+    calculateSecondMoments();
+}
+
+
+void PIC2D::calculateZerothMoments()
 {
     momentCalculater.calculateZerothMomentOfOneSpecies(
         zerothMomentIon, particlesIon, totalNumIon
@@ -499,12 +507,22 @@ void PIC2D::calculateMoments()
     momentCalculater.calculateZerothMomentOfOneSpecies(
         zerothMomentElectron, particlesElectron, totalNumElectron
     );
+}
+
+
+void PIC2D::calculateFirstMoments()
+{
     momentCalculater.calculateFirstMomentOfOneSpecies(
         firstMomentIon, particlesIon, totalNumIon
     );
     momentCalculater.calculateFirstMomentOfOneSpecies(
         firstMomentElectron, particlesElectron, totalNumElectron
     );
+}
+
+
+void PIC2D::calculateSecondMoments()
+{
     momentCalculater.calculateSecondMomentOfOneSpecies(
         secondMomentIon, particlesIon, totalNumIon
     );
@@ -514,42 +532,36 @@ void PIC2D::calculateMoments()
 }
 
 
-void PIC2D::saveMoments(
+void PIC2D::saveFullMoments(
     std::string directoryname, 
     std::string filenameWithoutStep, 
     int step
 )
 {
-    calculateMoments();
+    saveZerothMoments(directoryname, filenameWithoutStep, step);
+    saveFirstMoments(directoryname, filenameWithoutStep, step);
+    saveSecondMoments(directoryname, filenameWithoutStep, step);
+}
+
+
+void PIC2D::saveZerothMoments(
+    std::string directoryname, 
+    std::string filenameWithoutStep, 
+    int step
+)
+{
+    calculateZerothMoments();
 
     host_zerothMomentIon = zerothMomentIon;
     host_zerothMomentElectron = zerothMomentElectron;
-    host_firstMomentIon = firstMomentIon;
-    host_firstMomentElectron = firstMomentElectron;
-    host_secondMomentIon = secondMomentIon;
-    host_secondMomentElectron = secondMomentElectron;
 
     std::string filenameZerothMomentIon, filenameZerothMomentElectron;
-    std::string filenameFirstMomentIon, filenameFirstMomentElectron;
-    std::string filenameSecondMomentIon, filenameSecondMomentElectron;
-
+    
     filenameZerothMomentIon = directoryname + "/"
                             + filenameWithoutStep + "_zeroth_moment_ion_" + std::to_string(step)
                             + ".bin";
     filenameZerothMomentElectron = directoryname + "/"
                                  + filenameWithoutStep + "_zeroth_moment_electron_" + std::to_string(step)
-                                 + ".bin";
-    filenameFirstMomentIon = directoryname + "/"
-                           + filenameWithoutStep + "_first_moment_ion_" + std::to_string(step)
-                           + ".bin";
-    filenameFirstMomentElectron = directoryname + "/"
-                                + filenameWithoutStep + "_first_moment_electron_" + std::to_string(step)
-                                + ".bin";
-    filenameSecondMomentIon = directoryname + "/"
-                            + filenameWithoutStep + "_second_moment_ion_" + std::to_string(step)
-                            + ".bin";
-    filenameSecondMomentElectron = directoryname + "/"
-                                 + filenameWithoutStep + "_second_moment_electron_" + std::to_string(step)
                                  + ".bin";
     
 
@@ -572,6 +584,29 @@ void PIC2D::saveMoments(
             );
         }
     }
+}
+
+
+void PIC2D::saveFirstMoments(
+    std::string directoryname, 
+    std::string filenameWithoutStep, 
+    int step
+)
+{
+    calculateFirstMoments();
+
+    host_firstMomentIon = firstMomentIon;
+    host_firstMomentElectron = firstMomentElectron;
+
+    std::string filenameFirstMomentIon, filenameFirstMomentElectron;
+    
+    filenameFirstMomentIon = directoryname + "/"
+                           + filenameWithoutStep + "_first_moment_ion_" + std::to_string(step)
+                           + ".bin";
+    filenameFirstMomentElectron = directoryname + "/"
+                                + filenameWithoutStep + "_first_moment_electron_" + std::to_string(step)
+                                + ".bin";
+    
 
     std::ofstream ofsFirstMomentIon(filenameFirstMomentIon, std::ios::binary);
     ofsFirstMomentIon << std::fixed << std::setprecision(6);
@@ -604,6 +639,29 @@ void PIC2D::saveMoments(
             );
         }
     }
+}
+
+
+void PIC2D::saveSecondMoments(
+    std::string directoryname, 
+    std::string filenameWithoutStep, 
+    int step
+)
+{
+    calculateSecondMoments();
+
+    host_secondMomentIon = secondMomentIon;
+    host_secondMomentElectron = secondMomentElectron;
+
+    std::string filenameSecondMomentIon, filenameSecondMomentElectron;
+
+    filenameSecondMomentIon = directoryname + "/"
+                            + filenameWithoutStep + "_second_moment_ion_" + std::to_string(step)
+                            + ".bin";
+    filenameSecondMomentElectron = directoryname + "/"
+                                 + filenameWithoutStep + "_second_moment_electron_" + std::to_string(step)
+                                 + ".bin";
+    
 
     std::ofstream ofsSecondMomentIon(filenameSecondMomentIon, std::ios::binary);
     ofsSecondMomentIon << std::fixed << std::setprecision(6);
@@ -689,7 +747,7 @@ void PIC2D::saveParticle(
 
     std::ofstream ofsXIon(filenameXIon, std::ios::binary);
     ofsXIon << std::fixed << std::setprecision(6);
-    for (int i = 0; i < totalNumIon; i++) {
+    for (unsigned long long i = 0; i < totalNumIon; i++) {
         ofsXIon.write(reinterpret_cast<const char*>(&host_particlesIon[i].x), sizeof(float));
         ofsXIon.write(reinterpret_cast<const char*>(&host_particlesIon[i].y), sizeof(float));
         ofsXIon.write(reinterpret_cast<const char*>(&host_particlesIon[i].z), sizeof(float));
@@ -697,7 +755,7 @@ void PIC2D::saveParticle(
 
     std::ofstream ofsXElectron(filenameXElectron, std::ios::binary);
     ofsXElectron << std::fixed << std::setprecision(6);
-    for (int i = 0; i < totalNumElectron; i++) {
+    for (unsigned long long i = 0; i < totalNumElectron; i++) {
         ofsXElectron.write(reinterpret_cast<const char*>(&host_particlesElectron[i].x), sizeof(float));
         ofsXElectron.write(reinterpret_cast<const char*>(&host_particlesElectron[i].y), sizeof(float));
         ofsXElectron.write(reinterpret_cast<const char*>(&host_particlesElectron[i].z), sizeof(float));
@@ -708,7 +766,7 @@ void PIC2D::saveParticle(
 
     std::ofstream ofsVIon(filenameVIon, std::ios::binary);
     ofsVIon << std::fixed << std::setprecision(6);
-    for (int i = 0; i < totalNumIon; i++) {
+    for (unsigned long long i = 0; i < totalNumIon; i++) {
         vx = host_particlesIon[i].vx;
         vy = host_particlesIon[i].vy;
         vz = host_particlesIon[i].vz;
@@ -722,7 +780,7 @@ void PIC2D::saveParticle(
 
     std::ofstream ofsVElectron(filenameVElectron, std::ios::binary);
     ofsVElectron << std::fixed << std::setprecision(6);
-    for (int i = 0; i < totalNumElectron; i++) {
+    for (unsigned long long i = 0; i < totalNumElectron; i++) {
         vx = host_particlesElectron[i].vx;
         vy = host_particlesElectron[i].vy;
         vz = host_particlesElectron[i].vz;

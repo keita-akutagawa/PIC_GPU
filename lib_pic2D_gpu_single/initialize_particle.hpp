@@ -10,22 +10,22 @@ private:
 
 public:
     void uniformForPositionX(
-        int nStart, 
-        int nEnd, 
+        unsigned long long nStart, 
+        unsigned long long nEnd, 
         int seed, 
         thrust::device_vector<Particle>& particlesSpecies
     );
 
     void uniformForPositionY(
-        int nStart, 
-        int nEnd, 
+        unsigned long long nStart, 
+        unsigned long long nEnd, 
         int seed, 
         thrust::device_vector<Particle>& particlesSpecies
     );
 
     void uniformForPositionYDetail(
-        int nStart, 
-        int nEnd, 
+        unsigned long long nStart, 
+        unsigned long long nEnd, 
         int seed, 
         float ymin, 
         float ymax, 
@@ -39,23 +39,23 @@ public:
         float vxThSpecies, 
         float vyThSpecies, 
         float vzThSpecies, 
-        int nStart, 
-        int nEnd, 
+        unsigned long long nStart, 
+        unsigned long long nEnd, 
         int seed, 
         thrust::device_vector<Particle>& particlesSpecies
     );
 
     void harrisForPositionY(
-        int nStart, 
-        int nEnd, 
+        unsigned long long nStart, 
+        unsigned long long nEnd, 
         int seed, 
         float sheatThickness, 
         thrust::device_vector<Particle>& particlesSpecies
     );
 
     void harrisBackgroundForPositionY(
-        int nStart, 
-        int nEnd, 
+        unsigned long long nStart, 
+        unsigned long long nEnd, 
         int seed, 
         float sheatThickness, 
         thrust::device_vector<Particle>& particlesSpecies

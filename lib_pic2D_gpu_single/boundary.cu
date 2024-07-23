@@ -2,18 +2,18 @@
 
 
 __global__ void periodicBoundaryParticleX_kernel(
-    Particle* particlesSpecies, int totalNumSpecies
+    Particle* particlesSpecies, unsigned long long totalNumSpecies
 )
 {
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    unsigned long long i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (i < totalNumSpecies) {
-        if (particlesSpecies[i].x < device_xmin) {
-            particlesSpecies[i].x += device_xmax - device_xmin;
+        if (particlesSpecies[i].x <= device_xmin) {
+            particlesSpecies[i].x += device_xmax - device_xmin - device_EPS;
         }
 
-        if (particlesSpecies[i].x > device_xmax) {
-            particlesSpecies[i].x -= device_xmax - device_xmin;
+        if (particlesSpecies[i].x >= device_xmax) {
+            particlesSpecies[i].x -= device_xmax - device_xmin + device_EPS;
         }
     }
 }
@@ -44,19 +44,19 @@ void Boundary::periodicBoundaryParticleX(
 
 
 __global__ void conductingWallBoundaryParticleX_kernel(
-    Particle* particlesSpecies, int totalNumSpecies
+    Particle* particlesSpecies, unsigned long long totalNumSpecies
 )
 {
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    unsigned long long i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (i < totalNumSpecies) {
-        if (particlesSpecies[i].x < device_xmin) {
-            particlesSpecies[i].x = 2.0f * device_xmin - particlesSpecies[i].x;
+        if (particlesSpecies[i].x <= device_xmin) {
+            particlesSpecies[i].x = 2.0f * device_xmin - particlesSpecies[i].x + device_EPS;
             particlesSpecies[i].vx = -1.0f * particlesSpecies[i].vx;
         }
 
-        if (particlesSpecies[i].x > device_xmax) {
-            particlesSpecies[i].x = 2.0f * device_xmax - particlesSpecies[i].x;
+        if (particlesSpecies[i].x >= device_xmax) {
+            particlesSpecies[i].x = 2.0f * device_xmax - particlesSpecies[i].x - device_EPS;
             particlesSpecies[i].vx = -1.0f * particlesSpecies[i].vx;
         }
     }
@@ -89,18 +89,18 @@ void Boundary::conductingWallBoundaryParticleX(
 
 
 __global__ void periodicBoundaryParticleY_kernel(
-    Particle* particlesSpecies, int totalNumSpecies
+    Particle* particlesSpecies, unsigned long long totalNumSpecies
 )
 {
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    unsigned long long i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (i < totalNumSpecies) {
-        if (particlesSpecies[i].y < device_ymin) {
-            particlesSpecies[i].y += device_ymax - device_ymin;
+        if (particlesSpecies[i].y <= device_ymin) {
+            particlesSpecies[i].y += device_ymax - device_ymin - device_EPS;
         }
 
-        if (particlesSpecies[i].y > device_ymax) {
-            particlesSpecies[i].y -= device_ymax - device_ymin;
+        if (particlesSpecies[i].y >= device_ymax) {
+            particlesSpecies[i].y -= device_ymax - device_ymin + device_EPS;
         }
     }
 }
@@ -131,19 +131,19 @@ void Boundary::periodicBoundaryParticleY(
 
 
 __global__ void conductingWallBoundaryParticleY_kernel(
-    Particle* particlesSpecies, int totalNumSpecies
+    Particle* particlesSpecies, unsigned long long totalNumSpecies
 )
 {
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    unsigned long long i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (i < totalNumSpecies) {
-        if (particlesSpecies[i].y < device_ymin) {
-            particlesSpecies[i].y = 2.0f * device_ymin - particlesSpecies[i].y;
+        if (particlesSpecies[i].y <= device_ymin) {
+            particlesSpecies[i].y = 2.0f * device_ymin - particlesSpecies[i].y + device_EPS;
             particlesSpecies[i].vy = -1.0f * particlesSpecies[i].vy;
         }
 
-        if (particlesSpecies[i].y > device_ymax) {
-            particlesSpecies[i].y = 2.0f * device_ymax - particlesSpecies[i].y;
+        if (particlesSpecies[i].y >= device_ymax) {
+            particlesSpecies[i].y = 2.0f * device_ymax - particlesSpecies[i].y - device_EPS;
             particlesSpecies[i].vy = -1.0f * particlesSpecies[i].vy;
         }
     }

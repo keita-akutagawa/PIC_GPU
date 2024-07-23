@@ -6,6 +6,7 @@ extern const float c;
 extern const float epsilon0;
 extern const float mu0;
 extern const float dOfLangdonMarderTypeCorrection;
+extern const float EPS;
 
 extern const int nx;
 extern const float dx;
@@ -22,9 +23,9 @@ extern const float dt;
 extern const int numberDensityIon;
 extern const int numberDensityElectron;
 
-extern const long long totalNumIon;
-extern const long long totalNumElectron;
-extern const long long totalNumParticles;
+extern const unsigned long long totalNumIon;
+extern const unsigned long long totalNumElectron;
+extern const unsigned long long totalNumParticles;
 
 extern const float B0;
 
@@ -65,6 +66,7 @@ extern __constant__ float device_c;
 extern __constant__ float device_epsilon0;
 extern __constant__ float device_mu0;
 extern __constant__ float device_dOfLangdonMarderTypeCorrection;
+extern __constant__ float device_EPS;
 
 extern __constant__ int device_nx;
 extern __constant__ float device_dx;
@@ -81,9 +83,9 @@ extern __constant__ float device_dt;
 extern __constant__ int device_numberDensityIon;
 extern __constant__ int device_numberDensityElectron;
 
-extern __constant__ long long device_totalNumIon;
-extern __constant__ long long device_totalNumElectron;
-extern __constant__ long long device_totalNumParticles;
+extern __constant__ unsigned long long device_totalNumIon;
+extern __constant__ unsigned long long device_totalNumElectron;
+extern __constant__ unsigned long long device_totalNumParticles;
 
 extern __constant__ float device_B0;
 

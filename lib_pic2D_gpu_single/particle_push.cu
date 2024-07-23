@@ -105,10 +105,10 @@ ParticleField getParticleFields(
 __global__
 void pushVelocityOfOneSpecies_kernel(
     Particle* particlesSpecies, const MagneticField* B, const ElectricField* E, 
-    float q, float m, int totalNumSpecies, float dt
+    float q, float m, unsigned long long totalNumSpecies, float dt
 )
 {
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    unsigned long long i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (i < totalNumSpecies) {
         float qOverMTimesDtOver2;
@@ -179,7 +179,7 @@ void ParticlePush::pushVelocityOfOneSpecies(
     thrust::device_vector<Particle>& particlesSpecies, 
     const thrust::device_vector<MagneticField>& B,
     const thrust::device_vector<ElectricField>& E, 
-    float q, float m, int totalNumSpecies, 
+    float q, float m, unsigned long long totalNumSpecies, 
     float dt
 )
 {
@@ -201,10 +201,10 @@ void ParticlePush::pushVelocityOfOneSpecies(
 
 __global__
 void pushPositionOfOneSpecies_kernel(
-    Particle* particlesSpecies, int totalNumSpecies, float dt
+    Particle* particlesSpecies, unsigned long long totalNumSpecies, float dt
 )
 {
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    unsigned long long i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (i < totalNumSpecies) {
         float vx, vy, vz, gamma;
@@ -233,7 +233,7 @@ void pushPositionOfOneSpecies_kernel(
 
 void ParticlePush::pushPositionOfOneSpecies(
     thrust::device_vector<Particle>& particlesSpecies, 
-    int totalNumSpecies, 
+    unsigned long long totalNumSpecies, 
     float dt
 )
 {

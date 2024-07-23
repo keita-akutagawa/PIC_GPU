@@ -13,19 +13,19 @@ public:
     void calculateZerothMomentOfOneSpecies(
         thrust::device_vector<ZerothMoment>& zerothMomentOfOneSpecies, 
         const thrust::device_vector<Particle>& particlesSpecies, 
-        int totalNumSpecies
+        unsigned long long totalNumSpecies
     );
 
     void calculateFirstMomentOfOneSpecies(
         thrust::device_vector<FirstMoment>& firstMomentOfOneSpecies, 
         const thrust::device_vector<Particle>& particlesSpecies, 
-        int totalNumSpecies
+        unsigned long long totalNumSpecies
     );
 
     void calculateSecondMomentOfOneSpecies(
         thrust::device_vector<SecondMoment>& secondMomentOfOneSpecies, 
         const thrust::device_vector<Particle>& particlesSpecies, 
-        int totalNumSpecies
+        unsigned long long totalNumSpecies
     );
 
 private:

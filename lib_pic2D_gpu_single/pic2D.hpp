@@ -71,15 +71,31 @@ public:
 
     void sortParticle();
 
-    void calculateMoments();
-
     void saveFields(
         std::string directoryname, 
         std::string filenameWithoutStep, 
         int step
     );
 
-    void saveMoments(
+    void saveFullMoments(
+        std::string directoryname, 
+        std::string filenameWithoutStep, 
+        int step
+    );
+
+    void saveZerothMoments(
+        std::string directoryname, 
+        std::string filenameWithoutStep, 
+        int step
+    );
+
+    void saveFirstMoments(
+        std::string directoryname, 
+        std::string filenameWithoutStep, 
+        int step
+    );
+
+    void saveSecondMoments(
         std::string directoryname, 
         std::string filenameWithoutStep, 
         int step
@@ -92,6 +108,13 @@ public:
     );
 
 private:
+    void calculateFullMoments();
+
+    void calculateZerothMoments();
+
+    void calculateFirstMoments();
+
+    void calculateSecondMoments();
 
 };
 

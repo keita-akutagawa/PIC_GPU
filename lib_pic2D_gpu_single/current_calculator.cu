@@ -29,10 +29,10 @@ void CurrentCalculator::calculateCurrent(
 __global__ void calculateCurrentOfOneSpecies_kernel(
     CurrentField* current,
     const Particle* particlesSpecies, 
-    const float q, const int totalNumSpecies
+    const float q, const unsigned long long totalNumSpecies
 )
 {
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    unsigned long long i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (i < totalNumSpecies) {
     

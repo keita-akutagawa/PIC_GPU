@@ -7,6 +7,7 @@ void initializeDeviceConstants()
     cudaMemcpyToSymbol(device_epsilon0, &epsilon0, sizeof(float));
     cudaMemcpyToSymbol(device_mu0, &mu0, sizeof(float));
     cudaMemcpyToSymbol(device_dOfLangdonMarderTypeCorrection, &dOfLangdonMarderTypeCorrection, sizeof(float));
+    cudaMemcpyToSymbol(device_EPS, &EPS, sizeof(float));
 
     cudaMemcpyToSymbol(device_nx, &nx, sizeof(int));
     cudaMemcpyToSymbol(device_dx, &dx, sizeof(float));
@@ -23,9 +24,9 @@ void initializeDeviceConstants()
     cudaMemcpyToSymbol(device_numberDensityIon, &numberDensityIon, sizeof(int));
     cudaMemcpyToSymbol(device_numberDensityElectron, &numberDensityElectron, sizeof(int));
 
-    cudaMemcpyToSymbol(device_totalNumIon, &totalNumIon, sizeof(long long));
-    cudaMemcpyToSymbol(device_totalNumElectron, &totalNumElectron, sizeof(long long));
-    cudaMemcpyToSymbol(device_totalNumParticles, &totalNumParticles, sizeof(long long));
+    cudaMemcpyToSymbol(device_totalNumIon, &totalNumIon, sizeof(unsigned long long));
+    cudaMemcpyToSymbol(device_totalNumElectron, &totalNumElectron, sizeof(unsigned long long));
+    cudaMemcpyToSymbol(device_totalNumParticles, &totalNumParticles, sizeof(unsigned long long));
 
     cudaMemcpyToSymbol(device_B0, &B0, sizeof(float));
 

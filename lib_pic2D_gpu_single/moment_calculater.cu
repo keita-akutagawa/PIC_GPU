@@ -12,6 +12,8 @@ void MomentCalculater::resetZerothMomentOfOneSpecies(
         zerothMomentOfOneSpecies.end(), 
         ZerothMoment()
     );
+
+    cudaDeviceSynchronize();
 }
 
 void MomentCalculater::resetFirstMomentOfOneSpecies(
@@ -23,6 +25,8 @@ void MomentCalculater::resetFirstMomentOfOneSpecies(
         firstMomentOfOneSpecies.end(), 
         FirstMoment()
     );
+
+    cudaDeviceSynchronize();
 }
 
 void MomentCalculater::resetSecondMomentOfOneSpecies(
@@ -34,6 +38,8 @@ void MomentCalculater::resetSecondMomentOfOneSpecies(
         secondMomentOfOneSpecies.end(), 
         SecondMoment()
     );
+
+    cudaDeviceSynchronize();
 }
 
 //////////
@@ -43,12 +49,12 @@ struct CalculateZerothMomentOfOneSpeciesFunctor {
     const Particle* particlesSpecies;
 
     __device__
-    void operator()(const int& i) const {
+    void operator()(const unsigned long long& i) const {
         float cx1, cx2; 
-        int xIndex1, xIndex2;
+        unsigned long long xIndex1, xIndex2;
         float xOverDx;
         float cy1, cy2; 
-        int yIndex1, yIndex2;
+        unsigned long long yIndex1, yIndex2;
         float yOverDy;
 
         xOverDx = particlesSpecies[i].x / device_dx;
@@ -77,7 +83,7 @@ struct CalculateZerothMomentOfOneSpeciesFunctor {
 void MomentCalculater::calculateZerothMomentOfOneSpecies(
     thrust::device_vector<ZerothMoment>& zerothMomentOfOneSpecies, 
     const thrust::device_vector<Particle>& particlesSpecies, 
-    int totalNumSpecies
+    unsigned long long totalNumSpecies
 )
 {
     resetZerothMomentOfOneSpecies(zerothMomentOfOneSpecies);
@@ -88,10 +94,12 @@ void MomentCalculater::calculateZerothMomentOfOneSpecies(
     };
 
     thrust::for_each(
-        thrust::counting_iterator<int>(0), 
-        thrust::counting_iterator<int>(totalNumSpecies), 
+        thrust::counting_iterator<unsigned long long>(0), 
+        thrust::counting_iterator<unsigned long long>(totalNumSpecies), 
         calculateZerothMomentOfOneSpeciesFunctor
     );
+
+    cudaDeviceSynchronize();
 }
 
 
@@ -101,12 +109,12 @@ struct CalculateFirstMomentOfOneSpeciesFunctor {
     const Particle* particlesSpecies;
 
     __device__
-    void operator()(const int& i) const {
+    void operator()(const unsigned long long& i) const {
         float cx1, cx2; 
-        int xIndex1, xIndex2;
+        unsigned long long xIndex1, xIndex2;
         float xOverDx;
         float cy1, cy2; 
-        int yIndex1, yIndex2;
+        unsigned long long yIndex1, yIndex2;
         float yOverDy;
         float vx, vy, vz;
 
@@ -150,7 +158,7 @@ struct CalculateFirstMomentOfOneSpeciesFunctor {
 void MomentCalculater::calculateFirstMomentOfOneSpecies(
     thrust::device_vector<FirstMoment>& firstMomentOfOneSpecies, 
     const thrust::device_vector<Particle>& particlesSpecies, 
-    int totalNumSpecies
+    unsigned long long totalNumSpecies
 )
 {
     resetFirstMomentOfOneSpecies(firstMomentOfOneSpecies);
@@ -161,10 +169,12 @@ void MomentCalculater::calculateFirstMomentOfOneSpecies(
     };
 
     thrust::for_each(
-        thrust::counting_iterator<int>(0), 
-        thrust::counting_iterator<int>(totalNumSpecies), 
+        thrust::counting_iterator<unsigned long long>(0), 
+        thrust::counting_iterator<unsigned long long>(totalNumSpecies), 
         calculateFirstMomentOfOneSpeciesFunctor
     );
+
+    cudaDeviceSynchronize();
 }
 
 
@@ -174,7 +184,7 @@ struct CalculateSecondMomentOfOneSpeciesFunctor {
     const Particle* particlesSpecies;
 
     __device__
-    void operator()(const int& i) const {
+    void operator()(const unsigned long long& i) const {
         float cx1, cx2; 
         int xIndex1, xIndex2;
         float xOverDx;
@@ -238,7 +248,7 @@ struct CalculateSecondMomentOfOneSpeciesFunctor {
 void MomentCalculater::calculateSecondMomentOfOneSpecies(
     thrust::device_vector<SecondMoment>& secondMomentOfOneSpecies, 
     const thrust::device_vector<Particle>& particlesSpecies, 
-    int totalNumSpecies
+    unsigned long long totalNumSpecies
 )
 {
     resetSecondMomentOfOneSpecies(secondMomentOfOneSpecies);
@@ -249,10 +259,12 @@ void MomentCalculater::calculateSecondMomentOfOneSpecies(
     };
 
     thrust::for_each(
-        thrust::counting_iterator<int>(0), 
-        thrust::counting_iterator<int>(totalNumSpecies), 
+        thrust::counting_iterator<unsigned long long>(0), 
+        thrust::counting_iterator<unsigned long long>(totalNumSpecies), 
         calculateSecondMomentOfOneSpeciesFunctor
     );
+
+    cudaDeviceSynchronize();
 }
 
 
