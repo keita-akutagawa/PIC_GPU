@@ -11,7 +11,7 @@ std::string directoryname = "results_mr_mr1";
 std::string filenameWithoutStep = "mr";
 std::ofstream logfile("results_mr_mr1/log_mr.txt");
 
-const int totalStep = 100 * 4;
+const int totalStep = 200 * 4;
 const int fieldRecordStep = 4;
 const bool isParticleRecord = false;
 const int particleRecordStep = totalStep;
@@ -64,7 +64,7 @@ const float ymax = ny * dy - 1.5f * dy;
 const float dt = 0.5f;
 
 //追加
-const float sheatThickness = 1.0f * ionInertialLength;
+const float sheatThickness = 2.0f * ionInertialLength;
 const float triggerRatio = 0.1f;
 const float xPointPosition = 50.0f * ionInertialLength;
 
