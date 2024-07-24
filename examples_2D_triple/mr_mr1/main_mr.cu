@@ -7,12 +7,12 @@
 #include <cuda_runtime.h>
 
 
-std::string directoryname = "results_mr_triple_10-10-20";
+std::string directoryname = "results_mr_triple_4-16-20";
 std::string filenameWithoutStep = "mr";
-std::ofstream logfile("results_mr_triple_10-10-20/log_mr.txt");
+std::ofstream logfile("results_mr_triple_4-16-20/log_mr.txt");
 
-const int totalStep = 12000;
-const int fieldRecordStep = 80;
+const int totalStep = 60000;
+const int fieldRecordStep = 400;
 const bool isParticleRecord = false;
 const int particleRecordStep = totalStep;
 float totalTime = 0.0f;
@@ -22,16 +22,16 @@ const float epsilon0 = 1.0f;
 const float mu0 = 1.0f;
 const float dOfLangdonMarderTypeCorrection = 0.005f;
 
-const int numberDensityIon = 100;
-const int numberDensityHeavyIon = 10; //backgroundでの数密度を設定すること
-const int numberDensityElectron = 100;
+const int numberDensityIon = 50;
+const int numberDensityHeavyIon = 2; //backgroundでの数密度を設定すること
+const int numberDensityElectron = 50;
 
 const float B0 = sqrt(static_cast<float>(numberDensityElectron)) / 1.0f;
 
 const float mRatio = 1.0f;
 const float mElectron = 1.0f;
 const float mIon = mRatio * mElectron;
-const float mHeavyIon = mIon * 1836.0f;
+const float mHeavyIon = mIon * 100.0f;
 
 const float tRatio = 1.0f;
 const float tElectron = (B0 * B0 / 2.0 / mu0) / (numberDensityIon + numberDensityElectron * tRatio);
@@ -73,7 +73,7 @@ const float xPointPosition = 250.0f * ionInertialLength;
 
 //追加
 const int harrisNumIon = int(nx * numberDensityIon * 2.0f * sheatThickness);
-const int backgroundNumIon = int(0.10f * nx * ny * numberDensityIon);
+const int backgroundNumIon = int(0.16f * nx * ny * numberDensityIon);
 const long long totalNumIon = harrisNumIon + backgroundNumIon;
 const int harrisNumElectron = int(nx * numberDensityElectron * 2.0f * sheatThickness);
 const int backgroundNumElectron = int(0.2f * nx * ny * numberDensityElectron);
