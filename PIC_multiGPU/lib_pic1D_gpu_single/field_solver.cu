@@ -24,7 +24,7 @@ void FieldSolver::timeEvolutionB(
     MPIInfo& mPIInfo
 )
 {   
-    sendrecv(E, mPIInfo);
+    sendrecv_field(E, mPIInfo);
 
     int localNx = mPIInfo.localNx;
     dim3 threadsPerBlock(256);
@@ -67,8 +67,8 @@ void FieldSolver::timeEvolutionE(
     MPIInfo& mPIInfo
 )
 {
-    sendrecv(B, mPIInfo);
-    sendrecv(current, mPIInfo);
+    sendrecv_field(B, mPIInfo);
+    sendrecv_field(current, mPIInfo);
 
     int localNx = mPIInfo.localNx;
     dim3 threadsPerBlock(256);

@@ -2,17 +2,24 @@
 #include "const.hpp"
 #include "particle_struct.hpp"
 #include "field_parameter_struct.hpp"
+#include "mpi.hpp"
 
 
 class Boundary
 {
 private:
+    thrust::device_vector<Particle> sendrecvParticlesIonLeftToRight;
+    thrust::device_vector<Particle> sendrecvParticlesElectronLeftToRight; 
+    thrust::device_vector<Particle> sendrecvParticlesIonRightToLeft;
+    thrust::device_vector<Particle> sendrecvParticlesElectronRightToLeft; 
 
 public:
+    Boundary();
 
     void periodicBoundaryParticleX(
         thrust::device_vector<Particle>& particlesIon,
-        thrust::device_vector<Particle>& particlesElectron
+        thrust::device_vector<Particle>& particlesElectron, 
+        MPIInfo& mPIInfo
     );
     void conductingWallBoundaryParticleX(
         thrust::device_vector<Particle>& particlesIon,

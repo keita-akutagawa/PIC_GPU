@@ -2,6 +2,7 @@
 #include "particle_struct.hpp"
 #include "field_parameter_struct.hpp"
 #include "const.hpp"
+#include "mpi.hpp"
 
 
 class ParticlePush
@@ -15,12 +16,12 @@ public:
         thrust::device_vector<Particle>& particlesElectron, 
         const thrust::device_vector<MagneticField>& B, 
         const thrust::device_vector<ElectricField>& E, 
-        float dt
+        float dt, MPIInfo& mPIInfo
     );
     void pushPosition(
         thrust::device_vector<Particle>& particlesIon, 
         thrust::device_vector<Particle>& particlesElectron, 
-        float dt
+        float dt, MPIInfo& mPIInfo
     );
 
 private:
@@ -29,13 +30,14 @@ private:
         thrust::device_vector<Particle>& particlesSpecies, 
         const thrust::device_vector<MagneticField>& B,
         const thrust::device_vector<ElectricField>& E, 
-        float q, float m, int totalNumSpecies, 
-        float dt
+        float q, float m, int existNumSpecies, 
+        float dt, 
+        const float xminForProcs, const float xmaxForProcs
     );
 
     void pushPositionOfOneSpecies(
         thrust::device_vector<Particle>& particlesSpecies, 
-        int totalNumSpecies, 
+        int existNumSpecies, 
         float dt
     );
 };

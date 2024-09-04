@@ -4,6 +4,8 @@
 #include <thrust/device_vector.h>
 #include <mpi.h>
 #include "const.hpp"
+#include "field_parameter_struct.hpp"
+#include "particle_struct.hpp"
 
 
 struct MPIInfo
@@ -36,7 +38,7 @@ void setupInfo(MPIInfo& mPIInfo);
 
 
 template <typename FieldType>
-void sendrecv(thrust::device_vector<FieldType>& field, MPIInfo& mPIInfo)
+void sendrecv_field(thrust::device_vector<FieldType>& field, MPIInfo& mPIInfo)
 {
     int localNx = mPIInfo.localNx;
     int left = mPIInfo.getRank(-1);
@@ -61,10 +63,8 @@ void sendrecv(thrust::device_vector<FieldType>& field, MPIInfo& mPIInfo)
 }
 
 
-void sendrecv_particle(thrust::device_vector<Particle>& particlesSpecies, MPIInfo& mPIInfo)
-{
-    
-}
+void sendrecv_particle(thrust::device_vector<Particle>& particlesSpecies, MPIInfo& mPIInfo);
+
 
 #endif
 

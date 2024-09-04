@@ -46,5 +46,14 @@ struct ParticleField
         {}
 };
 
+
+struct IsExistTransform
+{
+    __host__ __device__
+    double operator()(const Particle& p) const {
+        return p.isExist ? 1 : 0;
+    }
+};
+
 #endif
 
