@@ -41,6 +41,25 @@ void setupInfo(MPIInfo& mPIInfo)
     mPIInfo.gridX = procs;
     mPIInfo.localGridX = rank;
     mPIInfo.localNx = nx / mPIInfo.gridX;
+
+    int block_lengths_particle[3] = {6, 1, 1};
+    MPI_Aint offsets_particle[3];
+    offsets_particle[0] = offsetof(Particle, x);
+    offsets_particle[1] = offsetof(Particle, gamma);
+    offsets_particle[2] = offsetof(Particle, isExist);
+    MPI_Datatype types_particle[3] = {MPI_DOUBLE, MPI_DOUBLE, MPI_INT}; // isExistをint型として扱う
+    MPI_Type_create_struct(3, block_lengths_particle, offsets_particle, types_particle, &mPIInfo.mpi_particle_type);
+    MPI_Type_commit(&mPIInfo.mpi_particle_type);
+
+    // MagneticField, ElectricField, CurrentField共通
+    int block_lengths_field[3] = {1, 1, 1};
+    MPI_Aint offsets_field[3];
+    offsets_field[0] = offsetof(MagneticField, bX);
+    offsets_field[1] = offsetof(MagneticField, bY);
+    offsets_field[2] = offsetof(MagneticField, bZ);
+    MPI_Datatype types_field[3] = {MPI_DOUBLE, MPI_DOUBLE, MPI_DOUBLE};
+    MPI_Type_create_struct(3, block_lengths_field, offsets_field, types_field, &mPIInfo.mpi_field_type);
+    MPI_Type_commit(&mPIInfo.mpi_field_type);
 }
 
 
@@ -52,29 +71,41 @@ void setupInfo(MPIInfo& mPIInfo)
 
 void sendrecv_particle(
     thrust::device_vector<Particle>& particlesSpecies, 
-    thrust::device_vector<Particle>& sendrecvParticlesSpeciesLeftToRight, 
-    thrust::device_vector<Particle>& sendrecvParticlesSpeciesRightToLeft, 
-    MPIInfo& mPIInfo)
+    thrust::host_vector<Particle>& host_sendParticlesSpeciesLeftToRight, 
+    thrust::host_vector<Particle>& host_sendParticlesSpeciesRightToLeft, 
+    thrust::host_vector<Particle>& host_recvParticlesSpeciesLeftToRight, 
+    thrust::host_vector<Particle>& host_recvParticlesSpeciesRightToLeft, 
+    const int countForSendSpeciesLeftToRight, 
+    const int countForSendSpeciesRightToLeft, 
+    MPIInfo& mPIInfo
+)
 {
     int left = mPIInfo.getRank(-1);
     int right = mPIInfo.getRank(1);
     MPI_Status st;
 
-
-    
-
-    sendFieldRight = field[localNx];
-    sendFieldLeft  = field[1];
-
-    MPI_Sendrecv(&(sendFieldRight), 3, MPI_FLOAT, right, 0, 
-                 &(recvFieldLeft),  3, MPI_FLOAT, left,  0, MPI_COMM_WORLD, &st
+    MPI_Sendrecv(
+        &(host_sendParticlesSpeciesLeftToRight[0]), 
+        countForSendSpeciesLeftToRight, 
+        mPIInfo.mpi_particle_type, 
+        left, 0, 
+        &(host_recvParticlesSpeciesLeftToRight[0]), 
+        countForSendSpeciesLeftToRight, 
+        mPIInfo.mpi_particle_type, 
+        right, 0, 
+        MPI_COMM_WORLD, &st
     );
-    MPI_Sendrecv(&(sendFieldLeft),  3, MPI_FLOAT, right, 0, 
-                 &(recvFieldRight), 3, MPI_FLOAT, left,  0, MPI_COMM_WORLD, &st
+    MPI_Sendrecv(
+        &(host_sendParticlesSpeciesRightToLeft[0]), 
+        countForSendSpeciesRightToLeft, 
+        mPIInfo.mpi_particle_type, 
+        right, 0, 
+        &(host_recvParticlesSpeciesRightToLeft[0]), 
+        countForSendSpeciesRightToLeft, 
+        mPIInfo.mpi_particle_type, 
+        left, 0, 
+        MPI_COMM_WORLD, &st
     );
-
-    field[0]           = recvFieldLeft;
-    field[localNx + 1] = recvFieldRight;
 }
 
 

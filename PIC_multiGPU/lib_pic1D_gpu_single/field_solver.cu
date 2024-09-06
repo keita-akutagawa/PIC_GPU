@@ -3,7 +3,7 @@
 
 __global__ void timeEvolutionB_kernel(
     MagneticField* B, const ElectricField* E, 
-    const float dt, int localNx
+    const double dt, int localNx
 )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -20,7 +20,7 @@ __global__ void timeEvolutionB_kernel(
 void FieldSolver::timeEvolutionB(
     thrust::device_vector<MagneticField>& B, 
     thrust::device_vector<ElectricField>& E, 
-    const float dt, 
+    const double dt, 
     MPIInfo& mPIInfo
 )
 {   
@@ -43,7 +43,7 @@ void FieldSolver::timeEvolutionB(
 
 __global__ void timeEvolutionE_kernel(
     ElectricField* E, const MagneticField* B, const CurrentField* current, 
-    const float dt, int localNx
+    const double dt, int localNx
 )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -63,7 +63,7 @@ void FieldSolver::timeEvolutionE(
     thrust::device_vector<ElectricField>& E, 
     thrust::device_vector<MagneticField>& B, 
     thrust::device_vector<CurrentField>& current, 
-    const float dt, 
+    const double dt, 
     MPIInfo& mPIInfo
 )
 {

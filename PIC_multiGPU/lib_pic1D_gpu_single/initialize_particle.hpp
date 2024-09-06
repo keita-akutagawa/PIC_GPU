@@ -12,17 +12,17 @@ public:
     void uniformForPositionX(
         int nStart, 
         int nEnd, 
-        float xmin, 
-        float xmax, 
+        double xmin, 
+        double xmax, 
         int seed, 
         thrust::device_vector<Particle>& particlesSpecies
     );
 
     void maxwellDistributionForVelocity(
-        float bulkVxSpecies, 
-        float bulkVySpecies, 
-        float bulkVzSpecies, 
-        float vThSpecies, 
+        double bulkVxSpecies, 
+        double bulkVySpecies, 
+        double bulkVzSpecies, 
+        double vThSpecies, 
         int nStart, 
         int nEnd, 
         int seed, 

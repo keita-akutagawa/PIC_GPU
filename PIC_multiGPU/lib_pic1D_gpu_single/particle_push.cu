@@ -7,11 +7,11 @@ void ParticlePush::pushVelocity(
     thrust::device_vector<Particle>& particlesElectron, 
     const thrust::device_vector<MagneticField>& B, 
     const thrust::device_vector<ElectricField>& E, 
-    float dt, MPIInfo& mPIInfo
+    double dt, MPIInfo& mPIInfo
 )
 {
-    float xminForProcs = xmin + (xmax - xmin) / mPIInfo.procs * mPIInfo.rank;
-    float xmaxForProcs = xmin + (xmax - xmin) / mPIInfo.procs * (mPIInfo.rank + 1);
+    double xminForProcs = xmin + (xmax - xmin) / mPIInfo.procs * mPIInfo.rank;
+    double xmaxForProcs = xmin + (xmax - xmin) / mPIInfo.procs * (mPIInfo.rank + 1);
 
     pushVelocityOfOneSpecies(
         particlesIon, B, E, qIon, mIon, mPIInfo.existNumIonPerProcs, dt, xminForProcs, xmaxForProcs
@@ -25,7 +25,7 @@ void ParticlePush::pushVelocity(
 void ParticlePush::pushPosition(
     thrust::device_vector<Particle>& particlesIon, 
     thrust::device_vector<Particle>& particlesElectron, 
-    float dt, MPIInfo& mPIInfo
+    double dt, MPIInfo& mPIInfo
 )
 {
     pushPositionOfOneSpecies(
@@ -44,15 +44,15 @@ ParticleField getParticleFields(
     const MagneticField* B,
     const ElectricField* E, 
     const Particle& particle, 
-    const float xminForProcs, const float xmaxForProcs
+    const double xminForProcs, const double xmaxForProcs
 )
 {
     ParticleField particleField;
 
-    float cx1, cx2; 
+    double cx1, cx2; 
     int xIndex1, xIndex2;
 
-    float xOverDx;
+    double xOverDx;
     xOverDx = (particle.x - xminForProcs + device_dx) / device_dx;
 
     xIndex1 = floorf(xOverDx);
@@ -87,23 +87,23 @@ ParticleField getParticleFields(
 __global__
 void pushVelocityOfOneSpecies_kernel(
     Particle* particlesSpecies, const MagneticField* B, const ElectricField* E, 
-    float q, float m, int existNumSpecies, float dt, 
-    const float xminForProcs, const float xmaxForProcs
+    double q, double m, int existNumSpecies, double dt, 
+    const double xminForProcs, const double xmaxForProcs
 )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (i < existNumSpecies) {
-        float qOverMTimesDtOver2;
-        float tmpForT, tmpForS, tmp1OverC2;
-        float vx, vy, vz, gamma;
-        float tx, ty, tz;
-        float sx, sy, sz;
-        float vxMinus, vyMinus, vzMinus;
-        float vx0, vy0, vz0;
-        float vxPlus, vyPlus, vzPlus; 
-        float bx, by, bz;
-        float ex, ey, ez;
+        double qOverMTimesDtOver2;
+        double tmpForT, tmpForS, tmp1OverC2;
+        double vx, vy, vz, gamma;
+        double tx, ty, tz;
+        double sx, sy, sz;
+        double vxMinus, vyMinus, vzMinus;
+        double vx0, vy0, vz0;
+        double vxPlus, vyPlus, vzPlus; 
+        double bx, by, bz;
+        double ex, ey, ez;
         ParticleField particleField;
 
         qOverMTimesDtOver2 = q / m * dt / 2.0f;
@@ -162,9 +162,9 @@ void ParticlePush::pushVelocityOfOneSpecies(
     thrust::device_vector<Particle>& particlesSpecies, 
     const thrust::device_vector<MagneticField>& B,
     const thrust::device_vector<ElectricField>& E, 
-    float q, float m, int existNumSpecies, 
-    float dt,  
-    const float xminForProcs, const float xmaxForProcs
+    double q, double m, int existNumSpecies, 
+    double dt,  
+    const double xminForProcs, const double xmaxForProcs
 )
 {
     dim3 threadsPerBlock(256);
@@ -186,15 +186,15 @@ void ParticlePush::pushVelocityOfOneSpecies(
 
 __global__
 void pushPositionOfOneSpecies_kernel(
-    Particle* particlesSpecies, int existNumSpecies, float dt
+    Particle* particlesSpecies, int existNumSpecies, double dt
 )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (i < existNumSpecies) {
-        float vx, vy, vz, gamma;
-        float x, y, z;
-        float dtOverGamma;
+        double vx, vy, vz, gamma;
+        double x, y, z;
+        double dtOverGamma;
 
         vx = particlesSpecies[i].vx;
         vy = particlesSpecies[i].vy;
@@ -219,7 +219,7 @@ void pushPositionOfOneSpecies_kernel(
 void ParticlePush::pushPositionOfOneSpecies(
     thrust::device_vector<Particle>& particlesSpecies, 
     int existNumSpecies, 
-    float dt
+    double dt
 )
 {
     dim3 threadsPerBlock(256);

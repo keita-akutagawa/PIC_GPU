@@ -9,7 +9,7 @@
 __global__ void uniformForPositionX_kernel(
     Particle* particle, 
     const int nStart, const int nEnd, 
-    const float xmin, const float xmax, 
+    const double xmin, const double xmax, 
     const int seed
 )
 {
@@ -18,7 +18,7 @@ __global__ void uniformForPositionX_kernel(
     if (i < nEnd - nStart) {
         curandState state; 
         curand_init(seed, i, 0, &state);
-        float x = curand_uniform(&state) * (xmax - xmin) + xmin;
+        double x = curand_uniform(&state) * (xmax - xmin) + xmin;
         particle[i + nStart].x = x;
         particle[i + nStart].isExist = true;
     }
@@ -28,8 +28,8 @@ __global__ void uniformForPositionX_kernel(
 void InitializeParticle::uniformForPositionX(
     int nStart, 
     int nEnd, 
-    float xmin, 
-    float xmax, 
+    double xmin, 
+    double xmax, 
     int seed, 
     thrust::device_vector<Particle>& particlesSpecies
 )
@@ -51,7 +51,7 @@ void InitializeParticle::uniformForPositionX(
 
 __global__ void maxwellDistributionForVelocity_kernel(
     Particle* particle, 
-    const float bulkVxSpecies, const float bulkVySpecies, const float bulkVzSpecies, const float vThSpecies, 
+    const double bulkVxSpecies, const double bulkVySpecies, const double bulkVzSpecies, const double vThSpecies, 
     const int nStart, const int nEnd, const int seed
 )
 {
@@ -65,7 +65,7 @@ __global__ void maxwellDistributionForVelocity_kernel(
         curand_init(seed + 1000000, 100 * i, 0, &stateVy);
         curand_init(seed + 2000000, 100 * i, 0, &stateVz);
 
-        float vx, vy, vz;
+        double vx, vy, vz;
 
         while (true) {
             vx = bulkVxSpecies + curand_normal(&stateVx) * vThSpecies;
@@ -85,10 +85,10 @@ __global__ void maxwellDistributionForVelocity_kernel(
 
 
 void InitializeParticle::maxwellDistributionForVelocity(
-    float bulkVxSpecies, 
-    float bulkVySpecies, 
-    float bulkVzSpecies, 
-    float vThSpecies, 
+    double bulkVxSpecies, 
+    double bulkVySpecies, 
+    double bulkVzSpecies, 
+    double vThSpecies, 
     int nStart, 
     int nEnd, 
     int seed, 

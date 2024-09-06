@@ -12,12 +12,12 @@ __global__ void initializeField_kernel(
 
         if (mPIInfo.isInside(i)) {
             int index = mPIInfo.globalToLocal(i);
-            E[index].eX = 0.0f;
-            E[index].eY = 0.0f;
-            E[index].eZ = 0.0f;
+            E[index].eX = 0.0;
+            E[index].eY = 0.0;
+            E[index].eZ = 0.0;
             B[index].bX = device_B0;
-            B[index].bY = 0.0f;
-            B[index].bZ = 0.0f;
+            B[index].bY = 0.0;
+            B[index].bZ = 0.0;
         }
     }
 }
@@ -77,9 +77,9 @@ int main(int argc, char** argv)
 
     cudaMemcpyToSymbol(device_totalNumElectronBeam1, &totalNumElectronBeam1, sizeof(int));
     cudaMemcpyToSymbol(device_totalNumElectronBeam2, &totalNumElectronBeam2, sizeof(int));
-    cudaMemcpyToSymbol(device_bulkVxElectronBeam, &bulkVxElectronBeam, sizeof(float));
-    cudaMemcpyToSymbol(device_bulkVxElectronBeam, &bulkVxElectronBeam, sizeof(float));
-    cudaMemcpyToSymbol(device_bulkVxElectronBeam, &bulkVxElectronBeam, sizeof(float));
+    cudaMemcpyToSymbol(device_bulkVxElectronBeam, &bulkVxElectronBeam, sizeof(double));
+    cudaMemcpyToSymbol(device_bulkVxElectronBeam, &bulkVxElectronBeam, sizeof(double));
+    cudaMemcpyToSymbol(device_bulkVxElectronBeam, &bulkVxElectronBeam, sizeof(double));
 
     mPIInfo.existNumIonPerProcs = int(totalNumIon / mPIInfo.procs);
     mPIInfo.existNumElectronPerProcs = int(totalNumElectron / mPIInfo.procs);

@@ -1,4 +1,5 @@
 #include <thrust/device_vector.h>
+#include <thrust/host_vector.h>
 #include "const.hpp"
 #include "particle_struct.hpp"
 #include "field_parameter_struct.hpp"
@@ -8,10 +9,20 @@
 class Boundary
 {
 private:
-    thrust::device_vector<Particle> sendrecvParticlesIonLeftToRight;
-    thrust::device_vector<Particle> sendrecvParticlesElectronLeftToRight; 
-    thrust::device_vector<Particle> sendrecvParticlesIonRightToLeft;
-    thrust::device_vector<Particle> sendrecvParticlesElectronRightToLeft; 
+    thrust::device_vector<Particle> sendParticlesIonLeftToRight;
+    thrust::device_vector<Particle> sendParticlesIonRightToLeft;
+    thrust::device_vector<Particle> sendParticlesElectronLeftToRight; 
+    thrust::device_vector<Particle> sendParticlesElectronRightToLeft;
+
+    thrust::host_vector<Particle> host_sendParticlesIonLeftToRight;
+    thrust::host_vector<Particle> host_sendParticlesIonRightToLeft;
+    thrust::host_vector<Particle> host_sendParticlesElectronLeftToRight; 
+    thrust::host_vector<Particle> host_sendParticlesElectronRightToLeft; 
+
+    thrust::host_vector<Particle> host_recvParticlesIonLeftToRight;
+    thrust::host_vector<Particle> host_recvParticlesIonRightToLeft;
+    thrust::host_vector<Particle> host_recvParticlesElectronLeftToRight; 
+    thrust::host_vector<Particle> host_recvParticlesElectronRightToLeft; 
 
 public:
     Boundary();

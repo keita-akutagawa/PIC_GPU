@@ -2,6 +2,7 @@
 #define MPI_H
 
 #include <thrust/device_vector.h>
+#include <thrust/host_vector.h>
 #include <mpi.h>
 #include "const.hpp"
 #include "field_parameter_struct.hpp"
@@ -21,6 +22,9 @@ struct MPIInfo
     int existNumElectronPerProcs = 0;
     int totalNumIonPerProcs = 0;
     int totalNumElectronPerProcs = 0;
+
+    MPI_Datatype mpi_particle_type;
+    MPI_Datatype mpi_field_type;
 
 
     __host__ __device__
@@ -51,11 +55,13 @@ void sendrecv_field(thrust::device_vector<FieldType>& field, MPIInfo& mPIInfo)
     sendFieldRight = field[localNx];
     sendFieldLeft  = field[1];
 
-    MPI_Sendrecv(&(sendFieldRight), 3, MPI_FLOAT, right, 0, 
-                 &(recvFieldLeft),  3, MPI_FLOAT, left,  0, MPI_COMM_WORLD, &st
+    MPI_Sendrecv(&(sendFieldRight), 1, mPIInfo.mpi_field_type, right, 0, 
+                 &(recvFieldLeft),  1, mPIInfo.mpi_field_type, left,  0, 
+                 MPI_COMM_WORLD, &st
     );
-    MPI_Sendrecv(&(sendFieldLeft),  3, MPI_FLOAT, right, 0, 
-                 &(recvFieldRight), 3, MPI_FLOAT, left,  0, MPI_COMM_WORLD, &st
+    MPI_Sendrecv(&(sendFieldLeft),  1, mPIInfo.mpi_field_type, left,  0, 
+                 &(recvFieldRight), 1, mPIInfo.mpi_field_type, right, 0, 
+                 MPI_COMM_WORLD, &st
     );
 
     field[0]           = recvFieldLeft;
@@ -63,7 +69,16 @@ void sendrecv_field(thrust::device_vector<FieldType>& field, MPIInfo& mPIInfo)
 }
 
 
-void sendrecv_particle(thrust::device_vector<Particle>& particlesSpecies, MPIInfo& mPIInfo);
+void sendrecv_particle(
+    thrust::device_vector<Particle>& particlesSpecies, 
+    thrust::host_vector<Particle>& host_sendParticlesSpeciesLeftToRight,
+    thrust::host_vector<Particle>& host_sendParticlesSpeciesRightToLeft,  
+    thrust::host_vector<Particle>& host_recvParticlesSpeciesLeftToRight,
+    thrust::host_vector<Particle>& host_recvParticlesSpeciesRightToLeft, 
+    const int countForSendSpeciesLeftToRight, 
+    const int countForSendSpeciesRightToLeft,  
+    MPIInfo& mPIInfo
+);
 
 
 #endif

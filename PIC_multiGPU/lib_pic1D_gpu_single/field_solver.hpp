@@ -13,7 +13,7 @@ public:
     void timeEvolutionB(
         thrust::device_vector<MagneticField>& B, 
         thrust::device_vector<ElectricField>& E, 
-        const float dt, 
+        const double dt, 
         MPIInfo& mPIInfo
     );
 
@@ -21,7 +21,7 @@ public:
         thrust::device_vector<ElectricField>& E, 
         thrust::device_vector<MagneticField>& B, 
         thrust::device_vector<CurrentField>& current, 
-        const float dt, 
+        const double dt, 
         MPIInfo& mPIInfo
     );
 

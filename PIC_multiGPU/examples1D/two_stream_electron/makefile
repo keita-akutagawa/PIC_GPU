@@ -1,5 +1,5 @@
 CC = nvcc
-CFLAGS = -ccbin mpic++ -gencode=arch=compute_60,code=sm_80 -rdc=true -Xcompiler "-Wall -O3"
+CFLAGS = -ccbin mpic++ -gencode=arch=compute_60,code=sm_80 -rdc=true --extended-lambda -Xcompiler "-Wall -O3"
 SRCDIR = ../../lib_pic1D_gpu_single
 SOURCES = $(wildcard $(SRCDIR)/*.cu)
 OBJS = $(patsubst $(SRCDIR)/%.cu, $(SRCDIR)/%.o, $(SOURCES))

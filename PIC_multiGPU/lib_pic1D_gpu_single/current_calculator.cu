@@ -33,17 +33,17 @@ void CurrentCalculator::calculateCurrent(
 
 __global__ void calculateCurrentOfOneSpecies_kernel(
     CurrentField* current, const Particle* particlesSpecies, 
-    const float q, const int existNumSpecies, 
-    const float xminForProcs, const float xmaxForProcs
+    const double q, const int existNumSpecies, 
+    const double xminForProcs, const double xmaxForProcs
 )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (i < existNumSpecies) {
-        float cx1, cx2; 
+        double cx1, cx2; 
         int xIndex1, xIndex2;
-        float xOverDx;
-        float qOverGamma, qVxOverGamma, qVyOverGamma, qVzOverGamma;
+        double xOverDx;
+        double qOverGamma, qVxOverGamma, qVyOverGamma, qVzOverGamma;
 
         xOverDx = (particlesSpecies[i].x - xminForProcs + device_dx) / device_dx;
 
@@ -73,8 +73,8 @@ __global__ void calculateCurrentOfOneSpecies_kernel(
 void CurrentCalculator::calculateCurrentOfOneSpecies(
     thrust::device_vector<CurrentField>& current, 
     const thrust::device_vector<Particle>& particlesSpecies, 
-    const float q, const int existNumSpecies, 
-    const float xminForProcs, const float xmaxForProcs
+    const double q, const int existNumSpecies, 
+    const double xminForProcs, const double xmaxForProcs
 )
 {
     dim3 threadsPerBlock(256);
