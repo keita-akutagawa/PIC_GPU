@@ -42,12 +42,13 @@ void setupInfo(MPIInfo& mPIInfo)
     mPIInfo.localGridX = rank;
     mPIInfo.localNx = nx / mPIInfo.gridX;
 
+
     int block_lengths_particle[3] = {6, 1, 1};
     MPI_Aint offsets_particle[3];
     offsets_particle[0] = offsetof(Particle, x);
     offsets_particle[1] = offsetof(Particle, gamma);
     offsets_particle[2] = offsetof(Particle, isExist);
-    MPI_Datatype types_particle[3] = {MPI_DOUBLE, MPI_DOUBLE, MPI_INT}; // isExistをint型として扱う
+    MPI_Datatype types_particle[3] = {MPI_DOUBLE, MPI_DOUBLE, MPI_C_BOOL};
     MPI_Type_create_struct(3, block_lengths_particle, offsets_particle, types_particle, &mPIInfo.mpi_particle_type);
     MPI_Type_commit(&mPIInfo.mpi_particle_type);
 
@@ -70,7 +71,6 @@ void setupInfo(MPIInfo& mPIInfo)
 
 
 void sendrecv_particle(
-    thrust::device_vector<Particle>& particlesSpecies, 
     thrust::host_vector<Particle>& host_sendParticlesSpeciesLeftToRight, 
     thrust::host_vector<Particle>& host_sendParticlesSpeciesRightToLeft, 
     thrust::host_vector<Particle>& host_recvParticlesSpeciesLeftToRight, 
@@ -86,22 +86,23 @@ void sendrecv_particle(
 
     MPI_Sendrecv(
         &(host_sendParticlesSpeciesLeftToRight[0]), 
-        countForSendSpeciesLeftToRight, 
+        host_sendParticlesSpeciesLeftToRight.size(), 
         mPIInfo.mpi_particle_type, 
         left, 0, 
         &(host_recvParticlesSpeciesLeftToRight[0]), 
-        countForSendSpeciesLeftToRight, 
+        host_recvParticlesSpeciesLeftToRight.size(), 
         mPIInfo.mpi_particle_type, 
         right, 0, 
         MPI_COMM_WORLD, &st
     );
+
     MPI_Sendrecv(
         &(host_sendParticlesSpeciesRightToLeft[0]), 
-        countForSendSpeciesRightToLeft, 
+        host_sendParticlesSpeciesRightToLeft.size(), 
         mPIInfo.mpi_particle_type, 
         right, 0, 
         &(host_recvParticlesSpeciesRightToLeft[0]), 
-        countForSendSpeciesRightToLeft, 
+        host_recvParticlesSpeciesRightToLeft.size(), 
         mPIInfo.mpi_particle_type, 
         left, 0, 
         MPI_COMM_WORLD, &st

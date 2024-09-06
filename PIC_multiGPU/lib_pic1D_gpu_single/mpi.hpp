@@ -70,7 +70,6 @@ void sendrecv_field(thrust::device_vector<FieldType>& field, MPIInfo& mPIInfo)
 
 
 void sendrecv_particle(
-    thrust::device_vector<Particle>& particlesSpecies, 
     thrust::host_vector<Particle>& host_sendParticlesSpeciesLeftToRight,
     thrust::host_vector<Particle>& host_sendParticlesSpeciesRightToLeft,  
     thrust::host_vector<Particle>& host_recvParticlesSpeciesLeftToRight,

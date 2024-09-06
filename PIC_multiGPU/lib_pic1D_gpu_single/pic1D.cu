@@ -40,9 +40,9 @@ __global__ void getCenterBE_kernel(
         int index = i + 1;
 
         tmpB[index].bX = B[index].bX;
-        tmpB[index].bY = 0.5f * (B[index].bY + B[index - 1].bY);
-        tmpB[index].bZ = 0.5f * (B[index].bZ + B[index - 1].bZ);
-        tmpE[index].eX = 0.5f * (E[index].eX + E[index - 1].eX);
+        tmpB[index].bY = 0.5 * (B[index].bY + B[index - 1].bY);
+        tmpB[index].bZ = 0.5 * (B[index].bZ + B[index - 1].bZ);
+        tmpE[index].eX = 0.5 * (E[index].eX + E[index - 1].eX);
         tmpE[index].eY = E[index].eY;
         tmpE[index].eZ = E[index].eZ;
     }
@@ -58,7 +58,7 @@ __global__ void getHalfCurrent_kernel(
     if (i < localNx) {
         int index = i + 1;
 
-        current[index].jX = 0.5f * (tmpCurrent[index].jX + tmpCurrent[index + 1].jX);
+        current[index].jX = 0.5 * (tmpCurrent[index].jX + tmpCurrent[index + 1].jX);
         current[index].jY = tmpCurrent[index].jY;
         current[index].jZ = tmpCurrent[index].jZ;
     }
@@ -67,7 +67,7 @@ __global__ void getHalfCurrent_kernel(
 
 void PIC1D::oneStep()
 {
-    fieldSolver.timeEvolutionB(B, E, dt/2.0, mPIInfo);
+    fieldSolver.timeEvolutionB(B, E, dt / 2.0, mPIInfo);
 
     sendrecv_field(B, mPIInfo);
     sendrecv_field(E, mPIInfo);
@@ -89,7 +89,7 @@ void PIC1D::oneStep()
     );
 
     particlePush.pushPosition(
-        particlesIon, particlesElectron, dt/2.0f, mPIInfo
+        particlesIon, particlesElectron, dt / 2.0, mPIInfo
     );
     boundary.periodicBoundaryParticleX(
         particlesIon, particlesElectron, mPIInfo
@@ -107,12 +107,12 @@ void PIC1D::oneStep()
     );
     sendrecv_field(current, mPIInfo);
 
-    fieldSolver.timeEvolutionB(B, E, dt/2.0f, mPIInfo);
+    fieldSolver.timeEvolutionB(B, E, dt / 2.0, mPIInfo);
 
     fieldSolver.timeEvolutionE(E, B, current, dt, mPIInfo);
 
     particlePush.pushPosition(
-        particlesIon, particlesElectron, dt/2.0f, mPIInfo
+        particlesIon, particlesElectron, dt / 2.0, mPIInfo
     );
     boundary.periodicBoundaryParticleX(
         particlesIon, particlesElectron, mPIInfo
@@ -131,7 +131,7 @@ void PIC1D::saveFields(
     host_current = current;
     std::string filenameB, filenameE, filenameCurrent;
     std::string filenameBEnergy, filenameEEnergy;
-    double BEnergy = 0.0f, EEnergy = 0.0f;
+    double BEnergy = 0.0, EEnergy = 0.0;
 
     filenameB = directoryname + "/"
              + filenameWithoutStep + "_B_" + std::to_string(step)
@@ -163,7 +163,7 @@ void PIC1D::saveFields(
         ofsB.write(reinterpret_cast<const char*>(&host_B[i].bZ), sizeof(double));
         BEnergy += host_B[i].bX * host_B[i].bX + host_B[i].bY * host_B[i].bY + host_B[i].bZ * host_B[i].bZ;
     }
-    BEnergy *= 0.5f / mu0;
+    BEnergy *= 0.5 / mu0;
 
     std::ofstream ofsE(filenameE, std::ios::binary);
     ofsE << std::fixed << std::setprecision(6);
@@ -173,7 +173,7 @@ void PIC1D::saveFields(
         ofsE.write(reinterpret_cast<const char*>(&host_E[i].eZ), sizeof(double));
         EEnergy += host_E[i].eX * host_E[i].eX + host_E[i].eY * host_E[i].eY + host_E[i].eZ * host_E[i].eZ;
     }
-    EEnergy *= 0.5f * epsilon0;
+    EEnergy *= 0.5 * epsilon0;
 
     std::ofstream ofsCurrent(filenameCurrent, std::ios::binary);
     ofsCurrent << std::fixed << std::setprecision(6);
@@ -245,7 +245,7 @@ void PIC1D::saveParticle(
     }
 
 
-    double vx, vy, vz, KineticEnergy = 0.0f;
+    double vx, vy, vz, KineticEnergy = 0.0;
 
     std::ofstream ofsVIon(filenameVIon, std::ios::binary);
     ofsVIon << std::fixed << std::setprecision(6);
@@ -258,7 +258,7 @@ void PIC1D::saveParticle(
         ofsVIon.write(reinterpret_cast<const char*>(&vy), sizeof(double));
         ofsVIon.write(reinterpret_cast<const char*>(&vz), sizeof(double));
 
-        KineticEnergy += 0.5f * mIon * (vx * vx + vy * vy + vz * vz);
+        KineticEnergy += 0.5 * mIon * (vx * vx + vy * vy + vz * vz);
     }
 
     std::ofstream ofsVElectron(filenameVElectron, std::ios::binary);
@@ -272,7 +272,7 @@ void PIC1D::saveParticle(
         ofsVElectron.write(reinterpret_cast<const char*>(&vy), sizeof(double));
         ofsVElectron.write(reinterpret_cast<const char*>(&vz), sizeof(double));
         
-        KineticEnergy += 0.5f * mElectron * (vx * vx + vy * vy + vz * vz);
+        KineticEnergy += 0.5 * mElectron * (vx * vx + vy * vy + vz * vz);
     }
 
     std::ofstream ofsKineticEnergy(filenameKineticEnergy, std::ios::binary);
