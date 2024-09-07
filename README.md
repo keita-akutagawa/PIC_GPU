@@ -1,10 +1,12 @@
 Particle in Cellシミュレーションのコードです。\
-C++で書かれています。
+C++とCUDAで書かれています。
 
-Thrustライブラリ(CUDA)を用いてGPU並列化を施しています。
+CUDAとThrustライブラリを用いてGPU並列化を施しています。\
+MPIによってマルチGPU並列化を施しています。
 
 【MEMO】\
-未完成です。
+今はマルチGPU並列化に取り組んでいます。
 
 ## スキーム
+- Yee lattice
 - Langdon-Marder type correction
