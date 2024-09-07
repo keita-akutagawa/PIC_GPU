@@ -23,6 +23,22 @@ struct Particle
         gamma(0.0), 
         isExist(false)
         {}
+    
+    __host__ __device__
+    Particle& operator=(const Particle& other)
+    {
+        if (this != &other) {
+            x = other.x;
+            y = other.y;
+            z = other.z;
+            vx = other.vx;
+            vy = other.vy;
+            vz = other.vz;
+            gamma = other.gamma;
+            isExist = other.isExist;
+        }
+        return *this;
+    }
 };
 
 

@@ -74,8 +74,10 @@ void sendrecv_particle(
     thrust::host_vector<Particle>& host_sendParticlesSpeciesRightToLeft,  
     thrust::host_vector<Particle>& host_recvParticlesSpeciesLeftToRight,
     thrust::host_vector<Particle>& host_recvParticlesSpeciesRightToLeft, 
-    const int countForSendSpeciesLeftToRight, 
-    const int countForSendSpeciesRightToLeft,  
+    const int& countForSendSpeciesLeftToRight, 
+    const int& countForSendSpeciesRightToLeft, 
+    int& countForRecvSpeciesLeftToRight, 
+    int& countForRecvSpeciesRightToLeft, 
     MPIInfo& mPIInfo
 );
 

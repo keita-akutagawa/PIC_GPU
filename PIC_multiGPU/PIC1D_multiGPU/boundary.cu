@@ -47,21 +47,21 @@ __global__ void periodicBoundaryParticleX_kernel(
         Particle sendParticle;
 
         if (xminForProcs <= particlesSpecies[i].x && particlesSpecies[i].x < xminForProcs + device_dx) {
-            index = atomicAdd(&(countForSendSpeciesLeftToRight[0]), 1);
+            index = atomicAdd(&(countForSendSpeciesRightToLeft[0]), 1);
             sendParticle = particlesSpecies[i];
             if (sendParticle.x < device_xmin + device_dx) {
                 sendParticle.x += device_xmax;
             }
-            sendParticlesSpeciesLeftToRight[index] = sendParticle;
+            sendParticlesSpeciesRightToLeft[index] = sendParticle;
         }
 
         if (xmaxForProcs - device_dx < particlesSpecies[i].x && particlesSpecies[i].x <= xmaxForProcs) {
-            index = atomicAdd(&(countForSendSpeciesRightToLeft[0]), 1);
+            index = atomicAdd(&(countForSendSpeciesLeftToRight[0]), 1);
             sendParticle = particlesSpecies[i];
             if (sendParticle.x > device_xmax - device_dx) {
                 sendParticle.x -= device_xmax;
             }
-            sendParticlesSpeciesRightToLeft[index] = sendParticle;
+            sendParticlesSpeciesLeftToRight[index] = sendParticle;
         }
     }
 }
@@ -73,16 +73,21 @@ void Boundary::periodicBoundaryParticleX(
     MPIInfo& mPIInfo
 )
 {
-    thrust::device_vector<int> device_countForSendIonLeftToRight(1);
-    thrust::device_vector<int> device_countForSendIonRightToLeft(1);
-    thrust::device_vector<int> device_countForSendElectronLeftToRight(1);
-    thrust::device_vector<int> device_countForSendElectronRightToLeft(1);
-    device_countForSendIonLeftToRight[0] = 0; device_countForSendIonRightToLeft[0] = 0;
-    device_countForSendElectronLeftToRight[0] = 0; device_countForSendElectronRightToLeft[0] = 0;
-    int countForSendIonLeftToRight;
-    int countForSendIonRightToLeft;
-    int countForSendElectronLeftToRight;
-    int countForSendElectronRightToLeft;
+    double xminForProcs = xmin + (xmax - xmin) / mPIInfo.procs * mPIInfo.rank;
+    double xmaxForProcs = xmin + (xmax - xmin) / mPIInfo.procs * (mPIInfo.rank + 1);
+
+    thrust::device_vector<int> device_countForSendIonLeftToRight(1, 0);
+    thrust::device_vector<int> device_countForSendIonRightToLeft(1, 0);
+    thrust::device_vector<int> device_countForSendElectronLeftToRight(1, 0);
+    thrust::device_vector<int> device_countForSendElectronRightToLeft(1, 0);
+    int countForSendIonLeftToRight = 0;
+    int countForSendIonRightToLeft = 0;
+    int countForSendElectronLeftToRight = 0;
+    int countForSendElectronRightToLeft = 0;
+    int countForRecvIonLeftToRight = 0;
+    int countForRecvIonRightToLeft = 0;
+    int countForRecvElectronLeftToRight = 0;
+    int countForRecvElectronRightToLeft = 0;
 
 
     dim3 threadsPerBlockForIon(256);
@@ -95,10 +100,8 @@ void Boundary::periodicBoundaryParticleX(
         thrust::raw_pointer_cast(device_countForSendIonLeftToRight.data()), 
         thrust::raw_pointer_cast(device_countForSendIonRightToLeft.data()), 
         mPIInfo.existNumIonPerProcs, 
-        xmin + (xmax - xmin) / mPIInfo.procs * mPIInfo.rank, 
-        xmin + (xmax - xmin) / mPIInfo.procs * (mPIInfo.rank + 1)
+        xminForProcs, xmaxForProcs 
     );
-
     cudaDeviceSynchronize();
 
     dim3 threadsPerBlockForElectron(256);
@@ -111,10 +114,8 @@ void Boundary::periodicBoundaryParticleX(
         thrust::raw_pointer_cast(device_countForSendElectronLeftToRight.data()), 
         thrust::raw_pointer_cast(device_countForSendElectronRightToLeft.data()), 
         mPIInfo.existNumElectronPerProcs, 
-        xmin + (xmax - xmin) / mPIInfo.procs * mPIInfo.rank, 
-        xmin + (xmax - xmin) / mPIInfo.procs * (mPIInfo.rank + 1)
+        xminForProcs, xmaxForProcs
     );
-
     cudaDeviceSynchronize();
 
 
@@ -125,7 +126,6 @@ void Boundary::periodicBoundaryParticleX(
         0,               
         thrust::plus<int>()
     );
-
     cudaDeviceSynchronize();
 
     mPIInfo.existNumElectronPerProcs = thrust::transform_reduce(
@@ -135,7 +135,6 @@ void Boundary::periodicBoundaryParticleX(
         0,               
         thrust::plus<int>()
     );
-
     cudaDeviceSynchronize();
 
 
@@ -169,6 +168,8 @@ void Boundary::periodicBoundaryParticleX(
         host_recvParticlesIonRightToLeft, 
         countForSendIonLeftToRight, 
         countForSendIonRightToLeft, 
+        countForRecvIonLeftToRight, 
+        countForRecvIonRightToLeft, 
         mPIInfo
     );
 
@@ -179,27 +180,30 @@ void Boundary::periodicBoundaryParticleX(
         host_recvParticlesElectronRightToLeft, 
         countForSendElectronLeftToRight, 
         countForSendElectronRightToLeft, 
+        countForRecvElectronLeftToRight, 
+        countForRecvElectronRightToLeft, 
         mPIInfo
     );
 
 
-    for (int i = 0; i < countForSendIonLeftToRight; i++) {
+    
+    for (int i = 0; i < countForRecvIonLeftToRight; i++) {
         particlesIon[mPIInfo.existNumIonPerProcs + i] = host_recvParticlesIonLeftToRight[i];
     }
-    mPIInfo.existNumIonPerProcs += countForSendIonLeftToRight;
-    for (int i = 0; i < countForSendIonRightToLeft; i++) {
+    mPIInfo.existNumIonPerProcs += countForRecvIonLeftToRight;
+    for (int i = 0; i < countForRecvIonRightToLeft; i++) {
         particlesIon[mPIInfo.existNumIonPerProcs + i] = host_recvParticlesIonRightToLeft[i];
     }
-    mPIInfo.existNumIonPerProcs += countForSendIonRightToLeft;
+    mPIInfo.existNumIonPerProcs += countForRecvIonRightToLeft;
 
-    for (int i = 0; i < countForSendElectronLeftToRight; i++) {
+    for (int i = 0; i < countForRecvElectronLeftToRight; i++) {
         particlesElectron[mPIInfo.existNumElectronPerProcs + i] = host_recvParticlesElectronLeftToRight[i];
     }
-    mPIInfo.existNumElectronPerProcs += countForSendElectronLeftToRight;
-    for (int i = 0; i < countForSendElectronRightToLeft; i++) {
+    mPIInfo.existNumElectronPerProcs += countForRecvElectronLeftToRight;
+    for (int i = 0; i < countForRecvElectronRightToLeft; i++) {
         particlesElectron[mPIInfo.existNumElectronPerProcs + i] = host_recvParticlesElectronRightToLeft[i];
     }
-    mPIInfo.existNumElectronPerProcs += countForSendElectronRightToLeft;
+    mPIInfo.existNumElectronPerProcs += countForRecvElectronRightToLeft;
 
 
     if (mPIInfo.existNumIonPerProcs > mPIInfo.totalNumIonPerProcs) printf("ERROR!\n");

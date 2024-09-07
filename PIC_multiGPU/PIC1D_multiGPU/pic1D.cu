@@ -6,8 +6,8 @@
 PIC1D::PIC1D(MPIInfo& mPIInfo)
     : mPIInfo(mPIInfo), 
 
-      particlesIon     (mPIInfo.totalNumIonPerProcs), 
-      particlesElectron(mPIInfo.totalNumElectronPerProcs), 
+      particlesIon     (mPIInfo.totalNumIonPerProcs + 10000), 
+      particlesElectron(mPIInfo.totalNumElectronPerProcs + 10000), 
       E         (mPIInfo.localNx + 2 * mPIInfo.buffer), 
       B         (mPIInfo.localNx + 2 * mPIInfo.buffer), 
       current   (mPIInfo.localNx + 2 * mPIInfo.buffer), 
@@ -15,8 +15,8 @@ PIC1D::PIC1D(MPIInfo& mPIInfo)
       tmpB      (mPIInfo.localNx + 2 * mPIInfo.buffer), 
       tmpCurrent(mPIInfo.localNx + 2 * mPIInfo.buffer), 
 
-      host_particlesIon     (mPIInfo.totalNumIonPerProcs), 
-      host_particlesElectron(mPIInfo.totalNumElectronPerProcs), 
+      host_particlesIon     (mPIInfo.totalNumIonPerProcs + 10000), 
+      host_particlesElectron(mPIInfo.totalNumElectronPerProcs + 10000), 
       host_E      (mPIInfo.localNx + 2 * mPIInfo.buffer), 
       host_B      (mPIInfo.localNx + 2 * mPIInfo.buffer), 
       host_current(mPIInfo.localNx + 2 * mPIInfo.buffer)
@@ -67,8 +67,10 @@ __global__ void getHalfCurrent_kernel(
 
 void PIC1D::oneStep()
 {
+    
     fieldSolver.timeEvolutionB(B, E, dt / 2.0, mPIInfo);
 
+    
     sendrecv_field(B, mPIInfo);
     sendrecv_field(E, mPIInfo);
     dim3 threadsPerBlock(256);
@@ -83,10 +85,12 @@ void PIC1D::oneStep()
     cudaDeviceSynchronize();
     sendrecv_field(tmpB, mPIInfo);
     sendrecv_field(tmpE, mPIInfo);
+    
 
     particlePush.pushVelocity(
         particlesIon, particlesElectron, tmpB, tmpE, dt, mPIInfo
     );
+    
 
     particlePush.pushPosition(
         particlesIon, particlesElectron, dt / 2.0, mPIInfo
@@ -110,6 +114,7 @@ void PIC1D::oneStep()
     fieldSolver.timeEvolutionB(B, E, dt / 2.0, mPIInfo);
 
     fieldSolver.timeEvolutionE(E, B, current, dt, mPIInfo);
+
 
     particlePush.pushPosition(
         particlesIon, particlesElectron, dt / 2.0, mPIInfo

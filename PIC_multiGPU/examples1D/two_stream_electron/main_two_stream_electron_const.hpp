@@ -3,8 +3,8 @@
 #include <iostream>
 #include <iomanip>
 #include <cmath>
-#include "../../lib_pic1D_gpu_single/pic1D.hpp"
-#include "../../lib_pic1D_gpu_single/mpi.hpp"
+#include "../../PIC1D_multiGPU/pic1D.hpp"
+#include "../../PIC1D_multiGPU/mpi.hpp"
 
 
 std::string directoryname = "/cfca-work/akutagawakt/PIC_multiGPU/results_two_stream_electron";
@@ -12,16 +12,16 @@ std::string filenameWithoutStep = "two_stream_electron";
 std::ofstream logfile("/cfca-work/akutagawakt/PIC_multiGPU/results_two_stream_electron/log_two_stream_electron.txt");
 
 
-const double c = 1.0f;
-const double epsilon0 = 1.0f;
-const double mu0 = 1.0f;
+const double c = 1.0;
+const double epsilon0 = 1.0;
+const double mu0 = 1.0;
 
 const int nx = 512;
-const double dx = 1.0f;
-const double xmin = 0.0f; 
+const double dx = 1.0;
+const double xmin = 0.0; 
 const double xmax = nx * dx;
 
-const double dt = 0.5f;
+const double dt = 0.5;
 
 const int numberDensityIon = 100;
 const int numberDensityElectron = 100;
@@ -33,17 +33,17 @@ const int totalNumElectronBeam2 = nx * numberDensityElectron / 2;
 const int totalNumElectron = totalNumElectronBeam1 + totalNumElectronBeam2;
 const int totalNumParticles = totalNumIon + totalNumElectron;
 
-const double B0 = sqrt(static_cast<double>(numberDensityElectron)) / 10.0f;
+const double B0 = sqrt(static_cast<double>(numberDensityElectron)) / 10.0;
 
-const double mRatio = 100.0f;
-const double mElectron = 1.0f;
+const double mRatio = 100.0;
+const double mElectron = 1.0;
 const double mIon = mRatio * mElectron;
 
-const double tRatio = 100.0f;
-const double tElectron = 0.5f * mElectron * pow(0.01f * c, 2);
+const double tRatio = 100.0;
+const double tElectron = 0.5f * mElectron * pow(0.01 * c, 2);
 const double tIon = tRatio * tElectron;
 
-const double qRatio = -1.0f;
+const double qRatio = -1.0;
 const double qElectron = -1.0f * sqrt(epsilon0 * tElectron / static_cast<double>(numberDensityElectron));
 const double qIon = qRatio * qElectron;
 
@@ -54,22 +54,22 @@ const double omegaCi = qIon * B0 / mIon;
 
 const double debyeLength = sqrt(epsilon0 * tElectron / static_cast<double>(numberDensityElectron) / pow(qElectron, 2));
 
-const double vThIon = sqrt(2.0f * tIon / mIon);
-const double vThElectron = sqrt(2.0f * tElectron / mElectron);
-const double bulkVxIon = 0.0f;
-const double bulkVyIon = 0.0f;
-const double bulkVzIon = 0.0f;
-const double bulkVxElectron = -10.0f * vThIon;
-const double bulkVyElectron = 0.0f;
-const double bulkVzElectron = 0.0f;
+const double vThIon = sqrt(2.0 * tIon / mIon);
+const double vThElectron = sqrt(2.0 * tElectron / mElectron);
+const double bulkVxIon = 0.0;
+const double bulkVyIon = 0.0;
+const double bulkVzIon = 0.0;
+const double bulkVxElectron = -10.0 * vThIon;
+const double bulkVyElectron = 0.0;
+const double bulkVzElectron = 0.0;
 //追加
-const double bulkVxElectronBeam = 10.0f * vThIon;
-const double bulkVyElectronBeam = 0.0f;
-const double bulkVzElectronBeam = 0.0f;
+const double bulkVxElectronBeam = 10.0 * vThIon;
+const double bulkVyElectronBeam = 0.0;
+const double bulkVzElectronBeam = 0.0;
 
 const int totalStep = 10000;
 const int recordStep = 100;
-double totalTime = 0.0f;
+double totalTime = 0.0;
 
 
 __constant__ double device_c;

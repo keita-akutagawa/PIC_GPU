@@ -43,13 +43,24 @@ void setupInfo(MPIInfo& mPIInfo)
     mPIInfo.localNx = nx / mPIInfo.gridX;
 
 
-    int block_lengths_particle[3] = {6, 1, 1};
-    MPI_Aint offsets_particle[3];
+    int block_lengths_particle[8] = {1, 1, 1, 1, 1, 1, 1, 1};
+    MPI_Aint offsets_particle[8];
     offsets_particle[0] = offsetof(Particle, x);
-    offsets_particle[1] = offsetof(Particle, gamma);
-    offsets_particle[2] = offsetof(Particle, isExist);
-    MPI_Datatype types_particle[3] = {MPI_DOUBLE, MPI_DOUBLE, MPI_C_BOOL};
-    MPI_Type_create_struct(3, block_lengths_particle, offsets_particle, types_particle, &mPIInfo.mpi_particle_type);
+    offsets_particle[1] = offsetof(Particle, y);
+    offsets_particle[2] = offsetof(Particle, z);
+    offsets_particle[3] = offsetof(Particle, vx);
+    offsets_particle[4] = offsetof(Particle, vy);
+    offsets_particle[5] = offsetof(Particle, vz);
+    offsets_particle[6] = offsetof(Particle, gamma);
+    offsets_particle[7] = offsetof(Particle, isExist);
+
+    MPI_Datatype types_particle[8] = {
+        MPI_DOUBLE, MPI_DOUBLE, MPI_DOUBLE, 
+        MPI_DOUBLE, MPI_DOUBLE, MPI_DOUBLE, 
+        MPI_DOUBLE, MPI_C_BOOL
+    };
+
+    MPI_Type_create_struct(8, block_lengths_particle, offsets_particle, types_particle, &mPIInfo.mpi_particle_type);
     MPI_Type_commit(&mPIInfo.mpi_particle_type);
 
     // MagneticField, ElectricField, CurrentField共通
@@ -75,8 +86,10 @@ void sendrecv_particle(
     thrust::host_vector<Particle>& host_sendParticlesSpeciesRightToLeft, 
     thrust::host_vector<Particle>& host_recvParticlesSpeciesLeftToRight, 
     thrust::host_vector<Particle>& host_recvParticlesSpeciesRightToLeft, 
-    const int countForSendSpeciesLeftToRight, 
-    const int countForSendSpeciesRightToLeft, 
+    const int& countForSendSpeciesLeftToRight, 
+    const int& countForSendSpeciesRightToLeft, 
+    int& countForRecvSpeciesLeftToRight, 
+    int& countForRecvSpeciesRightToLeft, 
     MPIInfo& mPIInfo
 )
 {
@@ -85,25 +98,49 @@ void sendrecv_particle(
     MPI_Status st;
 
     MPI_Sendrecv(
-        &(host_sendParticlesSpeciesLeftToRight[0]), 
-        host_sendParticlesSpeciesLeftToRight.size(), 
+        host_sendParticlesSpeciesLeftToRight.data(), 
+        1000, 
         mPIInfo.mpi_particle_type, 
         left, 0, 
-        &(host_recvParticlesSpeciesLeftToRight[0]), 
-        host_recvParticlesSpeciesLeftToRight.size(), 
+        host_recvParticlesSpeciesLeftToRight.data(), 
+        1000,  
         mPIInfo.mpi_particle_type, 
         right, 0, 
         MPI_COMM_WORLD, &st
     );
 
     MPI_Sendrecv(
-        &(host_sendParticlesSpeciesRightToLeft[0]), 
-        host_sendParticlesSpeciesRightToLeft.size(), 
+        host_sendParticlesSpeciesRightToLeft.data(), 
+        1000, 
         mPIInfo.mpi_particle_type, 
         right, 0, 
-        &(host_recvParticlesSpeciesRightToLeft[0]), 
-        host_recvParticlesSpeciesRightToLeft.size(), 
+        host_recvParticlesSpeciesRightToLeft.data(), 
+        1000, 
         mPIInfo.mpi_particle_type, 
+        left, 0, 
+        MPI_COMM_WORLD, &st
+    );
+
+    MPI_Sendrecv(
+        &countForSendSpeciesLeftToRight, 
+        1, 
+        MPI_INT,  
+        right, 0, 
+        &countForRecvSpeciesLeftToRight, 
+        1, 
+        MPI_INT, 
+        left, 0, 
+        MPI_COMM_WORLD, &st
+    );
+
+    MPI_Sendrecv(
+        &countForSendSpeciesRightToLeft, 
+        1, 
+        MPI_INT,  
+        right, 0, 
+        &countForRecvSpeciesRightToLeft, 
+        1, 
+        MPI_INT, 
         left, 0, 
         MPI_COMM_WORLD, &st
     );

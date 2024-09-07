@@ -18,15 +18,18 @@ void CurrentCalculator::calculateCurrent(
     MPIInfo& mPIInfo
 )
 {
+    double xminForProcs = xmin + (xmax - xmin) / mPIInfo.procs * mPIInfo.rank;
+    double xmaxForProcs = xmin + (xmax - xmin) / mPIInfo.procs * (mPIInfo.rank + 1);
+
     calculateCurrentOfOneSpecies(
         current, particlesIon, qIon, 
         mPIInfo.existNumIonPerProcs, 
-        xmin + (xmax - xmin) / mPIInfo.procs * mPIInfo.rank, xmin + (xmax - xmin) / mPIInfo.procs * (mPIInfo.rank + 1)
+        xminForProcs, xmaxForProcs
     );
     calculateCurrentOfOneSpecies(
         current, particlesElectron, qElectron, 
         mPIInfo.existNumElectronPerProcs, 
-        xmin + (xmax - xmin) / mPIInfo.procs * mPIInfo.rank, xmin + (xmax - xmin) / mPIInfo.procs * (mPIInfo.rank + 1)
+        xminForProcs, xmaxForProcs
     );
 }
 
@@ -49,9 +52,9 @@ __global__ void calculateCurrentOfOneSpecies_kernel(
 
         xIndex1 = floorf(xOverDx);
         xIndex2 = xIndex1 + 1;
-
+        
         cx1 = xOverDx - xIndex1;
-        cx2 = 1.0f - cx1;
+        cx2 = 1.0 - cx1;
 
         qOverGamma = q / particlesSpecies[i].gamma;
         qVxOverGamma = qOverGamma * particlesSpecies[i].vx;

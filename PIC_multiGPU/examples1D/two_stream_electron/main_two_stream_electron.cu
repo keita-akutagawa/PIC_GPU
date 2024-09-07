@@ -32,23 +32,23 @@ void PIC1D::initialize()
     initializeParticle.uniformForPositionX(
         0, mPIInfo.existNumElectronPerProcs, 
         xmin + (xmax - xmin) / mPIInfo.procs * mPIInfo.rank, xmin + (xmax - xmin) / mPIInfo.procs * (mPIInfo.rank + 1), 
-        100000 + mPIInfo.rank, particlesElectron
+        10000 + mPIInfo.rank, particlesElectron
     );
 
     initializeParticle.maxwellDistributionForVelocity(
         bulkVxIon, bulkVyIon, bulkVzIon, vThIon, 
         0, mPIInfo.existNumIonPerProcs, 
-        200000 + mPIInfo.rank, particlesIon
+        20000 + mPIInfo.rank, particlesIon
     );
     initializeParticle.maxwellDistributionForVelocity(
         bulkVxElectron, bulkVyElectron, bulkVzElectron, vThElectron, 
         0, mPIInfo.existNumElectronPerProcs / 2, 
-        300000 + mPIInfo.rank, particlesElectron
+        30000 + mPIInfo.rank, particlesElectron
     );
     initializeParticle.maxwellDistributionForVelocity(
         bulkVxElectronBeam, bulkVyElectronBeam, bulkVzElectronBeam, vThElectron, 
         mPIInfo.existNumElectronPerProcs / 2, mPIInfo.existNumElectronPerProcs, 
-        400000 + mPIInfo.rank, particlesElectron
+        40000 + mPIInfo.rank, particlesElectron
     );
 
 
@@ -61,6 +61,11 @@ void PIC1D::initialize()
     );
 
     cudaDeviceSynchronize();
+
+
+    boundary.periodicBoundaryParticleX(
+        particlesIon, particlesElectron, mPIInfo
+    );
 }
 
 
@@ -98,7 +103,9 @@ int main(int argc, char** argv)
                   << "omega_pe * t = " << totalStep * dt * omegaPe << std::endl;
     }
 
-    for (int step = 0; step < 1; step++) {
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    for (int step = 0; step < totalStep + 1; step++) {
         if (step % recordStep == 0) {
             if (mPIInfo.rank == 0) {
                 std::cout << std::to_string(step) << " step done : total time is "
@@ -119,10 +126,9 @@ int main(int argc, char** argv)
         if (mPIInfo.rank == 0) {
             totalTime += dt;
         }
+
+        MPI_Barrier(MPI_COMM_WORLD);
     }
-
-
-    MPI_Barrier(MPI_COMM_WORLD);
 
     MPI_Finalize();
 

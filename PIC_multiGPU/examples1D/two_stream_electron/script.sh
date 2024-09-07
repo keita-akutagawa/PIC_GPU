@@ -2,7 +2,7 @@
 #SBATCH --partition=ga40-2gpu
 #SBATCH --ntasks=2
 #SBATCH --gres=gpu:2
-#SBATCH --time=1:00:00
+#SBATCH --time=0:10:00
 #SBATCH --output=%x.o%j
 #SBATCH --error=%x.e%j
 

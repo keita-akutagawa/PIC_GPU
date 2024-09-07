@@ -14,10 +14,12 @@ void ParticlePush::pushVelocity(
     double xmaxForProcs = xmin + (xmax - xmin) / mPIInfo.procs * (mPIInfo.rank + 1);
 
     pushVelocityOfOneSpecies(
-        particlesIon, B, E, qIon, mIon, mPIInfo.existNumIonPerProcs, dt, xminForProcs, xmaxForProcs
+        particlesIon, B, E, qIon, mIon, mPIInfo.existNumIonPerProcs, dt, 
+        xminForProcs, xmaxForProcs
     );
     pushVelocityOfOneSpecies(
-        particlesElectron, B, E, qElectron, mElectron, mPIInfo.existNumElectronPerProcs, dt, xminForProcs, xmaxForProcs
+        particlesElectron, B, E, qElectron, mElectron, mPIInfo.existNumElectronPerProcs, dt, 
+        xminForProcs, xmaxForProcs
     );
 }
 
@@ -59,7 +61,7 @@ ParticleField getParticleFields(
     xIndex2 = xIndex1 + 1;
 
     cx1 = xOverDx - xIndex1;
-    cx2 = 1.0f - cx1;
+    cx2 = 1.0 - cx1;
 
     particleField.bX += B[xIndex1].bX * cx2;
     particleField.bX += B[xIndex2].bX * cx1;
@@ -106,8 +108,8 @@ void pushVelocityOfOneSpecies_kernel(
         double ex, ey, ez;
         ParticleField particleField;
 
-        qOverMTimesDtOver2 = q / m * dt / 2.0f;
-        tmp1OverC2 = 1.0f / (device_c * device_c);
+        qOverMTimesDtOver2 = q / m * dt / 2.0;
+        tmp1OverC2 = 1.0 / (device_c * device_c);
 
 
         vx = particlesSpecies[i].vx;
@@ -128,7 +130,7 @@ void pushVelocityOfOneSpecies_kernel(
         ty = tmpForT * by;
         tz = tmpForT * bz;
 
-        tmpForS = 2.0f / (1.0f + tx * tx + ty * ty + tz * tz);
+        tmpForS = 2.0 / (1.0 + tx * tx + ty * ty + tz * tz);
         sx = tmpForS * tx;
         sy = tmpForS * ty;
         sz = tmpForS * tz;
@@ -148,7 +150,7 @@ void pushVelocityOfOneSpecies_kernel(
         vx = vxPlus + qOverMTimesDtOver2 * ex;
         vy = vyPlus + qOverMTimesDtOver2 * ey;
         vz = vzPlus + qOverMTimesDtOver2 * ez;
-        gamma = sqrt(1.0f + (vx * vx + vy * vy + vz * vz) * tmp1OverC2);
+        gamma = sqrt(1.0 + (vx * vx + vy * vy + vz * vz) * tmp1OverC2);
 
         particlesSpecies[i].vx = vx;
         particlesSpecies[i].vy = vy;
