@@ -40,11 +40,11 @@ const double mElectron = 1.0;
 const double mIon = mRatio * mElectron;
 
 const double tRatio = 100.0;
-const double tElectron = 0.5f * mElectron * pow(0.01 * c, 2);
+const double tElectron = 0.5 * mElectron * pow(0.01 * c, 2);
 const double tIon = tRatio * tElectron;
 
 const double qRatio = -1.0;
-const double qElectron = -1.0f * sqrt(epsilon0 * tElectron / static_cast<double>(numberDensityElectron));
+const double qElectron = -1.0 * sqrt(epsilon0 * tElectron / static_cast<double>(numberDensityElectron));
 const double qIon = qRatio * qElectron;
 
 const double omegaPe = sqrt(static_cast<double>(numberDensityElectron) * pow(qElectron, 2) / mElectron / epsilon0);
