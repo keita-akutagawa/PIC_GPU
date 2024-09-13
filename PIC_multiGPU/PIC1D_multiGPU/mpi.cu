@@ -125,11 +125,11 @@ void sendrecv_particle(
         &countForSendSpeciesLeftToRight, 
         1, 
         MPI_INT,  
-        right, 0, 
+        left, 0, 
         &countForRecvSpeciesLeftToRight, 
         1, 
         MPI_INT, 
-        left, 0, 
+        right, 0, 
         MPI_COMM_WORLD, &st
     );
 
