@@ -47,21 +47,21 @@ __global__ void periodicBoundaryParticleX_kernel(
         Particle sendParticle;
 
         if (xminForProcs <= particlesSpecies[i].x && particlesSpecies[i].x < xminForProcs + device_dx) {
-            index = atomicAdd(&(countForSendSpeciesRightToLeft[0]), 1);
+            index = atomicAdd(&(countForSendSpeciesLeftToRight[0]), 1);
             sendParticle = particlesSpecies[i];
             if (sendParticle.x < device_xmin + device_dx) {
                 sendParticle.x += device_xmax;
             }
-            sendParticlesSpeciesRightToLeft[index] = sendParticle;
+            sendParticlesSpeciesLeftToRight[index] = sendParticle;
         }
 
         if (xmaxForProcs - device_dx < particlesSpecies[i].x && particlesSpecies[i].x <= xmaxForProcs) {
-            index = atomicAdd(&(countForSendSpeciesLeftToRight[0]), 1);
+            index = atomicAdd(&(countForSendSpeciesRightToLeft[0]), 1);
             sendParticle = particlesSpecies[i];
             if (sendParticle.x > device_xmax - device_dx) {
                 sendParticle.x -= device_xmax;
             }
-            sendParticlesSpeciesLeftToRight[index] = sendParticle;
+            sendParticlesSpeciesRightToLeft[index] = sendParticle;
         }
     }
 }
@@ -160,6 +160,19 @@ void Boundary::periodicBoundaryParticleX(
     countForSendElectronLeftToRight = device_countForSendElectronLeftToRight[0];
     countForSendElectronRightToLeft = device_countForSendElectronRightToLeft[0];
 
+    if (mPIInfo.rank == 2) {
+        for (int i = 0; i < countForSendIonLeftToRight; i++) {
+            if (host_sendParticlesIonLeftToRight[i].x > xmaxForProcs) {
+                printf("ERROR");
+            }
+        }
+        for (int i = 0; i < countForSendIonRightToLeft; i++) {
+            if (host_sendParticlesIonRightToLeft[i].x > xmaxForProcs) {
+                printf("ERROR");
+            }
+        }
+    }
+
 
     sendrecv_particle(
         host_sendParticlesIonLeftToRight, 
@@ -186,7 +199,6 @@ void Boundary::periodicBoundaryParticleX(
     );
 
 
-    
     for (int i = 0; i < countForRecvIonLeftToRight; i++) {
         particlesIon[mPIInfo.existNumIonPerProcs + i] = host_recvParticlesIonLeftToRight[i];
     }
