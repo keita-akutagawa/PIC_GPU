@@ -11,7 +11,7 @@ __global__ void timeEvolutionB_kernel(
     if (i < localNx) {
         int index = i + 1;
 
-        B[index].bX += 0.0f;
+        B[index].bX += 0.0;
         B[index].bY += (E[index + 1].eZ - E[index].eZ) / device_dx * dt;
         B[index].bZ += -(E[index + 1].eY - E[index].eY) / device_dx * dt;
     }
@@ -25,6 +25,7 @@ void FieldSolver::timeEvolutionB(
 )
 {   
     sendrecv_field(E, mPIInfo);
+    MPI_Barrier(MPI_COMM_WORLD);
 
     int localNx = mPIInfo.localNx;
     dim3 threadsPerBlock(256);
@@ -69,6 +70,7 @@ void FieldSolver::timeEvolutionE(
 {
     sendrecv_field(B, mPIInfo);
     sendrecv_field(current, mPIInfo);
+    MPI_Barrier(MPI_COMM_WORLD);
 
     int localNx = mPIInfo.localNx;
     dim3 threadsPerBlock(256);

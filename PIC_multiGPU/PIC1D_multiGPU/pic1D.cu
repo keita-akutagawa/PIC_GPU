@@ -8,18 +8,18 @@ PIC1D::PIC1D(MPIInfo& mPIInfo)
 
       particlesIon     (mPIInfo.totalNumIonPerProcs + 10000), 
       particlesElectron(mPIInfo.totalNumElectronPerProcs + 10000), 
-      E         (mPIInfo.localNx + 2 * mPIInfo.buffer), 
-      B         (mPIInfo.localNx + 2 * mPIInfo.buffer), 
-      current   (mPIInfo.localNx + 2 * mPIInfo.buffer), 
-      tmpE      (mPIInfo.localNx + 2 * mPIInfo.buffer), 
-      tmpB      (mPIInfo.localNx + 2 * mPIInfo.buffer), 
-      tmpCurrent(mPIInfo.localNx + 2 * mPIInfo.buffer), 
+      E         (mPIInfo.localNx + 2 * 1), 
+      B         (mPIInfo.localNx + 2 * 1), 
+      current   (mPIInfo.localNx + 2 * 1), 
+      tmpE      (mPIInfo.localNx + 2 * 1), 
+      tmpB      (mPIInfo.localNx + 2 * 1), 
+      tmpCurrent(mPIInfo.localNx + 2 * 1), 
 
       host_particlesIon     (mPIInfo.totalNumIonPerProcs + 10000), 
       host_particlesElectron(mPIInfo.totalNumElectronPerProcs + 10000), 
-      host_E      (mPIInfo.localNx + 2 * mPIInfo.buffer), 
-      host_B      (mPIInfo.localNx + 2 * mPIInfo.buffer), 
-      host_current(mPIInfo.localNx + 2 * mPIInfo.buffer)
+      host_E      (mPIInfo.localNx + 2 * 1), 
+      host_B      (mPIInfo.localNx + 2 * 1), 
+      host_current(mPIInfo.localNx + 2 * 1)
 {
 
     cudaMalloc(&device_mPIInfo, sizeof(MPIInfo));
@@ -69,10 +69,12 @@ void PIC1D::oneStep()
 {
     
     fieldSolver.timeEvolutionB(B, E, dt / 2.0, mPIInfo);
+    MPI_Barrier(MPI_COMM_WORLD);
 
     
     sendrecv_field(B, mPIInfo);
     sendrecv_field(E, mPIInfo);
+    MPI_Barrier(MPI_COMM_WORLD);
     dim3 threadsPerBlock(256);
     dim3 blocksPerGrid((mPIInfo.localNx + threadsPerBlock.x - 1) / threadsPerBlock.x);
     getCenterBE_kernel<<<blocksPerGrid, threadsPerBlock>>>(
@@ -83,45 +85,58 @@ void PIC1D::oneStep()
         mPIInfo.localNx
     );
     cudaDeviceSynchronize();
+    MPI_Barrier(MPI_COMM_WORLD);
     sendrecv_field(tmpB, mPIInfo);
     sendrecv_field(tmpE, mPIInfo);
-    
+    MPI_Barrier(MPI_COMM_WORLD);
+
 
     particlePush.pushVelocity(
         particlesIon, particlesElectron, tmpB, tmpE, dt, mPIInfo
     );
     
-
+    MPI_Barrier(MPI_COMM_WORLD);
     particlePush.pushPosition(
         particlesIon, particlesElectron, dt / 2.0, mPIInfo
     );
+    MPI_Barrier(MPI_COMM_WORLD);
     boundary.periodicBoundaryParticleX(
         particlesIon, particlesElectron, mPIInfo
     );
+    MPI_Barrier(MPI_COMM_WORLD);
 
     currentCalculator.resetCurrent(tmpCurrent);
     currentCalculator.calculateCurrent(
         tmpCurrent, particlesIon, particlesElectron, mPIInfo
     );
+    MPI_Barrier(MPI_COMM_WORLD);
     sendrecv_field(tmpCurrent, mPIInfo);
+    MPI_Barrier(MPI_COMM_WORLD);
     getHalfCurrent_kernel<<<blocksPerGrid, threadsPerBlock>>>(
         thrust::raw_pointer_cast(current.data()), 
         thrust::raw_pointer_cast(tmpCurrent.data()), 
         mPIInfo.localNx
     );
+    cudaDeviceSynchronize();
+    MPI_Barrier(MPI_COMM_WORLD);
     sendrecv_field(current, mPIInfo);
+    MPI_Barrier(MPI_COMM_WORLD);
+
 
     fieldSolver.timeEvolutionB(B, E, dt / 2.0, mPIInfo);
+    MPI_Barrier(MPI_COMM_WORLD);
 
     fieldSolver.timeEvolutionE(E, B, current, dt, mPIInfo);
-
-
+    MPI_Barrier(MPI_COMM_WORLD);
+    
     particlePush.pushPosition(
         particlesIon, particlesElectron, dt / 2.0, mPIInfo
     );
+    MPI_Barrier(MPI_COMM_WORLD);
     boundary.periodicBoundaryParticleX(
         particlesIon, particlesElectron, mPIInfo
     );
+    MPI_Barrier(MPI_COMM_WORLD);
 }
 
 
@@ -131,6 +146,7 @@ void PIC1D::saveFields(
     int step
 )
 {
+
     host_E = E;
     host_B = B;
     host_current = current;
@@ -162,7 +178,7 @@ void PIC1D::saveFields(
 
     std::ofstream ofsB(filenameB, std::ios::binary);
     ofsB << std::fixed << std::setprecision(6);
-    for (int i = 0; i < mPIInfo.localNx; i++) {
+    for (int i = mPIInfo.buffer; i < mPIInfo.localNx + mPIInfo.buffer; i++) {
         ofsB.write(reinterpret_cast<const char*>(&host_B[i].bX), sizeof(double));
         ofsB.write(reinterpret_cast<const char*>(&host_B[i].bY), sizeof(double));
         ofsB.write(reinterpret_cast<const char*>(&host_B[i].bZ), sizeof(double));
@@ -172,7 +188,7 @@ void PIC1D::saveFields(
 
     std::ofstream ofsE(filenameE, std::ios::binary);
     ofsE << std::fixed << std::setprecision(6);
-    for (int i = 0; i < mPIInfo.localNx; i++) {
+    for (int i = mPIInfo.buffer; i < mPIInfo.localNx + mPIInfo.buffer; i++) {
         ofsE.write(reinterpret_cast<const char*>(&host_E[i].eX), sizeof(double));
         ofsE.write(reinterpret_cast<const char*>(&host_E[i].eY), sizeof(double));
         ofsE.write(reinterpret_cast<const char*>(&host_E[i].eZ), sizeof(double));
@@ -182,7 +198,7 @@ void PIC1D::saveFields(
 
     std::ofstream ofsCurrent(filenameCurrent, std::ios::binary);
     ofsCurrent << std::fixed << std::setprecision(6);
-    for (int i = 0; i < mPIInfo.localNx; i++) {
+    for (int i = mPIInfo.buffer; i < mPIInfo.localNx + mPIInfo.buffer; i++) {
         ofsCurrent.write(reinterpret_cast<const char*>(&host_current[i].jX), sizeof(double));
         ofsCurrent.write(reinterpret_cast<const char*>(&host_current[i].jY), sizeof(double));
         ofsCurrent.write(reinterpret_cast<const char*>(&host_current[i].jZ), sizeof(double));
@@ -195,6 +211,7 @@ void PIC1D::saveFields(
     std::ofstream ofsEEnergy(filenameEEnergy, std::ios::binary);
     ofsEEnergy << std::fixed << std::setprecision(6);
     ofsEEnergy.write(reinterpret_cast<const char*>(&EEnergy), sizeof(double));
+
 }
 
 
@@ -204,6 +221,7 @@ void PIC1D::saveParticle(
     int step
 )
 {
+
     host_particlesIon = particlesIon;
     host_particlesElectron = particlesElectron;
 
@@ -283,5 +301,6 @@ void PIC1D::saveParticle(
     std::ofstream ofsKineticEnergy(filenameKineticEnergy, std::ios::binary);
     ofsKineticEnergy << std::fixed << std::setprecision(6);
     ofsKineticEnergy.write(reinterpret_cast<const char*>(&KineticEnergy), sizeof(double));
+
 }
 

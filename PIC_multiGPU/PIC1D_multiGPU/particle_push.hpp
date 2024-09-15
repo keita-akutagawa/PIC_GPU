@@ -31,7 +31,7 @@ private:
         const thrust::device_vector<MagneticField>& B,
         const thrust::device_vector<ElectricField>& E, 
         double q, double m, int existNumSpecies, 
-        double dt, 
+        double dt, int localNx, 
         const double xminForProcs, const double xmaxForProcs
     );
 

@@ -97,51 +97,53 @@ void sendrecv_particle(
     int right = mPIInfo.getRank(1);
     MPI_Status st;
 
-    MPI_Sendrecv(
-        host_sendParticlesSpeciesLeftToRight.data(), 
-        1000, 
-        mPIInfo.mpi_particle_type, 
-        left, 0, 
-        host_recvParticlesSpeciesLeftToRight.data(), 
-        1000,  
-        mPIInfo.mpi_particle_type, 
-        right, 0, 
-        MPI_COMM_WORLD, &st
-    );
 
     MPI_Sendrecv(
         host_sendParticlesSpeciesRightToLeft.data(), 
-        1000, 
+        host_sendParticlesSpeciesRightToLeft.size(), 
         mPIInfo.mpi_particle_type, 
         right, 0, 
         host_recvParticlesSpeciesRightToLeft.data(), 
-        1000, 
+        host_recvParticlesSpeciesRightToLeft.size(), 
         mPIInfo.mpi_particle_type, 
         left, 0, 
         MPI_COMM_WORLD, &st
     );
 
     MPI_Sendrecv(
-        &countForSendSpeciesLeftToRight, 
-        1, 
-        MPI_INT,  
+        host_sendParticlesSpeciesLeftToRight.data(), 
+        host_sendParticlesSpeciesLeftToRight.size(),
+        mPIInfo.mpi_particle_type, 
         left, 0, 
-        &countForRecvSpeciesLeftToRight, 
-        1, 
-        MPI_INT, 
+        host_recvParticlesSpeciesLeftToRight.data(), 
+        host_recvParticlesSpeciesLeftToRight.size(),  
+        mPIInfo.mpi_particle_type, 
         right, 0, 
         MPI_COMM_WORLD, &st
     );
 
+
     MPI_Sendrecv(
-        &countForSendSpeciesRightToLeft, 
+        &(countForSendSpeciesRightToLeft), 
         1, 
-        MPI_INT,  
+        MPI_INT, 
         right, 0, 
-        &countForRecvSpeciesRightToLeft, 
+        &(countForRecvSpeciesRightToLeft), 
         1, 
         MPI_INT, 
         left, 0, 
+        MPI_COMM_WORLD, &st
+    );
+
+    MPI_Sendrecv(
+        &(countForSendSpeciesLeftToRight), 
+        1, 
+        MPI_INT,  
+        left, 0, 
+        &(countForRecvSpeciesLeftToRight), 
+        1, 
+        MPI_INT, 
+        right, 0, 
         MPI_COMM_WORLD, &st
     );
 }

@@ -14,11 +14,11 @@ void ParticlePush::pushVelocity(
     double xmaxForProcs = xmin + (xmax - xmin) / mPIInfo.procs * (mPIInfo.rank + 1);
 
     pushVelocityOfOneSpecies(
-        particlesIon, B, E, qIon, mIon, mPIInfo.existNumIonPerProcs, dt, 
+        particlesIon, B, E, qIon, mIon, mPIInfo.existNumIonPerProcs, dt, mPIInfo.localNx, 
         xminForProcs, xmaxForProcs
     );
     pushVelocityOfOneSpecies(
-        particlesElectron, B, E, qElectron, mElectron, mPIInfo.existNumElectronPerProcs, dt, 
+        particlesElectron, B, E, qElectron, mElectron, mPIInfo.existNumElectronPerProcs, dt, mPIInfo.localNx, 
         xminForProcs, xmaxForProcs
     );
 }
@@ -46,6 +46,7 @@ ParticleField getParticleFields(
     const MagneticField* B,
     const ElectricField* E, 
     const Particle& particle, 
+    const int localNx, 
     const double xminForProcs, const double xmaxForProcs
 )
 {
@@ -59,6 +60,7 @@ ParticleField getParticleFields(
 
     xIndex1 = floorf(xOverDx);
     xIndex2 = xIndex1 + 1;
+    xIndex2 = (xIndex2 == localNx + 2) ? 0 : xIndex2;
 
     cx1 = xOverDx - xIndex1;
     cx2 = 1.0 - cx1;
@@ -89,7 +91,7 @@ ParticleField getParticleFields(
 __global__
 void pushVelocityOfOneSpecies_kernel(
     Particle* particlesSpecies, const MagneticField* B, const ElectricField* E, 
-    double q, double m, int existNumSpecies, double dt, 
+    double q, double m, int existNumSpecies, double dt, int localNx, 
     const double xminForProcs, const double xmaxForProcs
 )
 {
@@ -117,7 +119,7 @@ void pushVelocityOfOneSpecies_kernel(
         vz = particlesSpecies[i].vz;
         gamma = particlesSpecies[i].gamma;
 
-        particleField = getParticleFields(B, E, particlesSpecies[i], xminForProcs, xmaxForProcs);
+        particleField = getParticleFields(B, E, particlesSpecies[i], localNx, xminForProcs, xmaxForProcs);
         bx = particleField.bX;
         by = particleField.bY;
         bz = particleField.bZ; 
@@ -165,7 +167,7 @@ void ParticlePush::pushVelocityOfOneSpecies(
     const thrust::device_vector<MagneticField>& B,
     const thrust::device_vector<ElectricField>& E, 
     double q, double m, int existNumSpecies, 
-    double dt,  
+    double dt, int localNx, 
     const double xminForProcs, const double xmaxForProcs
 )
 {
@@ -176,7 +178,7 @@ void ParticlePush::pushVelocityOfOneSpecies(
         thrust::raw_pointer_cast(particlesSpecies.data()), 
         thrust::raw_pointer_cast(B.data()), 
         thrust::raw_pointer_cast(E.data()), 
-        q, m, existNumSpecies, dt, 
+        q, m, existNumSpecies, dt, localNx, 
         xminForProcs, xmaxForProcs
     );
 

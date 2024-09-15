@@ -27,28 +27,28 @@ void PIC1D::initialize()
     initializeParticle.uniformForPositionX(
         0, mPIInfo.existNumIonPerProcs, 
         xmin + (xmax - xmin) / mPIInfo.procs * mPIInfo.rank, xmin + (xmax - xmin) / mPIInfo.procs * (mPIInfo.rank + 1), 
-        0 + mPIInfo.rank, particlesIon
+        0, particlesIon, mPIInfo
     );
     initializeParticle.uniformForPositionX(
         0, mPIInfo.existNumElectronPerProcs, 
         xmin + (xmax - xmin) / mPIInfo.procs * mPIInfo.rank, xmin + (xmax - xmin) / mPIInfo.procs * (mPIInfo.rank + 1), 
-        10000 + mPIInfo.rank, particlesElectron
+        100000, particlesElectron, mPIInfo
     );
 
     initializeParticle.maxwellDistributionForVelocity(
         bulkVxIon, bulkVyIon, bulkVzIon, vThIon, 
         0, mPIInfo.existNumIonPerProcs, 
-        20000 + mPIInfo.rank, particlesIon
+        200000, particlesIon, mPIInfo
     );
     initializeParticle.maxwellDistributionForVelocity(
         bulkVxElectron, bulkVyElectron, bulkVzElectron, vThElectron, 
         0, mPIInfo.existNumElectronPerProcs / 2, 
-        30000 + mPIInfo.rank, particlesElectron
+        300000, particlesElectron, mPIInfo
     );
     initializeParticle.maxwellDistributionForVelocity(
         bulkVxElectronBeam, bulkVyElectronBeam, bulkVzElectronBeam, vThElectron, 
         mPIInfo.existNumElectronPerProcs / 2, mPIInfo.existNumElectronPerProcs, 
-        40000 + mPIInfo.rank, particlesElectron
+        400000, particlesElectron, mPIInfo
     );
 
 
@@ -66,6 +66,9 @@ void PIC1D::initialize()
     boundary.periodicBoundaryParticleX(
         particlesIon, particlesElectron, mPIInfo
     );
+    sendrecv_field(B, mPIInfo);
+    sendrecv_field(E, mPIInfo);
+    sendrecv_field(current, mPIInfo);
 }
 
 

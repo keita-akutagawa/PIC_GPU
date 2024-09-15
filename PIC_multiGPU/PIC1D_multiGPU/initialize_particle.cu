@@ -10,14 +10,14 @@ __global__ void uniformForPositionX_kernel(
     Particle* particle, 
     const int nStart, const int nEnd, 
     const double xmin, const double xmax, 
-    const int seed
+    const int seed, int offset
 )
 {
     unsigned long long i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (i < nEnd - nStart) {
         curandState state; 
-        curand_init(seed, i, 0, &state);
+        curand_init(seed, offset + i, 0, &state);
         double x = curand_uniform(&state) * (xmax - xmin) + xmin;
         particle[i + nStart].x = x;
         particle[i + nStart].isExist = true;
@@ -31,7 +31,8 @@ void InitializeParticle::uniformForPositionX(
     double xmin, 
     double xmax, 
     int seed, 
-    thrust::device_vector<Particle>& particlesSpecies
+    thrust::device_vector<Particle>& particlesSpecies, 
+    MPIInfo& mPIInfo
 )
 {
     dim3 threadsPerBlock(256);
@@ -41,7 +42,7 @@ void InitializeParticle::uniformForPositionX(
         thrust::raw_pointer_cast(particlesSpecies.data()), 
         nStart, nEnd, 
         xmin, xmax, 
-        seed
+        seed, mPIInfo.rank * (nEnd - nStart)
     );
 
     cudaDeviceSynchronize();
@@ -52,7 +53,7 @@ void InitializeParticle::uniformForPositionX(
 __global__ void maxwellDistributionForVelocity_kernel(
     Particle* particle, 
     const double bulkVxSpecies, const double bulkVySpecies, const double bulkVzSpecies, const double vThSpecies, 
-    const int nStart, const int nEnd, const int seed
+    const int nStart, const int nEnd, const int seed, int offset
 )
 {
     unsigned long long i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -61,9 +62,9 @@ __global__ void maxwellDistributionForVelocity_kernel(
         curandState stateVx; 
         curandState stateVy; 
         curandState stateVz; 
-        curand_init(seed,           100 * i, 0, &stateVx);
-        curand_init(seed + 1000000, 100 * i, 0, &stateVy);
-        curand_init(seed + 2000000, 100 * i, 0, &stateVz);
+        curand_init(seed,           100 * (offset + i), 0, &stateVx);
+        curand_init(seed + 1000000, 100 * (offset + i), 0, &stateVy);
+        curand_init(seed + 2000000, 100 * (offset + i), 0, &stateVz);
 
         double vx, vy, vz;
 
@@ -92,7 +93,8 @@ void InitializeParticle::maxwellDistributionForVelocity(
     int nStart, 
     int nEnd, 
     int seed, 
-    thrust::device_vector<Particle>& particlesSpecies
+    thrust::device_vector<Particle>& particlesSpecies, 
+    MPIInfo& mPIInfo
 )
 {
     dim3 threadsPerBlock(256);
@@ -101,9 +103,8 @@ void InitializeParticle::maxwellDistributionForVelocity(
     maxwellDistributionForVelocity_kernel<<<blocksPerGrid, threadsPerBlock>>>(
         thrust::raw_pointer_cast(particlesSpecies.data()), 
         bulkVxSpecies, bulkVySpecies, bulkVzSpecies, vThSpecies, 
-        nStart, nEnd, seed
+        nStart, nEnd, seed, mPIInfo.rank * (nEnd - nStart)
     );
 
     cudaDeviceSynchronize();
 }
-

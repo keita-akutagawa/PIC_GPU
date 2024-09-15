@@ -2,6 +2,7 @@
 #include <thrust/host_vector.h>
 #include "const.hpp"
 #include "particle_struct.hpp"
+#include "mpi.hpp"
 
 
 class InitializeParticle
@@ -15,7 +16,8 @@ public:
         double xmin, 
         double xmax, 
         int seed, 
-        thrust::device_vector<Particle>& particlesSpecies
+        thrust::device_vector<Particle>& particlesSpecies, 
+        MPIInfo& mPIInfo
     );
 
     void maxwellDistributionForVelocity(
@@ -26,7 +28,8 @@ public:
         int nStart, 
         int nEnd, 
         int seed, 
-        thrust::device_vector<Particle>& particlesSpecies
+        thrust::device_vector<Particle>& particlesSpecies, 
+        MPIInfo& mPIInfo
     );
 
 private:

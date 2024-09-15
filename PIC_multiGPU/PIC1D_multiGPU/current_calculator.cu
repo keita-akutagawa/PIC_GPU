@@ -23,12 +23,12 @@ void CurrentCalculator::calculateCurrent(
 
     calculateCurrentOfOneSpecies(
         current, particlesIon, qIon, 
-        mPIInfo.existNumIonPerProcs, 
+        mPIInfo.existNumIonPerProcs, mPIInfo.localNx, 
         xminForProcs, xmaxForProcs
     );
     calculateCurrentOfOneSpecies(
         current, particlesElectron, qElectron, 
-        mPIInfo.existNumElectronPerProcs, 
+        mPIInfo.existNumElectronPerProcs, mPIInfo.localNx, 
         xminForProcs, xmaxForProcs
     );
 }
@@ -37,6 +37,7 @@ void CurrentCalculator::calculateCurrent(
 __global__ void calculateCurrentOfOneSpecies_kernel(
     CurrentField* current, const Particle* particlesSpecies, 
     const double q, const int existNumSpecies, 
+    int localNx, 
     const double xminForProcs, const double xmaxForProcs
 )
 {
@@ -52,6 +53,7 @@ __global__ void calculateCurrentOfOneSpecies_kernel(
 
         xIndex1 = floorf(xOverDx);
         xIndex2 = xIndex1 + 1;
+        xIndex2 = (xIndex2 == localNx + 2) ? 0 : xIndex2;
         
         cx1 = xOverDx - xIndex1;
         cx2 = 1.0 - cx1;
@@ -76,7 +78,7 @@ __global__ void calculateCurrentOfOneSpecies_kernel(
 void CurrentCalculator::calculateCurrentOfOneSpecies(
     thrust::device_vector<CurrentField>& current, 
     const thrust::device_vector<Particle>& particlesSpecies, 
-    const double q, const int existNumSpecies, 
+    const double q, const int existNumSpecies, int localNx, 
     const double xminForProcs, const double xmaxForProcs
 )
 {
@@ -87,6 +89,7 @@ void CurrentCalculator::calculateCurrentOfOneSpecies(
         thrust::raw_pointer_cast(current.data()), 
         thrust::raw_pointer_cast(particlesSpecies.data()), 
         q, existNumSpecies, 
+        localNx,  
         xminForProcs, xmaxForProcs
     );
 }

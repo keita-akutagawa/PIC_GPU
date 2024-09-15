@@ -34,11 +34,11 @@ __global__ void periodicBoundaryParticleX_kernel(
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (i < existNumSpecies) {
-        if (particlesSpecies[i].x < xminForProcs) {
+        if (particlesSpecies[i].x <= xminForProcs) {
             particlesSpecies[i].isExist = false;
         }
 
-        if (particlesSpecies[i].x > xmaxForProcs) {
+        if (particlesSpecies[i].x >= xmaxForProcs) {
             particlesSpecies[i].isExist = false;
         }
 
@@ -46,19 +46,19 @@ __global__ void periodicBoundaryParticleX_kernel(
         int index;
         Particle sendParticle;
 
-        if (xminForProcs <= particlesSpecies[i].x && particlesSpecies[i].x < xminForProcs + device_dx) {
+        if (xminForProcs < particlesSpecies[i].x && particlesSpecies[i].x <= xminForProcs + device_dx) {
             index = atomicAdd(&(countForSendSpeciesLeftToRight[0]), 1);
             sendParticle = particlesSpecies[i];
-            if (sendParticle.x < device_xmin + device_dx) {
+            if (sendParticle.x <= device_xmin + device_dx) {
                 sendParticle.x += device_xmax;
             }
             sendParticlesSpeciesLeftToRight[index] = sendParticle;
         }
 
-        if (xmaxForProcs - device_dx < particlesSpecies[i].x && particlesSpecies[i].x <= xmaxForProcs) {
+        if (xmaxForProcs - device_dx <= particlesSpecies[i].x && particlesSpecies[i].x < xmaxForProcs) {
             index = atomicAdd(&(countForSendSpeciesRightToLeft[0]), 1);
             sendParticle = particlesSpecies[i];
-            if (sendParticle.x > device_xmax - device_dx) {
+            if (sendParticle.x >= device_xmax - device_dx) {
                 sendParticle.x -= device_xmax;
             }
             sendParticlesSpeciesRightToLeft[index] = sendParticle;
@@ -160,19 +160,8 @@ void Boundary::periodicBoundaryParticleX(
     countForSendElectronLeftToRight = device_countForSendElectronLeftToRight[0];
     countForSendElectronRightToLeft = device_countForSendElectronRightToLeft[0];
 
-    if (mPIInfo.rank == 2) {
-        for (int i = 0; i < countForSendIonLeftToRight; i++) {
-            if (host_sendParticlesIonLeftToRight[i].x > xmaxForProcs) {
-                printf("ERROR");
-            }
-        }
-        for (int i = 0; i < countForSendIonRightToLeft; i++) {
-            if (host_sendParticlesIonRightToLeft[i].x > xmaxForProcs) {
-                printf("ERROR");
-            }
-        }
-    }
 
+    MPI_Barrier(MPI_COMM_WORLD);
 
     sendrecv_particle(
         host_sendParticlesIonLeftToRight, 
@@ -197,6 +186,8 @@ void Boundary::periodicBoundaryParticleX(
         countForRecvElectronRightToLeft, 
         mPIInfo
     );
+
+    MPI_Barrier(MPI_COMM_WORLD);
 
 
     for (int i = 0; i < countForRecvIonLeftToRight; i++) {
