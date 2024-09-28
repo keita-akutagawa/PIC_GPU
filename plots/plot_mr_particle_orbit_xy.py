@@ -7,7 +7,7 @@ c = 1.0
 epsilon0 = 1.0
 mu_0 = 1.0 / (epsilon0 * c**2)
 m_unit = 1.0
-r_m = 1.0 / 2.0
+r_m = 1.0 / 4.0
 m_electron = 1 * m_unit
 m_ion = m_electron / r_m
 t_r = 1.0
@@ -56,16 +56,16 @@ t_max = step * dt
 fig = plt.figure(figsize=(12, 6))
 ax1 = fig.add_subplot(111)
 
-mr = "mr2"
+mr = "mr4"
 dirname = f"/fs51/akutagawakt/PIC/results_mr_{mr}"
 savedir = f"pictures_{mr}"
 savename = f"{mr}_orbit_xy.png"
 
-record_start = 2000
-record_stop = 8000
-interval = 40
+record_start = 8000
+record_stop = 12000
+interval = 80
 
-step = record_start
+step = 10000
 filename = f"{dirname}/mr_x_electron_{step}.bin"
 with open(filename, 'rb') as f:
     x_electron = np.fromfile(f, dtype=np.float32)
@@ -73,15 +73,18 @@ x_electron = x_electron.reshape(-1, 3).T
 total_electron = x_electron.shape[0]
 
 target_index = np.where(
-    (45 < x_electron[0] / ion_inertial_length) & (x_electron[0] / ion_inertial_length < 55) &
-    (-1 < (x_electron[1] - 0.5 * y_max) / ion_inertial_length) & ((x_electron[1] - 0.5 * y_max) / ion_inertial_length < 1)
+    (36 < x_electron[0] / ion_inertial_length) & (x_electron[0] / ion_inertial_length < 37) &
+    (-0.5 < (x_electron[1] - 0.5 * y_max) / ion_inertial_length) & ((x_electron[1] - 0.5 * y_max) / ion_inertial_length < 0.5)
 )[0]
+#target_index = np.where(
+#    (49.5 < x_electron[0] / ion_inertial_length) & (x_electron[0] / ion_inertial_length < 50.5) &
+#    (-0.5 < (x_electron[1] - 0.5 * y_max) / ion_inertial_length) & ((x_electron[1] - 0.5 * y_max) / ion_inertial_length < 0.5)
+#)[0]
 
-particle_index = target_index[1000:1010]
+particle_index = np.random.choice(target_index, 5)
 
 data_size = np.dtype(np.float32).itemsize
 particle_position = np.zeros([len(particle_index), 3, int((record_stop - record_start) / interval + 1)])
-
 
 for step in range(record_start, record_stop + 1, interval):
     
@@ -95,17 +98,22 @@ for step in range(record_start, record_stop + 1, interval):
             for i in range(3):
                 f.seek(data_size * (index * 3 + i), 0)
                 x_electron_single[i] = np.fromfile(f, dtype=np.float32, count=1)[0]
-
+            
             particle_position[count, :, int((step - record_start) / interval)] = x_electron_single
 
             count += 1
 
 
 for i in range(len(particle_index)):
-    ax1.scatter(
+    ax1.plot(
          particle_position[i, 0, :] / ion_inertial_length, 
         (particle_position[i, 1, :] - 0.5 * (y_max - y_min)) / ion_inertial_length, 
-        marker='o', s=5
+        marker='o', markersize=3
+    )
+    ax1.scatter(
+        particle_position[i, 0, int((10000 - record_start) / interval)] / ion_inertial_length, 
+        (particle_position[i, 1, int((10000 - record_start) / interval)] - 0.5 * (y_max - y_min)) / ion_inertial_length, 
+        marker='*', s=200
     )
 
 ax1.set_xlabel('$x / \lambda_i$', fontsize=20)

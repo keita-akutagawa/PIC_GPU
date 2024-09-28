@@ -62,22 +62,26 @@ savedir = f"pictures_{mr}"
 savename = f"{mr}_orbit_xz.png"
 
 record_start = 2000
-record_stop = 8000
+record_stop = 5000
 interval = 40
 
-step = record_start
+step = 2000
 filename = f"{dirname}/mr_x_electron_{step}.bin"
 with open(filename, 'rb') as f:
     x_electron = np.fromfile(f, dtype=np.float32)
 x_electron = x_electron.reshape(-1, 3).T
 total_electron = x_electron.shape[0]
 
+#target_index = np.where(
+#    (35 < x_electron[0] / ion_inertial_length) & (x_electron[0] / ion_inertial_length < 45) &
+#    (-1 < (x_electron[1] - 0.5 * y_max) / ion_inertial_length) & ((x_electron[1] - 0.5 * y_max) / ion_inertial_length < 1)
+#)[0]
 target_index = np.where(
-    (45 < x_electron[0] / ion_inertial_length) & (x_electron[0] / ion_inertial_length < 55) &
-    (-1 < (x_electron[1] - 0.5 * y_max) / ion_inertial_length) & ((x_electron[1] - 0.5 * y_max) / ion_inertial_length < 1)
+    (48 < x_electron[0] / ion_inertial_length) & (x_electron[0] / ion_inertial_length < 52) &
+    (2 < (x_electron[1] - 0.5 * y_max) / ion_inertial_length) & ((x_electron[1] - 0.5 * y_max) / ion_inertial_length < 5)
 )[0]
 
-particle_index = target_index[1000:1010]
+particle_index = np.random.choice(target_index, 10)
 
 data_size = np.dtype(np.float32).itemsize
 particle_position = np.zeros([len(particle_index), 3, int((record_stop - record_start) / interval + 1)])
@@ -102,10 +106,10 @@ for step in range(record_start, record_stop + 1, interval):
 
 
 for i in range(len(particle_index)):
-    ax1.scatter(
+    ax1.plot(
          particle_position[i, 0, :] / ion_inertial_length, 
         (particle_position[i, 2, :]) / ion_inertial_length, 
-        marker='o', s=5
+        marker='o', markersize=3
     )
 
 ax1.set_xlabel('$x / \lambda_i$', fontsize=20)

@@ -63,7 +63,7 @@ ax1 = fig.add_subplot(111)
 
 mr = "mr2"
 dirname = f"/fs51/akutagawakt/PIC/results_mr_{mr}"
-step = 3000 #4520
+step = 4520
 savedir = f"pictures_{mr}"
 savename = f"{step}_{mr}_position_distribution.png"
     
@@ -80,12 +80,12 @@ gamma = np.sqrt(1.0 + np.linalg.norm(v_electron, axis=0)**2 / c**2)
 v_electron /= gamma 
 
     
-#target_index = np.where(
-#    (35 < x_electron[0] / ion_inertial_length) & (x_electron[0] / ion_inertial_length < 45) &
-#    (-5 < (x_electron[1] - 0.5 * y_max) / ion_inertial_length) & ((x_electron[1] - 0.5 * y_max) / ion_inertial_length < 5)
-#)[0]
 target_index = np.where(
-    (49 < x_electron[0] / ion_inertial_length) & (x_electron[0] / ion_inertial_length < 51) &
+    (35 < x_electron[0] / ion_inertial_length) & (x_electron[0] / ion_inertial_length < 45) &
+    (-1 < (x_electron[1] - 0.5 * y_max) / ion_inertial_length) & ((x_electron[1] - 0.5 * y_max) / ion_inertial_length < 1)
+)[0]
+target_index = np.where(
+    (45 < x_electron[0] / ion_inertial_length) & (x_electron[0] / ion_inertial_length < 55) &
     (-1 < (x_electron[1] - 0.5 * y_max) / ion_inertial_length) & ((x_electron[1] - 0.5 * y_max) / ion_inertial_length < 1)
 )[0]
 

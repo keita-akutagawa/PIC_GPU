@@ -7,7 +7,7 @@ c = 1.0
 epsilon0 = 1.0
 mu_0 = 1.0 / (epsilon0 * c**2)
 m_unit = 1.0
-r_m = 1.0 / 8.0
+r_m = 1.0 / 2.0
 m_electron = 1 * m_unit
 m_ion = m_electron / r_m
 t_r = 1.0
@@ -26,7 +26,7 @@ omega_pi = np.sqrt(n_i * q_ion**2 / m_ion / epsilon0)
 omega_ce = q_electron * B0 / m_electron
 omega_ci = q_ion * B0 / m_ion
 ion_inertial_length = c / omega_pi
-sheat_thickness = 1.0 * ion_inertial_length
+sheat_thickness = 2.0 * ion_inertial_length
 v_electron = np.array([0.0, 0.0, c * debye_length / sheat_thickness * np.sqrt(2 / (1.0 + 1/t_r))])
 v_ion = -v_electron / t_r
 v_thermal_electron = np.sqrt(2.0 * T_e / m_electron)
@@ -62,8 +62,8 @@ n_particle = n_ion + n_ion_background + n_electron + n_electron_background
 fig = plt.figure(figsize=(12, 6))
 ax1 = fig.add_subplot(111)
 
-dirname = "/fs51/akutagawakt/PIC/results_mr_mr8"
-savedir = "pictures_mr8_diffusion_region"
+dirname = "/fs51/akutagawakt/PIC/results_mr_mr2"
+savedir = "pictures_mr2_diffusion_region"
 
 kernel_size = 3
 
@@ -72,10 +72,14 @@ def apply_convolution(data, kernel_size=3):
     return np.convolve(data.flatten(), kernel.flatten(), mode='same').reshape(data.shape)
 
 
-start_y_enlarged = np.arange(10.5, 41, 1)
-start_points_enlarged = np.array([np.ones(start_y_enlarged.shape)*50.0, start_y_enlarged])
+start_y_enlarged = np.arange(-19, 20, 2.0)
+start_points_enlarged = np.array(
+    [np.ones(start_y_enlarged.shape) * 0.5 * (x_max - x_min) / ion_inertial_length, start_y_enlarged]
+)
 
-for step in range(0, 40000+1, 800):
+total_steps = 4000 * 2
+interval = 20 * 2
+for step in range(0, total_steps + 1, interval):
     ax1.clear()
 
     savename = f"{savedir}/{step}.png"
@@ -113,9 +117,9 @@ for step in range(0, 40000+1, 800):
                 + current[1] * (E[1] + bulk_electron[2] * B[0] - bulk_electron[0] * B[2])
                 + current[2] * (E[2] + bulk_electron[0] * B[1] - bulk_electron[1] * B[0]))
 
-    X, Y = np.meshgrid(x_coordinate, y_coordinate) / ion_inertial_length
+    X, Y = np.meshgrid(x_coordinate, y_coordinate - 0.5 * (y_max - y_min)) / ion_inertial_length
 
-    mappable = ax1.pcolormesh(X, Y, De, cmap='jet', vmin=-0.2, vmax=0.2)
+    mappable = ax1.pcolormesh(X, Y, De, cmap='jet', vmin=-1.0, vmax=1.0)
     if step == 0:
         cbar = fig.colorbar(mappable, ax=ax1)
         cbar.set_label(r'$D_e$', fontsize=24)
@@ -124,8 +128,8 @@ for step in range(0, 40000+1, 800):
     ax1.text(0.5, 1.05, f"{step / (1.0 / omega_ci / dt):.2f}" + r" $\Omega_{{ci}}^{{-1}}$", ha='center', transform=ax1.transAxes, fontsize=32)
     ax1.set_xlabel('$x / \lambda_i$', fontsize=20)
     ax1.set_ylabel('$y / \lambda_i$', fontsize=20)
-    ax1.set_xlim(0.0, x_max/ion_inertial_length + 0.1)
-    ax1.set_ylim(0, y_max/ion_inertial_length + 0.1)
+    ax1.set_xlim(0, 100)
+    ax1.set_ylim(-20, 20)
     ax1.tick_params(labelsize=18)
 
     fig.savefig(savename, dpi=200)

@@ -7,17 +7,17 @@ c = 1.0
 epsilon0 = 1.0
 mu_0 = 1.0 / (epsilon0 * c**2)
 m_unit = 1.0
-r_m = 1.0 / 9.0
+r_m = 1.0 / 2.0
 m_electron = 1 * m_unit
 m_ion = m_electron / r_m
 t_r = 1.0
 r_q = 1.0
-n_e = 10 #ここは手動で調整すること
+n_e = 100 #ここは手動で調整すること
 B0 = np.sqrt(n_e) / 1.0
 n_i = int(n_e / r_q)
 T_i  = (B0**2 / 2.0 / mu_0) / (n_i + n_e * t_r)
 T_e = T_i * t_r
-q_unit = np.sqrt(epsilon0 * T_e / n_e) / 1.0
+q_unit = np.sqrt(epsilon0 * T_e / n_e) / 5.0
 q_electron = -1 * q_unit
 q_ion = r_q * q_unit
 debye_length = np.sqrt(epsilon0 * T_e / n_e / q_electron**2)
@@ -40,8 +40,8 @@ beta_i = n_i * T_i / (B0**2 / 2 / mu_0)
 
 dx = 1.0
 dy = 1.0
-n_x = int(ion_inertial_length * 1000.0)
-n_y = int(ion_inertial_length * 500.0)
+n_x = int(ion_inertial_length * 100.0)
+n_y = int(ion_inertial_length * 50.0)
 x_min = 0.0 * dx
 y_min = 0.0 * dy
 x_max = n_x * dx
@@ -52,19 +52,13 @@ dt = 0.5
 step = 10000
 t_max = step * dt
 
-n_ion = int(n_x * n_i * 2.0 * sheat_thickness)
-n_electron = int(n_ion * abs(q_ion / q_electron))
-n_ion_background = int(n_x * n_y * 0.2 * n_i)
-n_electron_background = int(n_x * n_y * 0.2 * n_e)
-n_particle = n_ion + n_ion_background + n_electron + n_electron_background
-
 
 fig = plt.figure(figsize=(12, 6))
 ax1 = fig.add_subplot(111)
 
-dirname = "/cfca-work/akutagawakt/PIC/results_mr_thick_small_2"
+dirname = "/fs51/akutagawakt/PIC/results_mr_mr2"
 
-step = 18000
+step = 3000
 savename = f"{step}.png"
 
 filename = f"{dirname}/mr_zeroth_moment_ion_{step}.bin"
@@ -76,14 +70,14 @@ with open(filename, 'rb') as f:
     B = np.fromfile(f, dtype=np.float32)
 B = B.reshape(n_x, n_y, 3).T
 
-n_i_average = np.sum(zeroth_moment_ion[int(n_y/2), int(n_x/2) - 100 : int(n_x/2) + 100]) / 200.0
+n_i_average = np.sum(zeroth_moment_ion[int(n_y/2), int(n_x/2) - 50 : int(n_x/2) + 50]) / 100.0
 omega_pi_average = np.sqrt(n_i_average * q_ion**2 / m_ion / epsilon0)
 ion_inertial_length_average = c / omega_pi_average
-Bx_average = np.sum(B[0, :, int(n_x/2) - 100 : int(n_x/2) + 100], axis=1) / 200.0
+Bx_average = np.sum(B[0, :, int(n_x/2) - 50 : int(n_x/2) + 50], axis=1) / 100.0
 print(ion_inertial_length, ion_inertial_length_average)
 
 ax1.plot((y_coordinate - 0.5 * (y_max - y_min)) / ion_inertial_length, Bx_average, label="simulation")
-for i in range(1, 8):
+for i in [0.5, 1.0, 1.5, 2.0, 2.5, 3.0]:
     ax1.plot((y_coordinate - 0.5 * (y_max - y_min)) / ion_inertial_length, 
               B0 * np.tanh((y_coordinate - 0.5 * (y_max - y_min)) / (i * ion_inertial_length_average)), 
               label=f"thickness = {i}" + r"$\lambda_i$")

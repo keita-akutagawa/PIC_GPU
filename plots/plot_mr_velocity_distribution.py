@@ -1,5 +1,6 @@
 import numpy as np 
 import matplotlib.pyplot as plt 
+from matplotlib.patches import Circle
 import os 
 
 
@@ -7,7 +8,7 @@ c = 1.0
 epsilon0 = 1.0
 mu_0 = 1.0 / (epsilon0 * c**2)
 m_unit = 1.0
-r_m = 1.0 / 2.0
+r_m = 1.0 / 4.0
 m_electron = 1 * m_unit
 m_ion = m_electron / r_m
 t_r = 1.0
@@ -58,12 +59,12 @@ n_ion_background = int(n_x * n_y * 0.2 * n_i)
 n_electron_background = int(n_x * n_y * 0.2 * n_e)
 n_particle = n_ion + n_ion_background + n_electron + n_electron_background
 
-fig = plt.figure(figsize=(12, 6))
+fig = plt.figure(figsize=(8, 6))
 ax1 = fig.add_subplot(111)
 
-mr = "mr2"
+mr = "mr4"
 dirname = f"/fs51/akutagawakt/PIC/results_mr_{mr}"
-step = 3000 #4520
+step = 10000
 savedir = f"pictures_{mr}"
 savename = f"{step}_{mr}_velocity_distribution.png"
     
@@ -78,25 +79,40 @@ v_electron = v_electron.reshape(-1, 3).T
 #出力結果は4元速度なので気を付けること
 gamma = np.sqrt(1.0 + np.linalg.norm(v_electron, axis=0)**2 / c**2)
 v_electron /= gamma 
-
     
 #target_index = np.where(
-#    (35 < x_electron[0] / ion_inertial_length) & (x_electron[0] / ion_inertial_length < 45) &
-#    (-5 < (x_electron[1] - 0.5 * y_max) / ion_inertial_length) & ((x_electron[1] - 0.5 * y_max) / ion_inertial_length < 5)
+#    (59.0 < x_electron[0] / ion_inertial_length) & (x_electron[0] / ion_inertial_length < 60.0) &
+#    (-0.5 < (x_electron[1] - 0.5 * y_max) / ion_inertial_length) & ((x_electron[1] - 0.5 * y_max) / ion_inertial_length < 0.5)
 #)[0]
 target_index = np.where(
-    (45 < x_electron[0] / ion_inertial_length) & (x_electron[0] / ion_inertial_length < 55) &
-    (-1 < (x_electron[1] - 0.5 * y_max) / ion_inertial_length) & ((x_electron[1] - 0.5 * y_max) / ion_inertial_length < 1)
+    (47.0 < x_electron[0] / ion_inertial_length) & (x_electron[0] / ion_inertial_length < 50.0) &
+    (-0.5 < (x_electron[1] - 0.5 * y_max) / ion_inertial_length) & ((x_electron[1] - 0.5 * y_max) / ion_inertial_length < 0.5)
 )[0]
+#target_index = np.where(
+#    (44.0 < x_electron[0] / ion_inertial_length) & (x_electron[0] / ion_inertial_length < 46.0) &
+#    (-0.5 < (x_electron[1] - 0.5 * y_max) / ion_inertial_length) & ((x_electron[1] - 0.5 * y_max) / ion_inertial_length < 0.5)
+#)[0]
 
 particle_velocity = v_electron[:, target_index]
 
-ax1.hist(particle_velocity[0] / c, bins=200, color='blue')
+hist = ax1.hist2d(
+    particle_velocity[0] / V_Ae, particle_velocity[2] / V_Ae, 
+    bins=[100, 100], range=[[-1.0, 1.0], [-1.0, 1.0]], cmap='jet'
+)
 
-ax1.set_xlabel('$v_z / c$', fontsize=20)
-ax1.set_ylabel('count', fontsize=20)
+cbar = plt.colorbar(hist[3], ax=ax1)
+cbar.set_label("count", fontsize=24, rotation=90, labelpad=10)
+cbar.ax.tick_params(labelsize=20)
+
+ax1.grid()
+ax1.set_xlabel(r'$v_x / V_{Ae}$', fontsize=20)
+ax1.set_ylabel(r'$v_z / V_{Ae}$', fontsize=20)
 ax1.set_xlim(-1.0, 1.0)
-#ax1.set_ylim(0, 100)
+ax1.set_ylim(-1.0, 1.0)
+ax1.set_xticks(np.arange(-1.0, 1.1, 0.5))
+ax1.set_yticks(np.arange(-1.0, 1.1, 0.5))
+ax1.tick_params(labelsize=18)
+ax1.set_aspect("equal")
 
 fig.savefig(savename, dpi=200)
 

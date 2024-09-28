@@ -7,7 +7,7 @@ c = 1.0
 epsilon0 = 1.0
 mu_0 = 1.0 / (epsilon0 * c**2)
 m_unit = 1.0
-r_m = 1 / 2
+r_m = 1 / 4
 m_electron = 1 * m_unit
 m_ion = m_electron / r_m
 t_r = 1.0/1.0
@@ -62,10 +62,10 @@ n_particle = n_ion + n_ion_background + n_electron + n_electron_background
 fig = plt.figure(figsize=(18, 6))
 ax1 = fig.add_subplot(111)
 
-dirname = "/fs51/akutagawakt/PIC/results_mr_mr2"
+dirname = "/fs51/akutagawakt/PIC/results_mr_mr4"
 
-step = 4000
-savename = f"{step}_mr2.png"
+step = 10000
+savename = f"{step}_mr4_De.png"
 
 filename = f"{dirname}/mr_zeroth_moment_ion_{step}.bin"
 with open(filename, 'rb') as f:
