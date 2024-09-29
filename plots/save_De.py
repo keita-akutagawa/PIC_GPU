@@ -7,7 +7,7 @@ c = 1.0
 epsilon0 = 1.0
 mu_0 = 1.0 / (epsilon0 * c**2)
 m_unit = 1.0
-r_m = 1 / 8
+r_m = 1 / 32
 m_electron = 1 * m_unit
 m_ion = m_electron / r_m
 t_r = 1.0/1.0
@@ -40,7 +40,7 @@ beta_i = n_i * T_i / (B0**2 / 2 / mu_0)
 
 dx = 1.0
 dy = 1.0
-n_x = int(ion_inertial_length * 100.0)
+n_x = int(ion_inertial_length * 100.0) + 1
 n_y = int(ion_inertial_length * 50.0)
 x_min = 0.0 * dx
 y_min = 0.0 * dy
@@ -59,10 +59,7 @@ n_electron_background = int(n_x * n_y * 0.2 * n_e)
 n_particle = n_ion + n_ion_background + n_electron + n_electron_background
 
 
-fig = plt.figure(figsize=(18, 6))
-ax1 = fig.add_subplot(111)
-
-dirname = "/fs51/akutagawakt/PIC/results_mr_mr8"
+dirname = "/fs51/akutagawakt/PIC/results_mr_mr32"
 
 kernel_size = 3
 
@@ -71,8 +68,8 @@ def apply_convolution(data, kernel_size=3):
     return np.convolve(data.flatten(), kernel.flatten(), mode='same').reshape(data.shape)
 
 
-step = 20000
-savename = f"{step}_mr8_De.png"
+step = 108800
+savename = f"{step}_mr32_De.npy"
 
 filename = f"{dirname}/mr_zeroth_moment_ion_{step}.bin"
 with open(filename, 'rb') as f:
@@ -110,28 +107,6 @@ De = gamma * (current[0] * (E[0] + bulk_electron[1] * B[2] - bulk_electron[2] * 
 
 De = apply_convolution(De, kernel_size)
 
-X, Y = np.meshgrid(x_coordinate, y_coordinate - y_max / 2) / ion_inertial_length
-start_y_enlarged = np.arange(-9.5, 10, 1)
-start_points_enlarged1 = np.array([np.ones(start_y_enlarged.shape)*35, start_y_enlarged])
-start_points_enlarged2 = np.array([np.ones(start_y_enlarged.shape)*65, start_y_enlarged])
-
-mappable = ax1.pcolormesh(X, Y, De, cmap='jet', vmin=-0.2, vmax=0.2)
-cbar = fig.colorbar(mappable, ax=ax1)
-cbar.set_label(r'$D_e$', fontsize=24, rotation=90, labelpad=10)
-cbar.ax.tick_params(labelsize=20)
-
-ax1.streamplot(X, Y, B[0], B[1], broken_streamlines=False, 
-    start_points=start_points_enlarged1.T, color='black', density = 100, linewidth=1, arrowsize=0)
-ax1.streamplot(X, Y, B[0], B[1], broken_streamlines=False, 
-    start_points=start_points_enlarged2.T, color='black', density = 100, linewidth=1, arrowsize=0)
-
-ax1.text(0.5, 1.05, f"{step / (1.0 / omega_ci / dt):.2f}" + r" $\Omega_{{ci}}^{{-1}}$", ha='center', transform=ax1.transAxes, fontsize=32)
-ax1.set_xlabel(r'$x / \lambda_i$', fontsize=20)
-ax1.set_ylabel(r'$y / \lambda_i$', fontsize=20)
-ax1.set_xlim(30, 70)
-ax1.set_ylim(-10, 10)
-ax1.tick_params(labelsize=18)
-
-fig.savefig(savename, dpi=200)
+np.save(savename, De)
 
 

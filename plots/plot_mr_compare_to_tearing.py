@@ -67,10 +67,10 @@ start_points_enlarged = np.array([np.ones(start_y_enlarged.shape)*50.0, start_y_
 total_steps = 4000 * 2
 interval = 20 * 2
 start = 3600
-end = 4400
+end = 6000
 
 local_min = int(50 * ion_inertial_length)
-local_max = int(55 * ion_inertial_length)
+local_max = int(60 * ion_inertial_length)
 print(local_min, local_max)
 results_By = np.zeros([int((end - start) / interval + 1), local_max - local_min])
 for step in range(start, end + 1, interval):
@@ -101,25 +101,24 @@ omega_pi_average = np.sqrt(n_i_average * q_ion**2 / m_ion / epsilon0)
 ion_inertial_length_average = c / omega_pi_average
 Bx_average = np.sum(B[0, :, int(n_x/2) - 50 : int(n_x/2) + 50], axis=1) / 100.0
 
+t = np.arange(start * dt, end * dt + dt, interval * dt)
+ax1.plot(omega_ci * t, np.abs(results_By_FFT[:, 2])**2, label=f'mode = 2 : simulation')
 reconnected_sheat_thickness = ion_inertial_length_average
-reconnected_r_e = m_electron * v_thermal_electron_background / abs(q_electron) / (0.75 * B0)
-reconnected_r_i = m_ion * v_thermal_ion_background / abs(q_ion) / (0.75 * B0)
+reconnected_r_e = m_electron * v_thermal_electron_background / abs(q_electron) / (1.0 * B0)
+reconnected_r_i = m_ion * v_thermal_ion_background / abs(q_ion) / (1.0 * B0)
 growth_rate = np.sqrt(np.pi) * (1.0 + t_r) * (reconnected_r_e / reconnected_sheat_thickness)**2.5 * np.abs(omega_ce) \
             + np.sqrt(np.pi) * (1.0 + 1.0/t_r) * (reconnected_r_i / reconnected_sheat_thickness)**2.5 * np.abs(omega_ci) 
 
-
-t = np.arange(start * dt, end * dt + dt, interval * dt)
-ax1.plot(omega_ci * t, np.abs(results_By_FFT[:, 2])**2, label=f'mode = 2 : simulation')
-ax1.plot(omega_ci * t, np.abs(results_By_FFT[2, 2])**2 * np.exp(2.0 * growth_rate * (t - t[2])), ls='--', label=f'mode = 2 : theory')
+ax1.plot(omega_ci * t, np.abs(results_By_FFT[8, 2])**2 * np.exp(2.0 * growth_rate * (t - t[8])), ls='--', label=f'mode = 2 : theory')
 
 
 ax1.grid()
 ax1.set_yscale('log')
 ax1.set_xlabel(r'$\Omega_{ci} t$', fontsize=18)
 ax1.set_ylabel(r'$|B_{y, k}|^2$', fontsize=18)
-ax1.set_xlim(90, 105)
-ax1.set_ylim(1e-2, 1e3)
-ax1.set_xticks(np.arange(90, 105, 2))
+ax1.set_xlim(90, 140)
+ax1.set_ylim(1e-1, 1e4)
+ax1.set_xticks(np.arange(90, 140, 5))
 ax1.tick_params(labelsize=18)
 ax1.legend(loc='lower right', fontsize=16)
 

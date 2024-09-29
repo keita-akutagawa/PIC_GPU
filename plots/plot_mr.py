@@ -7,7 +7,7 @@ c = 1.0
 epsilon0 = 1.0
 mu_0 = 1.0 / (epsilon0 * c**2)
 m_unit = 1.0
-r_m = 1.0 / 32.0
+r_m = 1.0 / 16.0
 m_electron = 1 * m_unit
 m_ion = m_electron / r_m
 t_r = 1.0
@@ -40,7 +40,7 @@ beta_i = n_i * T_i / (B0**2 / 2 / mu_0)
 
 dx = 1.0
 dy = 1.0
-n_x = int(ion_inertial_length * 100.0) + 1
+n_x = int(ion_inertial_length * 100.0)
 n_y = int(ion_inertial_length * 50.0)
 x_min = 0.0 * dx
 y_min = 0.0 * dy
@@ -62,16 +62,16 @@ fig = plt.figure(figsize=(15, 12))
 ax1 = fig.add_subplot(211)
 ax2 = fig.add_subplot(212)
 
-dirname = "/fs51/akutagawakt/PIC/results_mr_mr32"
-savedir = "pictures_mr32"
+dirname = "/fs51/akutagawakt/PIC/results_mr_mr16"
+savedir = "pictures_mr16"
 
 start_y_enlarged = np.arange(-19, 20, 2.0)
 start_points_enlarged = np.array(
     [np.ones(start_y_enlarged.shape) * 0.5 * (x_max - x_min) / ion_inertial_length, start_y_enlarged]
 )
 
-total_steps = 4000 * 32
-interval = 20 * 32
+total_steps = 4000 * 16
+interval = 20 * 16
 for step in range(0, total_steps + 1, interval):
     ax1.clear()
     ax2.clear()

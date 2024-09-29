@@ -59,7 +59,7 @@ ax1 = fig.add_subplot(111)
 dirname = "/fs51/akutagawakt/PIC/results_mr_mr2"
 
 step = 3000
-savename = f"{step}.png"
+savename = f"{step}_reconnected current_sheet.png"
 
 filename = f"{dirname}/mr_zeroth_moment_ion_{step}.bin"
 with open(filename, 'rb') as f:
@@ -76,13 +76,17 @@ ion_inertial_length_average = c / omega_pi_average
 Bx_average = np.sum(B[0, :, int(n_x/2) - 50 : int(n_x/2) + 50], axis=1) / 100.0
 print(ion_inertial_length, ion_inertial_length_average)
 
-ax1.plot((y_coordinate - 0.5 * (y_max - y_min)) / ion_inertial_length, Bx_average, label="simulation")
-for i in [0.5, 1.0, 1.5, 2.0, 2.5, 3.0]:
+ax1.plot((y_coordinate - 0.5 * (y_max - y_min)) / ion_inertial_length, Bx_average / B0, label="simulation")
+for i in [0.5, 1.0, 1.5, 2.0]:
     ax1.plot((y_coordinate - 0.5 * (y_max - y_min)) / ion_inertial_length, 
-              B0 * np.tanh((y_coordinate - 0.5 * (y_max - y_min)) / (i * ion_inertial_length_average)), 
-              label=f"thickness = {i}" + r"$\lambda_i$")
+              np.tanh((y_coordinate - 0.5 * (y_max - y_min)) / (i * ion_inertial_length_average)), 
+              label=f"thickness = {i}" + r"$\lambda_i$", ls='--')
 
+ax1.set_xlabel(r'$y / \lambda_i$', fontsize=20)
+ax1.set_ylabel(r'$B_x / B_0$', fontsize=20)
 ax1.set_xlim(-20, 20)
+ax1.set_ylim(-1.2, 1.2)
+ax1.tick_params(labelsize=18)
 ax1.legend(loc='upper right')
 
 fig.savefig(savename, dpi=200)
