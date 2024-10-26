@@ -95,6 +95,7 @@ void PIC2D::oneStepPeriodicXY()
                        (mPIInfo.localSizeY + threadsPerBlock.y - 1) / threadsPerBlock.y);
 
     fieldSolver.timeEvolutionB(B, E, dt / 2.0f);
+    sendrecv_field(B, mPIInfo);
     boundary.periodicBoundaryBX(B);
     boundary.periodicBoundaryBY(B);
     
@@ -106,6 +107,8 @@ void PIC2D::oneStepPeriodicXY()
         mPIInfo.localSizeX, mPIInfo.localSizeY
     );
     cudaDeviceSynchronize();
+    sendrecv_field(tmpB, mPIInfo);
+    sendrecv_field(tmpE, mPIInfo);
     boundary.periodicBoundaryBX(tmpB);
     boundary.periodicBoundaryBY(tmpB);
     boundary.periodicBoundaryEX(tmpE);
@@ -116,7 +119,6 @@ void PIC2D::oneStepPeriodicXY()
         particlesIon, particlesElectron, tmpB, tmpE, dt
     );
 
-
     particlePush.pushPosition(
         particlesIon, particlesElectron, dt / 2.0f
     );
@@ -124,11 +126,11 @@ void PIC2D::oneStepPeriodicXY()
         particlesIon, particlesElectron
     );
 
-
     currentCalculator.resetCurrent(tmpCurrent);
     currentCalculator.calculateCurrent(
         tmpCurrent, particlesIon, particlesElectron
     );
+    sendrecv_field(tmpCurrent, mPIInfo);
     boundary.periodicBoundaryCurrentX(tmpCurrent);
     boundary.periodicBoundaryCurrentY(tmpCurrent);
     getHalfCurrent_kernel<<<blocksPerGrid, threadsPerBlock>>>(
@@ -136,14 +138,17 @@ void PIC2D::oneStepPeriodicXY()
         thrust::raw_pointer_cast(tmpCurrent.data()), 
         mPIInfo.localSizeX, mPIInfo.localSizeY
     );
+    sendrecv_field(current, mPIInfo);
     boundary.periodicBoundaryCurrentX(current);
     boundary.periodicBoundaryCurrentY(current);
 
     fieldSolver.timeEvolutionB(B, E, dt / 2.0f);
+    sendrecv_field(B, mPIInfo);
     boundary.periodicBoundaryBX(B);
     boundary.periodicBoundaryBY(B);
 
     fieldSolver.timeEvolutionE(E, B, current, dt);
+    sendrecv_field(E, mPIInfo);
     boundary.periodicBoundaryEX(E);
     boundary.periodicBoundaryEY(E);
 

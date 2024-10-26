@@ -24,7 +24,7 @@ __global__ void uniformForPositionX_kernel(
     if (i < nEnd - nStart) {
         curandState state; 
         curand_init(seed, offset + i, 0, &state);
-        double x = curand_uniform(&state) * (xmax - xmin) + xmin;
+        float x = curand_uniform(&state) * (xmax - xmin) + xmin;
         particle[i + nStart].x = x;
         particle[i + nStart].isExist = true;
     }
@@ -63,7 +63,7 @@ __global__ void uniformForPositionY_kernel(
     if (i < nEnd - nStart) {
         curandState state; 
         curand_init(seed, offset + i, 0, &state);
-        double y = curand_uniform(&state) * (ymax - ymin) + ymin;
+        float y = curand_uniform(&state) * (ymax - ymin) + ymin;
         particle[i + nStart].y = y;
         particle[i + nStart].isExist = true;
     }

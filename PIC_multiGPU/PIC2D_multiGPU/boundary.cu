@@ -111,6 +111,13 @@ void Boundary::periodicBoundaryParticleOfOneSpeciesX(
     unsigned long long& existNumSpecies
 )
 {
+    device_countForSendSpeciesLeftToRight[0] = 0; 
+    device_countForSendSpeciesRightToLeft[0] = 0; 
+    countForSendSpeciesLeftToRight = 0;
+    countForSendSpeciesRightToLeft = 0;
+    countForRecvSpeciesLeftToRight = 0;
+    countForRecvSpeciesRightToLeft = 0;
+
     float xminForProcs = xmin + (xmax - xmin) / mPIInfo.gridX * mPIInfo.localGridX;
     float xmaxForProcs = xmin + (xmax - xmin) / mPIInfo.gridX * (mPIInfo.localGridX + 1);
 
@@ -222,6 +229,14 @@ void Boundary::periodicBoundaryParticleOfOneSpeciesY(
     unsigned long long& existNumSpecies
 )
 {
+    device_countForSendSpeciesUpToDown[0] = 0; 
+    device_countForSendSpeciesDownToUp[0] = 0; 
+    countForSendSpeciesUpToDown = 0;
+    countForSendSpeciesDownToUp = 0;
+    countForRecvSpeciesUpToDown = 0;
+    countForRecvSpeciesDownToUp = 0;
+
+
     float yminForProcs = ymin + (ymax - ymin) / mPIInfo.gridY * mPIInfo.localGridY;
     float ymaxForProcs = ymin + (ymax - ymin) / mPIInfo.gridY * (mPIInfo.localGridY + 1);
 

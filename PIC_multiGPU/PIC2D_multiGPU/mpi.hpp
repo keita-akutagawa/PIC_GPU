@@ -125,8 +125,11 @@ void sendrecv_field_y(thrust::device_vector<FieldType>& field, MPIInfo& mPIInfo)
 template <typename FieldType>
 void sendrecv_field(thrust::device_vector<FieldType>& field, MPIInfo& mPIInfo)
 {
+    MPI_Barrier(MPI_COMM_WORLD);
     sendrecv_field_x(field, mPIInfo);
+    MPI_Barrier(MPI_COMM_WORLD);
     sendrecv_field_y(field, mPIInfo);
+    MPI_Barrier(MPI_COMM_WORLD);
 }
 
 
