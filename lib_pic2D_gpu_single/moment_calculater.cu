@@ -133,9 +133,9 @@ struct CalculateFirstMomentOfOneSpeciesFunctor {
         cy1 = yOverDy - yIndex1;
         cy2 = 1.0f - cy1;
 
-        vx = particlesSpecies[i].vx;
-        vy = particlesSpecies[i].vy;
-        vz = particlesSpecies[i].vz;
+        vx = particlesSpecies[i].vx / particlesSpecies[i].gamma;
+        vy = particlesSpecies[i].vy / particlesSpecies[i].gamma;
+        vz = particlesSpecies[i].vz / particlesSpecies[i].gamma;
 
         atomicAdd(&(firstMomentOfOneSpecies[yIndex1 + device_ny * xIndex1].x), vx * cx2 * cy2);
         atomicAdd(&(firstMomentOfOneSpecies[yIndex2 + device_ny * xIndex1].x), vx * cx2 * cy1);
