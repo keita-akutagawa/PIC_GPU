@@ -97,10 +97,10 @@ void setupInfo(MPIInfo& mPIInfo, int buffer)
 
 
 void sendrecv_particle_x(
-    thrust::device_vector<Particle>& sendParticlesSpeciesLeftToRight, 
-    thrust::device_vector<Particle>& sendParticlesSpeciesRightToLeft, 
-    thrust::device_vector<Particle>& recvParticlesSpeciesLeftToRight, 
-    thrust::device_vector<Particle>& recvParticlesSpeciesRightToLeft, 
+    thrust::host_vector<Particle>& host_sendParticlesSpeciesLeftToRight, 
+    thrust::host_vector<Particle>& host_sendParticlesSpeciesRightToLeft, 
+    thrust::host_vector<Particle>& host_recvParticlesSpeciesLeftToRight, 
+    thrust::host_vector<Particle>& host_recvParticlesSpeciesRightToLeft, 
     const unsigned long long& countForSendSpeciesLeftToRight, 
     const unsigned long long& countForSendSpeciesRightToLeft, 
     unsigned long long& countForRecvSpeciesLeftToRight, 
@@ -112,35 +112,31 @@ void sendrecv_particle_x(
     int right = mPIInfo.getRank(1, 0);
     MPI_Status st;
 
-    int batchSize = 1000;
 
-    for (int offset = 0; offset < int(countForSendSpeciesRightToLeft / batchSize + 1) * batchSize; offset += batchSize) {
-        MPI_Sendrecv(
-            thrust::raw_pointer_cast(sendParticlesSpeciesRightToLeft.data()) + offset, 
-            batchSize, 
-            mPIInfo.mpi_particle_type, 
-            right, 0, 
-            thrust::raw_pointer_cast(recvParticlesSpeciesRightToLeft.data()) + offset,
-            batchSize, 
-            mPIInfo.mpi_particle_type, 
-            left, 0, 
-            MPI_COMM_WORLD, &st
-        );
-    }
-    
-    for (int offset = 0; offset < int(countForSendSpeciesLeftToRight / batchSize + 1) * batchSize; offset += batchSize) {
-        MPI_Sendrecv(
-            thrust::raw_pointer_cast(sendParticlesSpeciesLeftToRight.data()) + offset, 
-            batchSize,
-            mPIInfo.mpi_particle_type, 
-            left, 0, 
-            thrust::raw_pointer_cast(recvParticlesSpeciesLeftToRight.data()) + offset, 
-            batchSize,  
-            mPIInfo.mpi_particle_type, 
-            right, 0, 
-            MPI_COMM_WORLD, &st
-        );
-    }
+    MPI_Sendrecv(
+        host_sendParticlesSpeciesRightToLeft.data(), 
+        host_sendParticlesSpeciesRightToLeft.size(), 
+        mPIInfo.mpi_particle_type, 
+        right, 0, 
+        host_recvParticlesSpeciesRightToLeft.data(), 
+        host_recvParticlesSpeciesRightToLeft.size(), 
+        mPIInfo.mpi_particle_type, 
+        left, 0, 
+        MPI_COMM_WORLD, &st
+    );
+
+    MPI_Sendrecv(
+        host_sendParticlesSpeciesLeftToRight.data(), 
+        host_sendParticlesSpeciesLeftToRight.size(),
+        mPIInfo.mpi_particle_type, 
+        left, 0, 
+        host_recvParticlesSpeciesLeftToRight.data(), 
+        host_recvParticlesSpeciesLeftToRight.size(),  
+        mPIInfo.mpi_particle_type, 
+        right, 0, 
+        MPI_COMM_WORLD, &st
+    );
+
 
     MPI_Sendrecv(
         &(countForSendSpeciesRightToLeft), 
@@ -169,10 +165,10 @@ void sendrecv_particle_x(
 
 
 void sendrecv_particle_y(
-    thrust::device_vector<Particle>& sendParticlesSpeciesUpToDown, 
-    thrust::device_vector<Particle>& sendParticlesSpeciesDownToUp, 
-    thrust::device_vector<Particle>& recvParticlesSpeciesUpToDown, 
-    thrust::device_vector<Particle>& recvParticlesSpeciesDownToUp, 
+    thrust::host_vector<Particle>& host_sendParticlesSpeciesUpToDown, 
+    thrust::host_vector<Particle>& host_sendParticlesSpeciesDownToUp, 
+    thrust::host_vector<Particle>& host_recvParticlesSpeciesUpToDown, 
+    thrust::host_vector<Particle>& host_recvParticlesSpeciesDownToUp, 
     const unsigned long long& countForSendSpeciesUpToDown, 
     const unsigned long long& countForSendSpeciesDownToUp, 
     unsigned long long& countForRecvSpeciesUpToDown, 
@@ -184,35 +180,31 @@ void sendrecv_particle_y(
     int down = mPIInfo.getRank(0, 1);
     MPI_Status st;
 
-    int batchSize = 1000;
 
-    for (int offset = 0; offset < int(countForSendSpeciesDownToUp / batchSize + 1) * batchSize; offset += batchSize) {
-        MPI_Sendrecv(
-            thrust::raw_pointer_cast(sendParticlesSpeciesDownToUp.data()) + offset, 
-            batchSize, 
-            mPIInfo.mpi_particle_type, 
-            down, 0, 
-            thrust::raw_pointer_cast(recvParticlesSpeciesDownToUp.data()) + offset, 
-            batchSize, 
-            mPIInfo.mpi_particle_type, 
-            up, 0, 
-            MPI_COMM_WORLD, &st
-        );
-    }
+    MPI_Sendrecv(
+        host_sendParticlesSpeciesDownToUp.data(), 
+        host_sendParticlesSpeciesDownToUp.size(), 
+        mPIInfo.mpi_particle_type, 
+        down, 0, 
+        host_recvParticlesSpeciesDownToUp.data(), 
+        host_recvParticlesSpeciesDownToUp.size(), 
+        mPIInfo.mpi_particle_type, 
+        up, 0, 
+        MPI_COMM_WORLD, &st
+    );
 
-    for (int offset = 0; offset < int(countForSendSpeciesUpToDown / batchSize + 1) * batchSize; offset += batchSize) {
-        MPI_Sendrecv(
-            thrust::raw_pointer_cast(sendParticlesSpeciesUpToDown.data()) + offset, 
-            batchSize,
-            mPIInfo.mpi_particle_type, 
-            up, 0, 
-            thrust::raw_pointer_cast(recvParticlesSpeciesUpToDown.data()) + offset, 
-            batchSize,  
-            mPIInfo.mpi_particle_type, 
-            down, 0, 
-            MPI_COMM_WORLD, &st
-        );
-    }
+    MPI_Sendrecv(
+        host_sendParticlesSpeciesUpToDown.data(), 
+        host_sendParticlesSpeciesUpToDown.size(),
+        mPIInfo.mpi_particle_type, 
+        up, 0, 
+        host_recvParticlesSpeciesUpToDown.data(), 
+        host_recvParticlesSpeciesUpToDown.size(),  
+        mPIInfo.mpi_particle_type, 
+        down, 0, 
+        MPI_COMM_WORLD, &st
+    );
+
 
     MPI_Sendrecv(
         &(countForSendSpeciesDownToUp), 

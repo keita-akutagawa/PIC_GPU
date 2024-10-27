@@ -229,18 +229,13 @@ void ParticlePush::pushVelocityOfOneSpecies(
 
 __global__
 void pushPositionOfOneSpecies_kernel(
-    Particle* particlesSpecies, const unsigned long long existNumSpecies, 
-    const float dt, 
-    const float xminForProcs, const float xmaxForProcs, 
-    const float yminForProcs, const float ymaxForProcs, 
-    const int buffer
+    Particle* particlesSpecies, unsigned long long existNumSpecies, float dt
 )
 {
     unsigned long long i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (i < existNumSpecies) {
         float vx, vy, vz, gamma;
-        float xPast, yPast, zPast;
         float x, y, z;
         float dtOverGamma;
 
@@ -248,31 +243,18 @@ void pushPositionOfOneSpecies_kernel(
         vy = particlesSpecies[i].vy;
         vz = particlesSpecies[i].vz;
         gamma = particlesSpecies[i].gamma;
-        xPast = particlesSpecies[i].x;
-        yPast = particlesSpecies[i].y;
-        zPast = particlesSpecies[i].z;
+        x = particlesSpecies[i].x;
+        y = particlesSpecies[i].y;
+        z = particlesSpecies[i].z;
 
         dtOverGamma = dt / gamma;
-        x = xPast + dtOverGamma * vx;
-        y = yPast + dtOverGamma * vy;
-        z = zPast + dtOverGamma * vz;
+        x += dtOverGamma * vx;
+        y += dtOverGamma * vy;
+        z += dtOverGamma * vz;
 
         particlesSpecies[i].x = x;
         particlesSpecies[i].y = y;
         particlesSpecies[i].z = z;
-
-        if (xPast >= xminForProcs + buffer * device_dx && x < xminForProcs + buffer * device_dx) {
-            particlesSpecies[i].isMPISendLeftToRight = true;
-        }   
-        if (xPast <= xmaxForProcs - buffer * device_dx && x < xmaxForProcs - buffer * device_dx) {
-            particlesSpecies[i].isMPISendRightToLeft = true;
-        }
-        if (yPast >= yminForProcs + buffer * device_dy && y < yminForProcs + buffer * device_dy) {
-            particlesSpecies[i].isMPISendUpToDown = true;
-        }   
-        if (yPast <= ymaxForProcs - buffer * device_dy && y < ymaxForProcs - buffer * device_dy) {
-            particlesSpecies[i].isMPISendDownToUp = true;
-        }
     }
 }
 
@@ -283,20 +265,12 @@ void ParticlePush::pushPositionOfOneSpecies(
     float dt
 )
 {
-    float xminForProcs = xmin + (xmax - xmin) / mPIInfo.gridX * mPIInfo.localGridX;
-    float xmaxForProcs = xmin + (xmax - xmin) / mPIInfo.gridX * (mPIInfo.localGridX + 1);
-    float yminForProcs = ymin + (ymax - ymin) / mPIInfo.gridY * mPIInfo.localGridY;
-    float ymaxForProcs = ymin + (ymax - ymin) / mPIInfo.gridY * (mPIInfo.localGridY + 1);
-
     dim3 threadsPerBlock(256);
     dim3 blocksPerGrid((existNumSpecies + threadsPerBlock.x - 1) / threadsPerBlock.x);
 
     pushPositionOfOneSpecies_kernel<<<blocksPerGrid, threadsPerBlock>>>(
         thrust::raw_pointer_cast(particlesSpecies.data()), 
-        existNumSpecies, dt, 
-        xminForProcs, xmaxForProcs, 
-        yminForProcs, ymaxForProcs, 
-        mPIInfo.buffer
+        existNumSpecies, dt
     );
     cudaDeviceSynchronize();
 }
