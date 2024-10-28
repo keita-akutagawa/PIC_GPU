@@ -60,7 +60,7 @@ __global__ void boundaryForinitializeX_kernel(
         if (xminForProcs < particlesSpecies[i].x && particlesSpecies[i].x <= xminForProcs + buffer * device_dx) {
             particleIndex = atomicAdd(&(countForSendSpeciesLeftToRight[0]), 1);
             sendParticle = particlesSpecies[i];
-            if (sendParticle.x <= device_xmin + device_dx) {
+            if (sendParticle.x <= device_xmin + buffer * device_dx) {
                 sendParticle.x += device_xmax;
             }
             sendParticlesSpeciesLeftToRight[particleIndex] = sendParticle;
@@ -69,7 +69,7 @@ __global__ void boundaryForinitializeX_kernel(
         if (xmaxForProcs - buffer * device_dx <= particlesSpecies[i].x && particlesSpecies[i].x < xmaxForProcs) {
             particleIndex = atomicAdd(&(countForSendSpeciesRightToLeft[0]), 1);
             sendParticle = particlesSpecies[i];
-            if (sendParticle.x >= device_xmax - device_dx) {
+            if (sendParticle.x >= device_xmax - buffer * device_dx) {
                 sendParticle.x -= device_xmax;
             }
             sendParticlesSpeciesRightToLeft[particleIndex] = sendParticle;
@@ -97,7 +97,7 @@ __global__ void boundaryForinitializeY_kernel(
         if (yminForProcs < particlesSpecies[i].y && particlesSpecies[i].y <= yminForProcs + buffer * device_dy) {
             particleIndex = atomicAdd(&(countForSendSpeciesUpToDown[0]), 1);
             sendParticle = particlesSpecies[i];
-            if (sendParticle.y <= device_ymin + device_dy) {
+            if (sendParticle.y <= device_ymin + buffer * device_dy) {
                 sendParticle.y += device_ymax;
             }
             sendParticlesSpeciesUpToDown[particleIndex] = sendParticle;
@@ -106,7 +106,7 @@ __global__ void boundaryForinitializeY_kernel(
         if (ymaxForProcs - buffer * device_dy <= particlesSpecies[i].y && particlesSpecies[i].y < ymaxForProcs) {
             particleIndex = atomicAdd(&(countForSendSpeciesDownToUp[0]), 1);
             sendParticle = particlesSpecies[i];
-            if (sendParticle.y >= device_ymax - device_dy) {
+            if (sendParticle.y >= device_ymax - buffer * device_dy) {
                 sendParticle.y -= device_ymax;
             }
             sendParticlesSpeciesDownToUp[particleIndex] = sendParticle;
@@ -380,7 +380,6 @@ void Boundary::periodicBoundaryParticleOfOneSpeciesX(
         particlesSpecies[existNumSpecies + i] = recvParticlesSpeciesRightToLeft[i];
     }
     existNumSpecies += countForRecvSpeciesRightToLeft;
-
 }
 
 

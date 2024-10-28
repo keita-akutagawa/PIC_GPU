@@ -264,13 +264,13 @@ void pushPositionOfOneSpecies_kernel(
         if (xPast >= xminForProcs + buffer * device_dx && x < xminForProcs + buffer * device_dx) {
             particlesSpecies[i].isMPISendLeftToRight = true;
         }   
-        if (xPast <= xmaxForProcs - buffer * device_dx && x < xmaxForProcs - buffer * device_dx) {
+        if (xPast <= xmaxForProcs - buffer * device_dx && x > xmaxForProcs - buffer * device_dx) {
             particlesSpecies[i].isMPISendRightToLeft = true;
         }
         if (yPast >= yminForProcs + buffer * device_dy && y < yminForProcs + buffer * device_dy) {
             particlesSpecies[i].isMPISendUpToDown = true;
         }   
-        if (yPast <= ymaxForProcs - buffer * device_dy && y < ymaxForProcs - buffer * device_dy) {
+        if (yPast <= ymaxForProcs - buffer * device_dy && y > ymaxForProcs - buffer * device_dy) {
             particlesSpecies[i].isMPISendDownToUp = true;
         }
     }
