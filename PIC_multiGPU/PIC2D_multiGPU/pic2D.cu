@@ -521,56 +521,67 @@ void PIC2D::saveParticle(
              + "_" + std::to_string(mPIInfo.rank)
              + ".bin";
     filenameKineticEnergy = directoryname + "/"
-             + filenameWithoutStep + "_KE_" + std::to_string(step)
+             + filenameWithoutStep + "_KEnergy_" + std::to_string(step)
              + "_" + std::to_string(mPIInfo.rank)
              + ".bin";
 
 
-    std::ofstream ofsXIon(filenameXIon, std::ios::binary);
-    ofsXIon << std::fixed << std::setprecision(6);
-    for (unsigned long long i = 0; i < mPIInfo.existNumIonPerProcs; i++) {
-        ofsXIon.write(reinterpret_cast<const char*>(&host_particlesIon[i].x), sizeof(float));
-        ofsXIon.write(reinterpret_cast<const char*>(&host_particlesIon[i].y), sizeof(float));
-        ofsXIon.write(reinterpret_cast<const char*>(&host_particlesIon[i].z), sizeof(float));
-    }
+    float xminForProcs = xmin + (xmax - xmin) / mPIInfo.gridX * mPIInfo.localGridX;
+    float xmaxForProcs = xmin + (xmax - xmin) / mPIInfo.gridX * (mPIInfo.localGridX + 1);
+    float yminForProcs = ymin + (ymax - ymin) / mPIInfo.gridY * mPIInfo.localGridY;
+    float ymaxForProcs = ymin + (ymax - ymin) / mPIInfo.gridY * (mPIInfo.localGridY + 1);
 
-    std::ofstream ofsXElectron(filenameXElectron, std::ios::binary);
-    ofsXElectron << std::fixed << std::setprecision(6);
-    for (unsigned long long i = 0; i < mPIInfo.existNumElectronPerProcs; i++) {
-        ofsXElectron.write(reinterpret_cast<const char*>(&host_particlesElectron[i].x), sizeof(float));
-        ofsXElectron.write(reinterpret_cast<const char*>(&host_particlesElectron[i].y), sizeof(float));
-        ofsXElectron.write(reinterpret_cast<const char*>(&host_particlesElectron[i].z), sizeof(float));
-    }
-
-
+    float x, y, z;
     float vx, vy, vz, KineticEnergy = 0.0f;
 
+    std::ofstream ofsXIon(filenameXIon, std::ios::binary);
+    ofsXIon << std::fixed << std::setprecision(6);
     std::ofstream ofsVIon(filenameVIon, std::ios::binary);
     ofsVIon << std::fixed << std::setprecision(6);
     for (unsigned long long i = 0; i < mPIInfo.existNumIonPerProcs; i++) {
+        x = host_particlesIon[i].x;
+        y = host_particlesIon[i].y;
+        z = host_particlesIon[i].z;
         vx = host_particlesIon[i].vx / host_particlesIon[i].gamma;
         vy = host_particlesIon[i].vy / host_particlesIon[i].gamma;
         vz = host_particlesIon[i].vz / host_particlesIon[i].gamma;
 
-        ofsVIon.write(reinterpret_cast<const char*>(&vx), sizeof(float));
-        ofsVIon.write(reinterpret_cast<const char*>(&vy), sizeof(float));
-        ofsVIon.write(reinterpret_cast<const char*>(&vz), sizeof(float));
+        if (xminForProcs < x && x < xmaxForProcs && yminForProcs < y && y < ymaxForProcs) {
+            ofsXIon.write(reinterpret_cast<const char*>(&x), sizeof(float));
+            ofsXIon.write(reinterpret_cast<const char*>(&y), sizeof(float));
+            ofsXIon.write(reinterpret_cast<const char*>(&z), sizeof(float));
 
-        KineticEnergy += 0.5f * mIon * (vx * vx + vy * vy + vz * vz);
+            ofsVIon.write(reinterpret_cast<const char*>(&vx), sizeof(float));
+            ofsVIon.write(reinterpret_cast<const char*>(&vy), sizeof(float));
+            ofsVIon.write(reinterpret_cast<const char*>(&vz), sizeof(float));
+
+            KineticEnergy += 0.5f * mIon * (vx * vx + vy * vy + vz * vz);
+        }
     }
 
+    std::ofstream ofsXElectron(filenameXElectron, std::ios::binary);
+    ofsXElectron << std::fixed << std::setprecision(6);
     std::ofstream ofsVElectron(filenameVElectron, std::ios::binary);
     ofsVElectron << std::fixed << std::setprecision(6);
     for (unsigned long long i = 0; i < mPIInfo.existNumElectronPerProcs; i++) {
+        x = host_particlesElectron[i].x;
+        y = host_particlesElectron[i].y;
+        z = host_particlesElectron[i].z;
         vx = host_particlesElectron[i].vx / host_particlesElectron[i].gamma;
         vy = host_particlesElectron[i].vy / host_particlesElectron[i].gamma;
         vz = host_particlesElectron[i].vz / host_particlesElectron[i].gamma;
 
-        ofsVElectron.write(reinterpret_cast<const char*>(&vx), sizeof(float));
-        ofsVElectron.write(reinterpret_cast<const char*>(&vy), sizeof(float));
-        ofsVElectron.write(reinterpret_cast<const char*>(&vz), sizeof(float));
-        
-        KineticEnergy += 0.5f * mElectron * (vx * vx + vy * vy + vz * vz);
+        if (xminForProcs < x && x < xmaxForProcs && yminForProcs < y && y < ymaxForProcs) {
+            ofsXElectron.write(reinterpret_cast<const char*>(&x), sizeof(float));
+            ofsXElectron.write(reinterpret_cast<const char*>(&y), sizeof(float));
+            ofsXElectron.write(reinterpret_cast<const char*>(&z), sizeof(float));
+
+            ofsVElectron.write(reinterpret_cast<const char*>(&vx), sizeof(float));
+            ofsVElectron.write(reinterpret_cast<const char*>(&vy), sizeof(float));
+            ofsVElectron.write(reinterpret_cast<const char*>(&vz), sizeof(float));
+            
+            KineticEnergy += 0.5f * mElectron * (vx * vx + vy * vy + vz * vz);
+        }
     }
 
     std::ofstream ofsKineticEnergy(filenameKineticEnergy, std::ios::binary);

@@ -246,11 +246,11 @@ __global__ void periodicBoundaryParticleX_kernel(
     unsigned long long i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (i < existNumSpecies) {
-        if (particlesSpecies[i].x <= xminForProcs - buffer * device_dx) {
+        if (particlesSpecies[i].x < xminForProcs - buffer * device_dx) {
             particlesSpecies[i].isExist = false;
         }
 
-        if (particlesSpecies[i].x >= xmaxForProcs + buffer * device_dx) {
+        if (particlesSpecies[i].x > xmaxForProcs + buffer * device_dx) {
             particlesSpecies[i].isExist = false;
         }
 
@@ -361,11 +361,11 @@ __global__ void periodicBoundaryParticleY_kernel(
     unsigned long long i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (i < existNumSpecies) {
-        if (particlesSpecies[i].y <= yminForProcs - buffer * device_dy) {
+        if (particlesSpecies[i].y < yminForProcs - buffer * device_dy) {
             particlesSpecies[i].isExist = false;
         }
 
-        if (particlesSpecies[i].y >= ymaxForProcs + buffer * device_dy) {
+        if (particlesSpecies[i].y > ymaxForProcs + buffer * device_dy) {
             particlesSpecies[i].isExist = false;
         }
 
