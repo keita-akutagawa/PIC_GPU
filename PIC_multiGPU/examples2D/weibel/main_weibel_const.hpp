@@ -11,20 +11,21 @@
 std::string directoryname = "/cfca-work/akutagawakt/PIC_multiGPU/results_weibel";
 std::string filenameWithoutStep = "weibel";
 std::ofstream logfile("/cfca-work/akutagawakt/PIC_multiGPU/results_weibel/log_weibel.txt");
+std::ofstream mpifile("/cfca-work/akutagawakt/PIC_multiGPU/results_weibel/mpi_weibel.txt");
 
-const int buffer = 1;
+const int buffer = 2;
 
 const int totalStep = 3000;
 const int fieldRecordStep = 100;
-const bool isParticleRecord = false;
+const bool isParticleRecord = true;
 const int particleRecordStep = 1000000;
 float totalTime = 0.0f;
 
 const float c = 1.0f;
 const float epsilon0 = 1.0f;
 const float mu0 = 1.0f;
-const float dOfLangdonMarderTypeCorrection = 0.001f;
-const float EPS = 1.0e-20f;
+const float dOfLangdonMarderTypeCorrection = 0.0f;
+const float EPS = 1.0e-10f;
 
 const int numberDensityIon = 100;
 const int numberDensityElectron = 100;
@@ -53,13 +54,13 @@ const float ionInertialLength = c / omegaPi;
 
 const int nx = 256;
 const float dx = 1.0f;
-const float xmin = 0.0f * dx; 
-const float xmax = nx * dx - 0.0f * dx;
+const float xmin = EPS; 
+const float xmax = nx * dx - EPS;
 
 const int ny = 256;
 const float dy = 1.0f;
-const float ymin = 0.0f * dy; 
-const float ymax = ny * dy - 0.0f * dy;
+const float ymin = EPS; 
+const float ymax = ny * dy - EPS;
 
 float dt = 0.5f;
 

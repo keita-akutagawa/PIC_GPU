@@ -62,7 +62,6 @@ void PIC2D::initialize()
         0, mPIInfo.existNumElectronPerProcs, 500, particlesElectron
     );
 
-
     dim3 threadsPerBlock(16, 16);
     dim3 blocksPerGrid((nx + threadsPerBlock.x - 1) / threadsPerBlock.x,
                        (ny + threadsPerBlock.y - 1) / threadsPerBlock.y);
@@ -86,8 +85,9 @@ void PIC2D::initialize()
     boundary.periodicBoundaryEY(E);
     boundary.periodicBoundaryCurrentX(current);
     boundary.periodicBoundaryCurrentY(current);
-    boundary.periodicBoundaryParticleXY(particlesIon, particlesElectron);
-
+    boundary.boundaryForInitialize(particlesIon, mPIInfo.existNumIonPerProcs);
+    boundary.boundaryForInitialize(particlesElectron, mPIInfo.existNumElectronPerProcs);
+    
     MPI_Barrier(MPI_COMM_WORLD);
 }
 
@@ -99,28 +99,40 @@ int main(int argc, char** argv)
     MPIInfo mPIInfo;
     setupInfo(mPIInfo, buffer);
 
+    if (mPIInfo.rank == 0) {
+        std::cout << mPIInfo.gridX << "," << mPIInfo.gridY << std::endl;
+        mpifile   << mPIInfo.gridX << "," << mPIInfo.gridY << std::endl;
+    }
+
     cudaSetDevice(mPIInfo.rank);
 
     initializeDeviceConstants();
 
     mPIInfo.existNumIonPerProcs = int(totalNumIon / mPIInfo.procs);
     mPIInfo.existNumElectronPerProcs = int(totalNumElectron / mPIInfo.procs);
-    mPIInfo.totalNumIonPerProcs = mPIInfo.existNumIonPerProcs + 100000;
-    mPIInfo.totalNumElectronPerProcs = mPIInfo.existNumElectronPerProcs + 100000;
+    mPIInfo.totalNumIonPerProcs = mPIInfo.existNumIonPerProcs
+                                + numberDensityIon * (mPIInfo.localSizeX + mPIInfo.localSizeY) * (2 * mPIInfo.buffer + 10);
+    mPIInfo.totalNumElectronPerProcs = mPIInfo.existNumElectronPerProcs
+                                     + numberDensityElectron * (mPIInfo.localSizeX + mPIInfo.localSizeY) * (2 * mPIInfo.buffer + 10);
 
     PIC2D pIC2D(mPIInfo);
 
     pIC2D.initialize();
 
     if (mPIInfo.rank == 0) {
-         size_t free_mem = 0;
+        size_t free_mem = 0;
         size_t total_mem = 0;
         cudaError_t status = cudaMemGetInfo(&free_mem, &total_mem);
 
         std::cout << "Free memory: " << free_mem / (1024 * 1024) << " MB" << std::endl;
         std::cout << "Total memory: " << total_mem / (1024 * 1024) << " MB" << std::endl;
 
-        std::cout << "total number of partices is " << totalNumParticles << std::endl;
+        std::cout << "exist number of partices is " 
+                  << mPIInfo.procs * (mPIInfo.existNumIonPerProcs + mPIInfo.existNumElectronPerProcs) 
+                  << std::endl;
+        std::cout << "exist number of partices + buffer particles is " 
+                  << mPIInfo.procs * (mPIInfo.totalNumIonPerProcs + mPIInfo.totalNumElectronPerProcs) 
+                  << std::endl;
         std::cout << std::setprecision(4) 
                 << "omega_pe * t = " << totalStep * dt * omegaPe << std::endl;
     }
@@ -139,10 +151,7 @@ int main(int argc, char** argv)
             pIC2D.saveFields(
                 directoryname, filenameWithoutStep, step
             );
-            pIC2D.saveZerothMoments(
-                directoryname, filenameWithoutStep, step
-            );
-            pIC2D.saveFirstMoments(
+            pIC2D.saveParticle(
                 directoryname, filenameWithoutStep, step
             );
         }
