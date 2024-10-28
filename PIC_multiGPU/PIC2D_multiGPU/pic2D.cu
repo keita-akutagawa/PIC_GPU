@@ -536,7 +536,7 @@ void PIC2D::saveParticle(
 
     std::ofstream ofsXElectron(filenameXElectron, std::ios::binary);
     ofsXElectron << std::fixed << std::setprecision(6);
-    for (unsigned long long i = 0; i < mPIInfo.totalNumElectronPerProcs; i++) {
+    for (unsigned long long i = 0; i < mPIInfo.existNumElectronPerProcs; i++) {
         ofsXElectron.write(reinterpret_cast<const char*>(&host_particlesElectron[i].x), sizeof(float));
         ofsXElectron.write(reinterpret_cast<const char*>(&host_particlesElectron[i].y), sizeof(float));
         ofsXElectron.write(reinterpret_cast<const char*>(&host_particlesElectron[i].z), sizeof(float));
@@ -561,7 +561,7 @@ void PIC2D::saveParticle(
 
     std::ofstream ofsVElectron(filenameVElectron, std::ios::binary);
     ofsVElectron << std::fixed << std::setprecision(6);
-    for (unsigned long long i = 0; i < mPIInfo.totalNumElectronPerProcs; i++) {
+    for (unsigned long long i = 0; i < mPIInfo.existNumElectronPerProcs; i++) {
         vx = host_particlesElectron[i].vx / host_particlesElectron[i].gamma;
         vy = host_particlesElectron[i].vy / host_particlesElectron[i].gamma;
         vz = host_particlesElectron[i].vz / host_particlesElectron[i].gamma;

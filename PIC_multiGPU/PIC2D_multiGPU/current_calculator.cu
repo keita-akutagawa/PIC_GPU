@@ -63,7 +63,7 @@ __global__ void calculateCurrentOfOneSpecies_kernel(
         yIndex1 = floorf(yOverDy);
         yIndex2 = yIndex1 + 1;
         yIndex2 = (yIndex2 == localSizeY) ? 0 : yIndex2;
-
+        
         cx1 = xOverDx - xIndex1;
         cx2 = 1.0f - cx1;
         cy1 = yOverDy - yIndex1;

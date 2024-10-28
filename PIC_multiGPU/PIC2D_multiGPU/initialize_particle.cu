@@ -16,7 +16,7 @@ __global__ void uniformForPositionX_kernel(
     Particle* particle, 
     const unsigned long long nStart, const unsigned long long nEnd, 
     const float xmin, const float xmax, 
-    const int seed, const int offset
+    const int seed, const unsigned long long offset
 )
 {
     unsigned long long i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -55,7 +55,7 @@ __global__ void uniformForPositionY_kernel(
     Particle* particle, 
     const unsigned long long nStart, const unsigned long long nEnd, 
     const float ymin, const float ymax, 
-    const int seed, const int offset
+    const int seed, const unsigned long long offset
 )
 {
     unsigned long long i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -96,7 +96,7 @@ __global__ void maxwellDistributionForVelocity_kernel(
     const float bulkVxSpecies, const float bulkVySpecies, const float bulkVzSpecies, 
     const float vxThSpecies, const float vyThSpecies, const float vzThSpecies, 
     const unsigned long long nStart, const unsigned long long nEnd, 
-    const int seed, const int offset
+    const int seed, const unsigned long long offset
 )
 {
     unsigned long long i = blockIdx.x * blockDim.x + threadIdx.x;

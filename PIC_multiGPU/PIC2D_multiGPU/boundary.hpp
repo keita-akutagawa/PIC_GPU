@@ -37,7 +37,7 @@ private:
 public:
     Boundary(MPIInfo& mPIInfo);
 
-    void boundaryForinitialize(
+    void boundaryForInitialize(
         thrust::device_vector<Particle>& particlesSpecies,
         unsigned long long& existNumSpecies
     );

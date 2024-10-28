@@ -58,24 +58,29 @@ void setupInfo(MPIInfo& mPIInfo, int buffer)
     mPIInfo.localSizeY = mPIInfo.localNy + 2 * mPIInfo.buffer;
 
 
-    int block_lengths_particle[8] = {1, 1, 1, 1, 1, 1, 1, 1};
-    MPI_Aint offsets_particle[8];
-    offsets_particle[0] = offsetof(Particle, x);
-    offsets_particle[1] = offsetof(Particle, y);
-    offsets_particle[2] = offsetof(Particle, z);
-    offsets_particle[3] = offsetof(Particle, vx);
-    offsets_particle[4] = offsetof(Particle, vy);
-    offsets_particle[5] = offsetof(Particle, vz);
-    offsets_particle[6] = offsetof(Particle, gamma);
-    offsets_particle[7] = offsetof(Particle, isExist);
+    int block_lengths_particle[12] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+    MPI_Aint offsets_particle[12];
+    offsets_particle[0]  = offsetof(Particle, x);
+    offsets_particle[1]  = offsetof(Particle, y);
+    offsets_particle[2]  = offsetof(Particle, z);
+    offsets_particle[3]  = offsetof(Particle, vx);
+    offsets_particle[4]  = offsetof(Particle, vy);
+    offsets_particle[5]  = offsetof(Particle, vz);
+    offsets_particle[6]  = offsetof(Particle, gamma);
+    offsets_particle[7]  = offsetof(Particle, isExist);
+    offsets_particle[8]  = offsetof(Particle, isMPISendLeftToRight);
+    offsets_particle[9]  = offsetof(Particle, isMPISendRightToLeft);
+    offsets_particle[10] = offsetof(Particle, isMPISendUpToDown);
+    offsets_particle[11] = offsetof(Particle, isMPISendDownToUp);
 
-    MPI_Datatype types_particle[8] = {
+    MPI_Datatype types_particle[12] = {
         MPI_FLOAT, MPI_FLOAT, MPI_FLOAT, 
         MPI_FLOAT, MPI_FLOAT, MPI_FLOAT, 
-        MPI_FLOAT, MPI_C_BOOL
+        MPI_FLOAT, MPI_C_BOOL, 
+        MPI_C_BOOL, MPI_C_BOOL, MPI_C_BOOL, MPI_C_BOOL
     };
 
-    MPI_Type_create_struct(8, block_lengths_particle, offsets_particle, types_particle, &mPIInfo.mpi_particle_type);
+    MPI_Type_create_struct(12, block_lengths_particle, offsets_particle, types_particle, &mPIInfo.mpi_particle_type);
     MPI_Type_commit(&mPIInfo.mpi_particle_type);
 
     // MagneticField, ElectricField, CurrentField共通
@@ -112,9 +117,9 @@ void sendrecv_particle_x(
     int right = mPIInfo.getRank(1, 0);
     MPI_Status st;
 
-    int batchSize = 1000;
+    unsigned long long batchSize = 1000;
 
-    for (int offset = 0; offset < int(countForSendSpeciesRightToLeft / batchSize + 1) * batchSize; offset += batchSize) {
+    for (unsigned long long offset = 0; offset < static_cast<unsigned long long>((countForSendSpeciesRightToLeft / batchSize + 1) * batchSize); offset += batchSize) {
         MPI_Sendrecv(
             thrust::raw_pointer_cast(sendParticlesSpeciesRightToLeft.data()) + offset, 
             batchSize, 
@@ -128,7 +133,7 @@ void sendrecv_particle_x(
         );
     }
     
-    for (int offset = 0; offset < int(countForSendSpeciesLeftToRight / batchSize + 1) * batchSize; offset += batchSize) {
+    for (unsigned long long offset = 0; offset < static_cast<unsigned long long>((countForSendSpeciesLeftToRight / batchSize + 1) * batchSize); offset += batchSize) {
         MPI_Sendrecv(
             thrust::raw_pointer_cast(sendParticlesSpeciesLeftToRight.data()) + offset, 
             batchSize,
@@ -184,9 +189,9 @@ void sendrecv_particle_y(
     int down = mPIInfo.getRank(0, 1);
     MPI_Status st;
 
-    int batchSize = 1000;
+    unsigned long long batchSize = 1000;
 
-    for (int offset = 0; offset < int(countForSendSpeciesDownToUp / batchSize + 1) * batchSize; offset += batchSize) {
+    for (unsigned long long offset = 0; offset < static_cast<unsigned long long>((countForSendSpeciesDownToUp / batchSize + 1) * batchSize); offset += batchSize) {
         MPI_Sendrecv(
             thrust::raw_pointer_cast(sendParticlesSpeciesDownToUp.data()) + offset, 
             batchSize, 
@@ -200,7 +205,7 @@ void sendrecv_particle_y(
         );
     }
 
-    for (int offset = 0; offset < int(countForSendSpeciesUpToDown / batchSize + 1) * batchSize; offset += batchSize) {
+    for (unsigned long long offset = 0; offset < static_cast<unsigned long long>((countForSendSpeciesUpToDown / batchSize + 1) * batchSize); offset += batchSize) {
         MPI_Sendrecv(
             thrust::raw_pointer_cast(sendParticlesSpeciesUpToDown.data()) + offset, 
             batchSize,

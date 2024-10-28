@@ -40,7 +40,7 @@ struct IsExistTransform
 };
 
 
-__global__ void boundaryForinitializeX_kernel(
+__global__ void boundaryForInitializeX_kernel(
     Particle* particlesSpecies, 
     Particle* sendParticlesSpeciesLeftToRight, 
     Particle* sendParticlesSpeciesRightToLeft, 
@@ -54,22 +54,19 @@ __global__ void boundaryForinitializeX_kernel(
     unsigned long long i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (i < existNumSpecies) {
-        int particleIndex;
-        Particle sendParticle;
-
-        if (xminForProcs < particlesSpecies[i].x && particlesSpecies[i].x <= xminForProcs + buffer * device_dx) {
-            particleIndex = atomicAdd(&(countForSendSpeciesLeftToRight[0]), 1);
-            sendParticle = particlesSpecies[i];
-            if (sendParticle.x <= device_xmin + buffer * device_dx) {
+        if (xminForProcs < particlesSpecies[i].x && particlesSpecies[i].x < xminForProcs + buffer * device_dx) {
+            unsigned long long particleIndex = atomicAdd(&(countForSendSpeciesLeftToRight[0]), 1);
+            Particle sendParticle = particlesSpecies[i];
+            if (sendParticle.x < device_xmin + buffer * device_dx) {
                 sendParticle.x += device_xmax;
             }
             sendParticlesSpeciesLeftToRight[particleIndex] = sendParticle;
         }
 
-        if (xmaxForProcs - buffer * device_dx <= particlesSpecies[i].x && particlesSpecies[i].x < xmaxForProcs) {
-            particleIndex = atomicAdd(&(countForSendSpeciesRightToLeft[0]), 1);
-            sendParticle = particlesSpecies[i];
-            if (sendParticle.x >= device_xmax - buffer * device_dx) {
+        if (xmaxForProcs - buffer * device_dx < particlesSpecies[i].x && particlesSpecies[i].x < xmaxForProcs) {
+            unsigned long long particleIndex = atomicAdd(&(countForSendSpeciesRightToLeft[0]), 1);
+            Particle sendParticle = particlesSpecies[i];
+            if (device_xmax - buffer * device_dx < sendParticle.x) {
                 sendParticle.x -= device_xmax;
             }
             sendParticlesSpeciesRightToLeft[particleIndex] = sendParticle;
@@ -77,7 +74,7 @@ __global__ void boundaryForinitializeX_kernel(
     }
 }
 
-__global__ void boundaryForinitializeY_kernel(
+__global__ void boundaryForInitializeY_kernel(
     Particle* particlesSpecies, 
     Particle* sendParticlesSpeciesUpToDown, 
     Particle* sendParticlesSpeciesDownToUp, 
@@ -91,22 +88,19 @@ __global__ void boundaryForinitializeY_kernel(
     unsigned long long i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (i < existNumSpecies) {
-        int particleIndex;
-        Particle sendParticle;
-
-        if (yminForProcs < particlesSpecies[i].y && particlesSpecies[i].y <= yminForProcs + buffer * device_dy) {
-            particleIndex = atomicAdd(&(countForSendSpeciesUpToDown[0]), 1);
-            sendParticle = particlesSpecies[i];
-            if (sendParticle.y <= device_ymin + buffer * device_dy) {
+        if (yminForProcs < particlesSpecies[i].y && particlesSpecies[i].y < yminForProcs + buffer * device_dy) {
+            unsigned long long particleIndex = atomicAdd(&(countForSendSpeciesUpToDown[0]), 1);
+            Particle sendParticle = particlesSpecies[i];
+            if (sendParticle.y < device_ymin + buffer * device_dy) {
                 sendParticle.y += device_ymax;
             }
             sendParticlesSpeciesUpToDown[particleIndex] = sendParticle;
         }
 
-        if (ymaxForProcs - buffer * device_dy <= particlesSpecies[i].y && particlesSpecies[i].y < ymaxForProcs) {
-            particleIndex = atomicAdd(&(countForSendSpeciesDownToUp[0]), 1);
-            sendParticle = particlesSpecies[i];
-            if (sendParticle.y >= device_ymax - buffer * device_dy) {
+        if (ymaxForProcs - buffer * device_dy < particlesSpecies[i].y && particlesSpecies[i].y < ymaxForProcs) {
+            unsigned long long particleIndex = atomicAdd(&(countForSendSpeciesDownToUp[0]), 1);
+            Particle sendParticle = particlesSpecies[i];
+            if (device_ymax - buffer * device_dy < sendParticle.y) {
                 sendParticle.y -= device_ymax;
             }
             sendParticlesSpeciesDownToUp[particleIndex] = sendParticle;
@@ -114,7 +108,7 @@ __global__ void boundaryForinitializeY_kernel(
     }
 }
 
-void Boundary::boundaryForinitialize(
+void Boundary::boundaryForInitialize(
     thrust::device_vector<Particle>& particlesSpecies, 
     unsigned long long& existNumSpecies
 )
@@ -138,10 +132,10 @@ void Boundary::boundaryForinitialize(
     float ymaxForProcs = ymin + (ymax - ymin) / mPIInfo.gridY * (mPIInfo.localGridY + 1);
 
 
-    dim3 threadsPerBlock(256);
-    dim3 blocksPerGrid((existNumSpecies + threadsPerBlock.x - 1) / threadsPerBlock.x);
+    dim3 threadsPerBlockForX(256);
+    dim3 blocksPerGridForX((existNumSpecies + threadsPerBlockForX.x - 1) / threadsPerBlockForX.x);
 
-    boundaryForinitializeX_kernel<<<blocksPerGrid, threadsPerBlock>>>(
+    boundaryForInitializeX_kernel<<<blocksPerGridForX, threadsPerBlockForX>>>(
         thrust::raw_pointer_cast(particlesSpecies.data()), 
         thrust::raw_pointer_cast(sendParticlesSpeciesLeftToRight.data()), 
         thrust::raw_pointer_cast(sendParticlesSpeciesRightToLeft.data()), 
@@ -150,21 +144,6 @@ void Boundary::boundaryForinitialize(
         existNumSpecies, 
         xminForProcs, xmaxForProcs, 
         mPIInfo.buffer
-    );
-    cudaDeviceSynchronize();
-
-    existNumSpecies = thrust::transform_reduce(
-        particlesSpecies.begin(),
-        particlesSpecies.end(),
-        IsExistTransform(), 
-        0,               
-        thrust::plus<unsigned long long>()
-    );
-    cudaDeviceSynchronize();
-
-    thrust::partition(
-        particlesSpecies.begin(), particlesSpecies.end(), 
-        [] __device__ (const Particle& p) { return p.isExist; }
     );
     cudaDeviceSynchronize();
 
@@ -183,18 +162,22 @@ void Boundary::boundaryForinitialize(
         mPIInfo
     );
 
-    for (int i = 0; i < countForRecvSpeciesLeftToRight; i++) {
+    for (unsigned long long i = 0; i < countForRecvSpeciesLeftToRight; i++) {
         particlesSpecies[existNumSpecies + i] = recvParticlesSpeciesLeftToRight[i];
     }
     existNumSpecies += countForRecvSpeciesLeftToRight;
-    for (int i = 0; i < countForRecvSpeciesRightToLeft; i++) {
+    for (unsigned long long i = 0; i < countForRecvSpeciesRightToLeft; i++) {
         particlesSpecies[existNumSpecies + i] = recvParticlesSpeciesRightToLeft[i];
     }
     existNumSpecies += countForRecvSpeciesRightToLeft;
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-    boundaryForinitializeY_kernel<<<blocksPerGrid, threadsPerBlock>>>(
+
+    dim3 threadsPerBlockForY(256);
+    dim3 blocksPerGridForY((existNumSpecies + threadsPerBlockForY.x - 1) / threadsPerBlockForY.x);
+
+    boundaryForInitializeY_kernel<<<blocksPerGridForY, threadsPerBlockForY>>>(
         thrust::raw_pointer_cast(particlesSpecies.data()), 
         thrust::raw_pointer_cast(sendParticlesSpeciesUpToDown.data()), 
         thrust::raw_pointer_cast(sendParticlesSpeciesDownToUp.data()), 
@@ -203,21 +186,6 @@ void Boundary::boundaryForinitialize(
         existNumSpecies, 
         yminForProcs, ymaxForProcs, 
         mPIInfo.buffer
-    );
-    cudaDeviceSynchronize();
-
-    existNumSpecies = thrust::transform_reduce(
-        particlesSpecies.begin(),
-        particlesSpecies.end(),
-        IsExistTransform(), 
-        0,               
-        thrust::plus<unsigned long long>()
-    );
-    cudaDeviceSynchronize();
-
-    thrust::partition(
-        particlesSpecies.begin(), particlesSpecies.end(), 
-        [] __device__ (const Particle& p) { return p.isExist; }
     );
     cudaDeviceSynchronize();
 
@@ -236,11 +204,11 @@ void Boundary::boundaryForinitialize(
         mPIInfo
     );
 
-    for (int i = 0; i < countForRecvSpeciesUpToDown; i++) {
+    for (unsigned long long i = 0; i < countForRecvSpeciesUpToDown; i++) {
         particlesSpecies[existNumSpecies + i] = recvParticlesSpeciesUpToDown[i];
     }
     existNumSpecies += countForRecvSpeciesUpToDown;
-    for (int i = 0; i < countForRecvSpeciesDownToUp; i++) {
+    for (unsigned long long i = 0; i < countForRecvSpeciesDownToUp; i++) {
         particlesSpecies[existNumSpecies + i] = recvParticlesSpeciesDownToUp[i];
     }
     existNumSpecies += countForRecvSpeciesDownToUp;
@@ -286,25 +254,21 @@ __global__ void periodicBoundaryParticleX_kernel(
             particlesSpecies[i].isExist = false;
         }
 
-
-        int particleIndex;
-        Particle sendParticle;
-
         if (particlesSpecies[i].isMPISendLeftToRight) {
-            particleIndex = atomicAdd(&(countForSendSpeciesLeftToRight[0]), 1);
+            unsigned long long particleIndex = atomicAdd(&(countForSendSpeciesLeftToRight[0]), 1);
             particlesSpecies[i].isMPISendLeftToRight = false;
-            sendParticle = particlesSpecies[i];
-            if (sendParticle.x <= device_xmin + buffer * device_dx) {
+            Particle sendParticle = particlesSpecies[i];
+            if (sendParticle.x < device_xmin + buffer * device_dx) {
                 sendParticle.x += device_xmax;
             }
             sendParticlesSpeciesLeftToRight[particleIndex] = sendParticle;
         }
 
         if (particlesSpecies[i].isMPISendRightToLeft) {
-            particleIndex = atomicAdd(&(countForSendSpeciesRightToLeft[0]), 1);
+            unsigned long long particleIndex = atomicAdd(&(countForSendSpeciesRightToLeft[0]), 1);
             particlesSpecies[i].isMPISendRightToLeft = false;
-            sendParticle = particlesSpecies[i];
-            if (sendParticle.x >= device_xmax - buffer * device_dx) {
+            Particle sendParticle = particlesSpecies[i];
+            if (sendParticle.x > device_xmax - buffer * device_dx) {
                 sendParticle.x -= device_xmax;
             }
             sendParticlesSpeciesRightToLeft[particleIndex] = sendParticle;
@@ -372,11 +336,11 @@ void Boundary::periodicBoundaryParticleOfOneSpeciesX(
         mPIInfo
     );
 
-    for (int i = 0; i < countForRecvSpeciesLeftToRight; i++) {
+    for (unsigned long long i = 0; i < countForRecvSpeciesLeftToRight; i++) {
         particlesSpecies[existNumSpecies + i] = recvParticlesSpeciesLeftToRight[i];
     }
     existNumSpecies += countForRecvSpeciesLeftToRight;
-    for (int i = 0; i < countForRecvSpeciesRightToLeft; i++) {
+    for (unsigned long long i = 0; i < countForRecvSpeciesRightToLeft; i++) {
         particlesSpecies[existNumSpecies + i] = recvParticlesSpeciesRightToLeft[i];
     }
     existNumSpecies += countForRecvSpeciesRightToLeft;
@@ -405,25 +369,21 @@ __global__ void periodicBoundaryParticleY_kernel(
             particlesSpecies[i].isExist = false;
         }
 
-
-        int particleIndex;
-        Particle sendParticle;
-
         if (particlesSpecies[i].isMPISendUpToDown) {
-            particleIndex = atomicAdd(&(countForSendSpeciesUpToDown[0]), 1);
+            unsigned long long particleIndex = atomicAdd(&(countForSendSpeciesUpToDown[0]), 1);
             particlesSpecies[i].isMPISendUpToDown = false;
-            sendParticle = particlesSpecies[i];
-            if (sendParticle.y <= device_ymin + buffer * device_dy) {
+            Particle sendParticle = particlesSpecies[i];
+            if (sendParticle.y < device_ymin + buffer * device_dy) {
                 sendParticle.y += device_ymax;
             }
             sendParticlesSpeciesUpToDown[particleIndex] = sendParticle;
         }
 
         if (particlesSpecies[i].isMPISendDownToUp) {
-            particleIndex = atomicAdd(&(countForSendSpeciesDownToUp[0]), 1);
+            unsigned long long particleIndex = atomicAdd(&(countForSendSpeciesDownToUp[0]), 1);
             particlesSpecies[i].isMPISendDownToUp = false;
-            sendParticle = particlesSpecies[i];
-            if (sendParticle.y >= device_ymax - buffer * device_dy) {
+            Particle sendParticle = particlesSpecies[i];
+            if (sendParticle.y > device_ymax - buffer * device_dy) {
                 sendParticle.y -= device_ymax;
             }
             sendParticlesSpeciesDownToUp[particleIndex] = sendParticle;
@@ -492,11 +452,11 @@ void Boundary::periodicBoundaryParticleOfOneSpeciesY(
         mPIInfo
     );
 
-    for (int i = 0; i < countForRecvSpeciesUpToDown; i++) {
+    for (unsigned long long i = 0; i < countForRecvSpeciesUpToDown; i++) {
         particlesSpecies[existNumSpecies + i] = recvParticlesSpeciesUpToDown[i];
     }
     existNumSpecies += countForRecvSpeciesUpToDown;
-    for (int i = 0; i < countForRecvSpeciesDownToUp; i++) {
+    for (unsigned long long i = 0; i < countForRecvSpeciesDownToUp; i++) {
         particlesSpecies[existNumSpecies + i] = recvParticlesSpeciesDownToUp[i];
     }
     existNumSpecies += countForRecvSpeciesDownToUp;
