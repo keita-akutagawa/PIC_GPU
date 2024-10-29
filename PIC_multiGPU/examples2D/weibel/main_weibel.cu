@@ -72,7 +72,6 @@ void PIC2D::initialize()
     );
     cudaDeviceSynchronize();
 
-
     MPI_Barrier(MPI_COMM_WORLD);
 
     sendrecv_field(B, mPIInfo);
@@ -144,9 +143,9 @@ int main(int argc, char** argv)
         if (step % fieldRecordStep == 0) {
             if (mPIInfo.rank == 0) {
                 std::cout << std::to_string(step) << " step done : total time is "
-                            << std::setprecision(4) << totalTime
+                            << std::setprecision(6) << totalTime
                             << std::endl;
-                logfile << std::setprecision(6) << totalTime << std::endl;
+                logfile << std::to_string(step) << "," << totalTime << std::endl;
             }
             pIC2D.saveFields(
                 directoryname, filenameWithoutStep, step
