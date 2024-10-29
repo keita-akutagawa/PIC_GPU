@@ -43,6 +43,15 @@ void setupInfo(MPIInfo& mPIInfo, int buffer);
 
 
 template <typename FieldType>
+struct is_nan {
+    __host__ __device__
+    bool operator()(const FieldType& x) const {
+        return isnan(x);  // isnanはCUDAでサポートされています
+    }
+};
+
+
+template <typename FieldType>
 void sendrecv_field_x(thrust::device_vector<FieldType>& field, MPIInfo& mPIInfo)
 {
     int localNx = mPIInfo.localNx;
@@ -54,8 +63,8 @@ void sendrecv_field_x(thrust::device_vector<FieldType>& field, MPIInfo& mPIInfo)
     int right = mPIInfo.getRank(1, 0);
     MPI_Status st;
 
-    thrust::device_vector<FieldType> sendFieldLeft(mPIInfo.buffer * localNy), sendFieldRight(mPIInfo.buffer * localNy);
-    thrust::device_vector<FieldType> recvFieldLeft(mPIInfo.buffer * localNy), recvFieldRight(mPIInfo.buffer * localNy);
+    thrust::host_vector<FieldType> sendFieldLeft(mPIInfo.buffer * localNy), sendFieldRight(mPIInfo.buffer * localNy);
+    thrust::host_vector<FieldType> recvFieldLeft(mPIInfo.buffer * localNy), recvFieldRight(mPIInfo.buffer * localNy);
 
     for (int i = 0; i < mPIInfo.buffer; i++) {
         for (int j = 0; j < localNy; j++) {
@@ -64,14 +73,12 @@ void sendrecv_field_x(thrust::device_vector<FieldType>& field, MPIInfo& mPIInfo)
         }
     }
 
-    MPI_Barrier(MPI_COMM_WORLD);
     MPI_Sendrecv(thrust::raw_pointer_cast(sendFieldRight.data()), sendFieldRight.size(), mPIInfo.mpi_field_type, right, 0, 
                  thrust::raw_pointer_cast(recvFieldLeft.data()),  recvFieldLeft.size(),  mPIInfo.mpi_field_type, left,  0, 
                  MPI_COMM_WORLD, &st);
     MPI_Sendrecv(thrust::raw_pointer_cast(sendFieldLeft.data()),  sendFieldLeft.size(),  mPIInfo.mpi_field_type, left,  0, 
                  thrust::raw_pointer_cast(recvFieldRight.data()), recvFieldRight.size(), mPIInfo.mpi_field_type, right, 0, 
                  MPI_COMM_WORLD, &st);
-    MPI_Barrier(MPI_COMM_WORLD);
 
     for (int i = 0; i < mPIInfo.buffer; i++) {
         for (int j = 0; j < localNy; j++) {
@@ -94,8 +101,8 @@ void sendrecv_field_y(thrust::device_vector<FieldType>& field, MPIInfo& mPIInfo)
     int down = mPIInfo.getRank(0, 1);
     MPI_Status st;
 
-    thrust::device_vector<FieldType> sendFieldUp(mPIInfo.buffer * localSizeX), sendFieldDown(mPIInfo.buffer * localSizeX);
-    thrust::device_vector<FieldType> recvFieldUp(mPIInfo.buffer * localSizeX), recvFieldDown(mPIInfo.buffer * localSizeX);
+    thrust::host_vector<FieldType> sendFieldUp(mPIInfo.buffer * localSizeX), sendFieldDown(mPIInfo.buffer * localSizeX);
+    thrust::host_vector<FieldType> recvFieldUp(mPIInfo.buffer * localSizeX), recvFieldDown(mPIInfo.buffer * localSizeX);
 
     for (int i = 0; i < localSizeX; i++) {
         for (int j = 0; j < mPIInfo.buffer; j++) {
@@ -104,14 +111,12 @@ void sendrecv_field_y(thrust::device_vector<FieldType>& field, MPIInfo& mPIInfo)
         }
     }
 
-    MPI_Barrier(MPI_COMM_WORLD);
     MPI_Sendrecv(thrust::raw_pointer_cast(sendFieldDown.data()), sendFieldDown.size(), mPIInfo.mpi_field_type, down, 0, 
                  thrust::raw_pointer_cast(recvFieldUp.data()),   recvFieldUp.size(),   mPIInfo.mpi_field_type, up,   0, 
                  MPI_COMM_WORLD, &st);
     MPI_Sendrecv(thrust::raw_pointer_cast(sendFieldUp.data()),   sendFieldUp.size(),   mPIInfo.mpi_field_type, up,   0, 
                  thrust::raw_pointer_cast(recvFieldDown.data()), recvFieldDown.size(), mPIInfo.mpi_field_type, down, 0, 
                  MPI_COMM_WORLD, &st);
-    MPI_Barrier(MPI_COMM_WORLD);
 
     for (int i = 0; i < localSizeX; i++) {
         for (int j = 0; j < mPIInfo.buffer; j++) {
@@ -125,11 +130,8 @@ void sendrecv_field_y(thrust::device_vector<FieldType>& field, MPIInfo& mPIInfo)
 template <typename FieldType>
 void sendrecv_field(thrust::device_vector<FieldType>& field, MPIInfo& mPIInfo)
 {
-    MPI_Barrier(MPI_COMM_WORLD);
     sendrecv_field_x(field, mPIInfo);
-    MPI_Barrier(MPI_COMM_WORLD);
     sendrecv_field_y(field, mPIInfo);
-    MPI_Barrier(MPI_COMM_WORLD);
 }
 
 

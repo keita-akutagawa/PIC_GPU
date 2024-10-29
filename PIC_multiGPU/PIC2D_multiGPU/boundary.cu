@@ -220,6 +220,8 @@ void Boundary::periodicBoundaryParticleXY(
     thrust::device_vector<Particle>& particlesElectron
 )
 {
+    MPI_Barrier(MPI_COMM_WORLD);
+
     periodicBoundaryParticleOfOneSpeciesX(particlesIon, mPIInfo.existNumIonPerProcs);
     periodicBoundaryParticleOfOneSpeciesX(particlesElectron, mPIInfo.existNumElectronPerProcs);
 

@@ -10,6 +10,15 @@ struct ZerothMoment
     ZerothMoment() : 
         n(0.0f)
         {}
+    
+    __host__ __device__
+    ZerothMoment& operator=(const ZerothMoment& other)
+    {
+        if (this != &other) {
+            n = other.n;
+        }
+        return *this;
+    }
 };
 
 
@@ -25,6 +34,17 @@ struct FirstMoment
         y(0.0f), 
         z(0.0f)
         {}
+    
+    __host__ __device__
+    FirstMoment& operator=(const FirstMoment& other)
+    {
+        if (this != &other) {
+            x = other.x;
+            y = other.y;
+            z = other.z;
+        }
+        return *this;
+    }
 };
 
 
@@ -46,6 +66,20 @@ struct SecondMoment
         xz(0.0f), 
         yz(0.0f)
         {}
+    
+    __host__ __device__
+    SecondMoment& operator=(const SecondMoment& other)
+    {
+        if (this != &other) {
+            xx = other.xx;
+            yy = other.yy;
+            zz = other.zz;
+            xy = other.xy;
+            xz = other.xz;
+            yz = other.yz;
+        }
+        return *this;
+    }
 };
 
 #endif

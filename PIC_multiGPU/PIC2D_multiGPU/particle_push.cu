@@ -108,7 +108,6 @@ ParticleField getParticleFields(
     particleField.eZ += E[yIndex1 + localSizeY * xIndex2].eZ * cx1 * cy2;
     particleField.eZ += E[yIndex2 + localSizeY * xIndex2].eZ * cx1 * cy1;
 
-
     return particleField;
 }
 

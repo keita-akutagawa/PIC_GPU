@@ -13,6 +13,17 @@ struct MagneticField
         bY(0.0f),
         bZ(0.0f)
         {}
+    
+    __host__ __device__
+    MagneticField& operator=(const MagneticField& other)
+    {
+        if (this != &other) {
+            bX = other.bX;
+            bY = other.bY;
+            bZ = other.bZ;
+        }
+        return *this;
+    }
 };
 
 
@@ -28,6 +39,17 @@ struct ElectricField
         eY(0.0f),
         eZ(0.0f)
         {}
+    
+    __host__ __device__
+    ElectricField& operator=(const ElectricField& other)
+    {
+        if (this != &other) {
+            eX = other.eX;
+            eY = other.eY;
+            eZ = other.eZ;
+        }
+        return *this;
+    }
 };
 
 
@@ -43,6 +65,17 @@ struct CurrentField
         jY(0.0f),
         jZ(0.0f)
         {}
+    
+    __host__ __device__
+    CurrentField& operator=(const CurrentField& other)
+    {
+        if (this != &other) {
+            jX = other.jX;
+            jY = other.jY;
+            jZ = other.jZ;
+        }
+        return *this;
+    }
 };
 
 
@@ -54,6 +87,15 @@ struct RhoField
     RhoField() : 
         rho(0.0f)
         {}
+    
+    __host__ __device__
+    RhoField& operator=(const RhoField& other)
+    {
+        if (this != &other) {
+            rho = other.rho;
+        }
+        return *this;
+    }
 };
 
 
@@ -65,6 +107,15 @@ struct FilterField
     FilterField() : 
         F(0.0f)
         {}
+    
+    __host__ __device__
+    FilterField& operator=(const FilterField& other)
+    {
+        if (this != &other) {
+            F = other.F;
+        }
+        return *this;
+    }
 };
 
 #endif

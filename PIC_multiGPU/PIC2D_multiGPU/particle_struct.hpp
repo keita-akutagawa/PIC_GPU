@@ -72,6 +72,20 @@ struct ParticleField
         eY(0.0f), 
         eZ(0.0f)
         {}
+    
+    __host__ __device__
+    ParticleField& operator=(const ParticleField& other)
+    {
+        if (this != &other) {
+            bX = other.bX;
+            bY = other.bY;
+            bZ = other.bZ;
+            eX = other.eX;
+            eY = other.eY;
+            eZ = other.eZ;
+        }
+        return *this;
+    }
 };
 
 #endif

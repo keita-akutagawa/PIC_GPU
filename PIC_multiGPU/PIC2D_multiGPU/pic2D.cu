@@ -93,7 +93,7 @@ void PIC2D::oneStepPeriodicXY()
     dim3 threadsPerBlock(16, 16);
     dim3 blocksPerGrid((mPIInfo.localSizeX + threadsPerBlock.x - 1) / threadsPerBlock.x,
                        (mPIInfo.localSizeY + threadsPerBlock.y - 1) / threadsPerBlock.y);
-
+                       
     fieldSolver.timeEvolutionB(B, E, dt / 2.0f);
     sendrecv_field(B, mPIInfo);
     boundary.periodicBoundaryBX(B);
@@ -555,7 +555,7 @@ void PIC2D::saveParticle(
             ofsVIon.write(reinterpret_cast<const char*>(&vy), sizeof(float));
             ofsVIon.write(reinterpret_cast<const char*>(&vz), sizeof(float));
 
-            KineticEnergy += 0.5f * mIon * (vx * vx + vy * vy + vz * vz);
+            KineticEnergy += (host_particlesIon[i].gamma - 1.0f) * mIon * pow(c, 2);
         }
     }
 
@@ -580,7 +580,7 @@ void PIC2D::saveParticle(
             ofsVElectron.write(reinterpret_cast<const char*>(&vy), sizeof(float));
             ofsVElectron.write(reinterpret_cast<const char*>(&vz), sizeof(float));
             
-            KineticEnergy += 0.5f * mElectron * (vx * vx + vy * vy + vz * vz);
+            KineticEnergy += (host_particlesElectron[i].gamma - 1.0f) * mElectron * pow(c, 2);
         }
     }
 
