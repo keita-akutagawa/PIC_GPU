@@ -60,21 +60,23 @@ __global__ void calculateZerothMomentOfOneSpecies_kernel(
     if (i < existNumSpecies) {
 
         float cx1, cx2; 
-        unsigned long long xIndex1, xIndex2;
+        int xIndex1, xIndex2;
         float xOverDx;
         float cy1, cy2; 
-        unsigned long long yIndex1, yIndex2;
+        int yIndex1, yIndex2;
         float yOverDy;
 
         xOverDx = (particlesSpecies[i].x - xminForProcs + buffer * device_dx) / device_dx;
         yOverDy = (particlesSpecies[i].y - yminForProcs + buffer * device_dy) / device_dy;
 
         xIndex1 = floorf(xOverDx);
+        xIndex1 = (xIndex1 < 0) ? 0 : xIndex1;
         xIndex2 = xIndex1 + 1;
-        xIndex2 = (xIndex2 == localSizeX) ? 0 : xIndex2;
+        xIndex2 = (xIndex2 >= localSizeX) ? 0 : xIndex2;
         yIndex1 = floorf(yOverDy);
+        yIndex1 = (yIndex1 < 0) ? 0 : yIndex1;
         yIndex2 = yIndex1 + 1;
-        yIndex2 = (yIndex2 == localSizeY) ? 0 : yIndex2;
+        yIndex2 = (yIndex2 >= localSizeY) ? 0 : yIndex2;
 
         cx1 = xOverDx - xIndex1;
         cx2 = 1.0f - cx1;
@@ -96,12 +98,6 @@ void MomentCalculater::calculateZerothMomentOfOneSpecies(
 )
 {
     resetZerothMomentOfOneSpecies(zerothMomentOfOneSpecies);
-
-
-    float xminForProcs = xmin + (xmax - xmin) / mPIInfo.gridX * mPIInfo.localGridX;
-    float xmaxForProcs = xmin + (xmax - xmin) / mPIInfo.gridX * (mPIInfo.localGridX + 1);
-    float yminForProcs = ymin + (ymax - ymin) / mPIInfo.gridY * mPIInfo.localGridY;
-    float ymaxForProcs = ymin + (ymax - ymin) / mPIInfo.gridY * (mPIInfo.localGridY + 1);
 
     dim3 threadsPerBlock(256);
     dim3 blocksPerGrid((existNumSpecies + threadsPerBlock.x - 1) / threadsPerBlock.x);
@@ -145,11 +141,13 @@ __global__ void calculateFirstMomentOfOneSpecies_kernel(
         yOverDy = (particlesSpecies[i].y - yminForProcs + buffer * device_dy) / device_dy;
 
         xIndex1 = floorf(xOverDx);
+        xIndex1 = (xIndex1 < 0) ? 0 : xIndex1;
         xIndex2 = xIndex1 + 1;
-        xIndex2 = (xIndex2 == localSizeX) ? 0 : xIndex2;
+        xIndex2 = (xIndex2 >= localSizeX) ? 0 : xIndex2;
         yIndex1 = floorf(yOverDy);
+        yIndex1 = (yIndex1 < 0) ? 0 : yIndex1;
         yIndex2 = yIndex1 + 1;
-        yIndex2 = (yIndex2 == localSizeY) ? 0 : yIndex2;
+        yIndex2 = (yIndex2 >= localSizeY) ? 0 : yIndex2;
 
         cx1 = xOverDx - xIndex1;
         cx2 = 1.0f - cx1;
@@ -185,12 +183,6 @@ void MomentCalculater::calculateFirstMomentOfOneSpecies(
 )
 {
     resetFirstMomentOfOneSpecies(firstMomentOfOneSpecies);
-
-    
-    float xminForProcs = xmin + (xmax - xmin) / mPIInfo.gridX * mPIInfo.localGridX;
-    float xmaxForProcs = xmin + (xmax - xmin) / mPIInfo.gridX * (mPIInfo.localGridX + 1);
-    float yminForProcs = ymin + (ymax - ymin) / mPIInfo.gridY * mPIInfo.localGridY;
-    float ymaxForProcs = ymin + (ymax - ymin) / mPIInfo.gridY * (mPIInfo.localGridY + 1);
 
     dim3 threadsPerBlock(256);
     dim3 blocksPerGrid((existNumSpecies + threadsPerBlock.x - 1) / threadsPerBlock.x);
@@ -233,11 +225,13 @@ __global__ void calculateSecondMomentOfOneSpecies_kernel(
         yOverDy = (particlesSpecies[i].y - yminForProcs + buffer * device_dy) / device_dy;
 
         xIndex1 = floorf(xOverDx);
+        xIndex1 = (xIndex1 < 0) ? 0 : xIndex1;
         xIndex2 = xIndex1 + 1;
-        xIndex2 = (xIndex2 == localSizeX) ? 0 : xIndex2;
+        xIndex2 = (xIndex2 >= localSizeX) ? 0 : xIndex2;
         yIndex1 = floorf(yOverDy);
+        yIndex1 = (yIndex1 < 0) ? 0 : yIndex1;
         yIndex2 = yIndex1 + 1;
-        yIndex2 = (yIndex2 == localSizeY) ? 0 : yIndex2;
+        yIndex2 = (yIndex2 >= localSizeY) ? 0 : yIndex2;
 
         cx1 = xOverDx - xIndex1;
         cx2 = 1.0f - cx1;
@@ -288,12 +282,6 @@ void MomentCalculater::calculateSecondMomentOfOneSpecies(
 )
 {
     resetSecondMomentOfOneSpecies(secondMomentOfOneSpecies);
-
-    
-    float xminForProcs = xmin + (xmax - xmin) / mPIInfo.gridX * mPIInfo.localGridX;
-    float xmaxForProcs = xmin + (xmax - xmin) / mPIInfo.gridX * (mPIInfo.localGridX + 1);
-    float yminForProcs = ymin + (ymax - ymin) / mPIInfo.gridY * mPIInfo.localGridY;
-    float ymaxForProcs = ymin + (ymax - ymin) / mPIInfo.gridY * (mPIInfo.localGridY + 1);
 
     dim3 threadsPerBlock(256);
     dim3 blocksPerGrid((existNumSpecies + threadsPerBlock.x - 1) / threadsPerBlock.x);

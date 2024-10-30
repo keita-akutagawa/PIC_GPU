@@ -113,7 +113,7 @@ void sendrecv_particle_x(
     MPIInfo& mPIInfo
 )
 {
-    int left = mPIInfo.getRank(-1, 0);
+    int left  = mPIInfo.getRank(-1, 0);
     int right = mPIInfo.getRank(1, 0);
     MPI_Status st;
 
@@ -179,8 +179,8 @@ void sendrecv_particle_y(
     MPIInfo& mPIInfo
 )
 {
-    int up = mPIInfo.getRank(0, -1);
-    int down = mPIInfo.getRank(0, 1);
+    int down = mPIInfo.getRank(0, -1);
+    int up   = mPIInfo.getRank(0, 1);   
     MPI_Status st;
 
     MPI_Sendrecv(

@@ -73,6 +73,11 @@ unsigned long long existNumElectronPerProcs;
 unsigned long long totalNumIonPerProcs;
 unsigned long long totalNumElectronPerProcs;
 
+float xminForProcs;
+float xmaxForProcs;
+float yminForProcs;
+float ymaxForProcs;
+
 const float vThIon = sqrt(2.0f * tIon / mIon);
 const float vThElectron = sqrt(2.0f * tElectron / mElectron);
 const float bulkVxIon = 0.0f;
@@ -103,6 +108,11 @@ __device__ unsigned long long device_existNumIonPerProcs;
 __device__ unsigned long long device_existNumElectronPerProcs;
 __device__ unsigned long long device_totalNumIonPerProcs;
 __device__ unsigned long long device_totalNumElectronPerProcs;
+
+__device__ float device_xminForProcs;
+__device__ float device_xmaxForProcs;
+__device__ float device_yminForProcs;
+__device__ float device_ymaxForProcs;
 
 __constant__ float device_B0;
 

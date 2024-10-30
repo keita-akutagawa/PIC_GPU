@@ -32,6 +32,11 @@ extern unsigned long long existNumElectronPerProcs;
 extern unsigned long long totalNumIonPerProcs;
 extern unsigned long long totalNumElectronPerProcs;
 
+extern float xminForProcs;
+extern float xmaxForProcs;
+extern float yminForProcs;
+extern float ymaxForProcs;
+
 extern const float B0;
 
 extern const float mRatio;
@@ -95,6 +100,11 @@ extern __device__ unsigned long long device_existNumIonPerProcs;
 extern __device__ unsigned long long device_existNumElectronPerProcs;
 extern __device__ unsigned long long device_totalNumIonPerProcs;
 extern __device__ unsigned long long device_totalNumElectronPerProcs;
+
+extern __device__ float device_xminForProcs;
+extern __device__ float device_xmaxForProcs;
+extern __device__ float device_yminForProcs;
+extern __device__ float device_ymaxForProcs;
 
 extern __constant__ float device_B0;
 

@@ -89,21 +89,21 @@ __global__ void boundaryForInitializeY_kernel(
 
     if (i < existNumSpecies) {
         if (yminForProcs < particlesSpecies[i].y && particlesSpecies[i].y < yminForProcs + buffer * device_dy) {
-            unsigned long long particleIndex = atomicAdd(&(countForSendSpeciesUpToDown[0]), 1);
+            unsigned long long particleIndex = atomicAdd(&(countForSendSpeciesDownToUp[0]), 1);
             Particle sendParticle = particlesSpecies[i];
             if (sendParticle.y < device_ymin + buffer * device_dy) {
                 sendParticle.y += device_ymax;
             }
-            sendParticlesSpeciesUpToDown[particleIndex] = sendParticle;
+            sendParticlesSpeciesDownToUp[particleIndex] = sendParticle;
         }
 
         if (ymaxForProcs - buffer * device_dy < particlesSpecies[i].y && particlesSpecies[i].y < ymaxForProcs) {
-            unsigned long long particleIndex = atomicAdd(&(countForSendSpeciesDownToUp[0]), 1);
+            unsigned long long particleIndex = atomicAdd(&(countForSendSpeciesUpToDown[0]), 1);
             Particle sendParticle = particlesSpecies[i];
             if (device_ymax - buffer * device_dy < sendParticle.y) {
                 sendParticle.y -= device_ymax;
             }
-            sendParticlesSpeciesDownToUp[particleIndex] = sendParticle;
+            sendParticlesSpeciesUpToDown[particleIndex] = sendParticle;
         }
     }
 }
@@ -125,11 +125,6 @@ void Boundary::boundaryForInitialize(
     countForSendSpeciesDownToUp = 0;
     countForRecvSpeciesUpToDown = 0;
     countForRecvSpeciesDownToUp = 0;
-
-    float xminForProcs = xmin + (xmax - xmin) / mPIInfo.gridX * mPIInfo.localGridX;
-    float xmaxForProcs = xmin + (xmax - xmin) / mPIInfo.gridX * (mPIInfo.localGridX + 1);
-    float yminForProcs = ymin + (ymax - ymin) / mPIInfo.gridY * mPIInfo.localGridY;
-    float ymaxForProcs = ymin + (ymax - ymin) / mPIInfo.gridY * (mPIInfo.localGridY + 1);
 
 
     dim3 threadsPerBlockForX(256);
@@ -221,15 +216,13 @@ void Boundary::periodicBoundaryParticleXY(
 )
 {
     MPI_Barrier(MPI_COMM_WORLD);
-
     periodicBoundaryParticleOfOneSpeciesX(particlesIon, existNumIonPerProcs);
-    periodicBoundaryParticleOfOneSpeciesX(particlesElectron, existNumElectronPerProcs);
-
     MPI_Barrier(MPI_COMM_WORLD);
-
+    periodicBoundaryParticleOfOneSpeciesX(particlesElectron, existNumElectronPerProcs);
+    MPI_Barrier(MPI_COMM_WORLD);
     periodicBoundaryParticleOfOneSpeciesY(particlesIon, existNumIonPerProcs);
+    MPI_Barrier(MPI_COMM_WORLD);
     periodicBoundaryParticleOfOneSpeciesY(particlesElectron, existNumElectronPerProcs);
-
     MPI_Barrier(MPI_COMM_WORLD);
 }
 
@@ -248,11 +241,11 @@ __global__ void periodicBoundaryParticleX_kernel(
     unsigned long long i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (i < existNumSpecies) {
-        if (particlesSpecies[i].x < xminForProcs - buffer * device_dx) {
+        if (particlesSpecies[i].x - (xminForProcs - buffer * device_dx) < device_EPS) {
             particlesSpecies[i].isExist = false;
         }
 
-        if (particlesSpecies[i].x > xmaxForProcs + buffer * device_dx) {
+        if (particlesSpecies[i].x - (xmaxForProcs + buffer * device_dx) > -device_EPS) {
             particlesSpecies[i].isExist = false;
         }
 
@@ -261,7 +254,7 @@ __global__ void periodicBoundaryParticleX_kernel(
             particlesSpecies[i].isMPISendLeftToRight = false;
             Particle sendParticle = particlesSpecies[i];
             if (sendParticle.x < device_xmin + buffer * device_dx) {
-                sendParticle.x += device_xmax;
+                sendParticle.x += device_xmax - device_EPS;
             }
             sendParticlesSpeciesLeftToRight[particleIndex] = sendParticle;
         }
@@ -271,7 +264,7 @@ __global__ void periodicBoundaryParticleX_kernel(
             particlesSpecies[i].isMPISendRightToLeft = false;
             Particle sendParticle = particlesSpecies[i];
             if (sendParticle.x > device_xmax - buffer * device_dx) {
-                sendParticle.x -= device_xmax;
+                sendParticle.x -= device_xmax + device_EPS;
             }
             sendParticlesSpeciesRightToLeft[particleIndex] = sendParticle;
         }
@@ -289,9 +282,6 @@ void Boundary::periodicBoundaryParticleOfOneSpeciesX(
     countForSendSpeciesRightToLeft = 0;
     countForRecvSpeciesLeftToRight = 0;
     countForRecvSpeciesRightToLeft = 0;
-
-    float xminForProcs = xmin + (xmax - xmin) / mPIInfo.gridX * mPIInfo.localGridX;
-    float xmaxForProcs = xmin + (xmax - xmin) / mPIInfo.gridX * (mPIInfo.localGridX + 1);
 
     dim3 threadsPerBlock(256);
     dim3 blocksPerGrid((existNumSpecies + threadsPerBlock.x - 1) / threadsPerBlock.x);
@@ -363,32 +353,32 @@ __global__ void periodicBoundaryParticleY_kernel(
     unsigned long long i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (i < existNumSpecies) {
-        if (particlesSpecies[i].y < yminForProcs - buffer * device_dy) {
+        if (particlesSpecies[i].y - (yminForProcs - buffer * device_dy) < device_EPS) {
             particlesSpecies[i].isExist = false;
         }
 
-        if (particlesSpecies[i].y > ymaxForProcs + buffer * device_dy) {
+        if (particlesSpecies[i].y - (ymaxForProcs + buffer * device_dy) > -device_EPS) {
             particlesSpecies[i].isExist = false;
-        }
-
-        if (particlesSpecies[i].isMPISendUpToDown) {
-            unsigned long long particleIndex = atomicAdd(&(countForSendSpeciesUpToDown[0]), 1);
-            particlesSpecies[i].isMPISendUpToDown = false;
-            Particle sendParticle = particlesSpecies[i];
-            if (sendParticle.y < device_ymin + buffer * device_dy) {
-                sendParticle.y += device_ymax;
-            }
-            sendParticlesSpeciesUpToDown[particleIndex] = sendParticle;
         }
 
         if (particlesSpecies[i].isMPISendDownToUp) {
             unsigned long long particleIndex = atomicAdd(&(countForSendSpeciesDownToUp[0]), 1);
             particlesSpecies[i].isMPISendDownToUp = false;
             Particle sendParticle = particlesSpecies[i];
-            if (sendParticle.y > device_ymax - buffer * device_dy) {
-                sendParticle.y -= device_ymax;
+            if (sendParticle.y < device_ymin + buffer * device_dy) {
+                sendParticle.y += device_ymax - device_EPS;
             }
             sendParticlesSpeciesDownToUp[particleIndex] = sendParticle;
+        }
+
+        if (particlesSpecies[i].isMPISendUpToDown) {
+            unsigned long long particleIndex = atomicAdd(&(countForSendSpeciesUpToDown[0]), 1);
+            particlesSpecies[i].isMPISendUpToDown = false;
+            Particle sendParticle = particlesSpecies[i];
+            if (sendParticle.y > device_ymax - buffer * device_dy) {
+                sendParticle.y -= device_ymax + device_EPS;
+            }
+            sendParticlesSpeciesUpToDown[particleIndex] = sendParticle;
         }
     }
 }
@@ -404,10 +394,6 @@ void Boundary::periodicBoundaryParticleOfOneSpeciesY(
     countForSendSpeciesDownToUp = 0;
     countForRecvSpeciesUpToDown = 0;
     countForRecvSpeciesDownToUp = 0;
-
-
-    float yminForProcs = ymin + (ymax - ymin) / mPIInfo.gridY * mPIInfo.localGridY;
-    float ymaxForProcs = ymin + (ymax - ymin) / mPIInfo.gridY * (mPIInfo.localGridY + 1);
 
     dim3 threadsPerBlock(256);
     dim3 blocksPerGrid((existNumSpecies + threadsPerBlock.x - 1) / threadsPerBlock.x);
@@ -471,7 +457,7 @@ void Boundary::periodicBoundaryBX(
     thrust::device_vector<MagneticField>& B
 )
 {
-    
+    MPI_Barrier(MPI_COMM_WORLD);
 }
 
 
@@ -479,7 +465,7 @@ void Boundary::periodicBoundaryBY(
     thrust::device_vector<MagneticField>& B
 )
 {
-    
+    MPI_Barrier(MPI_COMM_WORLD);
 }
 
 //////////
@@ -488,7 +474,7 @@ void Boundary::periodicBoundaryEX(
     thrust::device_vector<ElectricField>& E
 )
 {
-    
+    MPI_Barrier(MPI_COMM_WORLD);
 }
 
 
@@ -496,7 +482,7 @@ void Boundary::periodicBoundaryEY(
     thrust::device_vector<ElectricField>& E
 )
 {
-    
+    MPI_Barrier(MPI_COMM_WORLD);
 }
 
 //////////
@@ -505,7 +491,7 @@ void Boundary::periodicBoundaryCurrentX(
     thrust::device_vector<CurrentField>& current
 )
 {
-    
+    MPI_Barrier(MPI_COMM_WORLD);
 }
 
 
@@ -513,6 +499,6 @@ void Boundary::periodicBoundaryCurrentY(
     thrust::device_vector<CurrentField>& current
 )
 {
-    
+    MPI_Barrier(MPI_COMM_WORLD);
 }
 

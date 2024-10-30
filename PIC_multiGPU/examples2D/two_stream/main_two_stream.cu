@@ -13,23 +13,18 @@ __global__ void initializeField_kernel(
 
         if (mPIInfo.isInside(i, j)) {
             int index = mPIInfo.globalToLocal(i, j);
-            E[index].eX = 0.0;
-            E[index].eY = 0.0;
-            E[index].eZ = 0.0;
+            E[index].eX = 0.0f;
+            E[index].eY = 0.0f;
+            E[index].eZ = 0.0f;
             B[index].bX = device_B0;
-            B[index].bY = 0.0;
-            B[index].bZ = 0.0;
+            B[index].bY = 0.0f;
+            B[index].bZ = 0.0f;
         }
     }
 }
 
 void PIC2D::initialize()
 {
-    float xminForProcs = xmin + (xmax - xmin) / mPIInfo.gridX * mPIInfo.localGridX;
-    float xmaxForProcs = xmin + (xmax - xmin) / mPIInfo.gridX * (mPIInfo.localGridX + 1);
-    float yminForProcs = ymin + (ymax - ymin) / mPIInfo.gridY * mPIInfo.localGridY;
-    float ymaxForProcs = ymin + (ymax - ymin) / mPIInfo.gridY * (mPIInfo.localGridY + 1);
-
     initializeParticle.uniformForPositionX(
         0, existNumIonPerProcs, 
         xminForProcs, xmaxForProcs, 
@@ -118,6 +113,11 @@ int main(int argc, char** argv)
                                 + numberDensityIon * (mPIInfo.localSizeX + mPIInfo.localSizeY) * (2 * mPIInfo.buffer + 10);
     totalNumElectronPerProcs = existNumElectronPerProcs
                                      + numberDensityElectron * (mPIInfo.localSizeX + mPIInfo.localSizeY) * (2 * mPIInfo.buffer + 10);
+
+    xminForProcs = xmin + (xmax - xmin) / mPIInfo.gridX * mPIInfo.localGridX;
+    xmaxForProcs = xmin + (xmax - xmin) / mPIInfo.gridX * (mPIInfo.localGridX + 1);
+    yminForProcs = ymin + (ymax - ymin) / mPIInfo.gridY * mPIInfo.localGridY;
+    ymaxForProcs = ymin + (ymax - ymin) / mPIInfo.gridY * (mPIInfo.localGridY + 1);
 
     PIC2D pIC2D(mPIInfo);
 

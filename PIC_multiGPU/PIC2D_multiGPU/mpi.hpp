@@ -45,7 +45,7 @@ void sendrecv_field_x(thrust::device_vector<FieldType>& field, MPIInfo& mPIInfo)
     //int localSizeX = mPIInfo.localSizeX;
     int localSizeY = mPIInfo.localSizeY;
 
-    int left = mPIInfo.getRank(-1, 0);
+    int left  = mPIInfo.getRank(-1, 0);
     int right = mPIInfo.getRank(1, 0);
     MPI_Status st;
 
@@ -83,8 +83,8 @@ void sendrecv_field_y(thrust::device_vector<FieldType>& field, MPIInfo& mPIInfo)
     int localSizeX = mPIInfo.localSizeX;
     int localSizeY = mPIInfo.localSizeY;
 
-    int up = mPIInfo.getRank(0, -1);
-    int down = mPIInfo.getRank(0, 1);
+    int down = mPIInfo.getRank(0, -1);
+    int up   = mPIInfo.getRank(0, 1);   
     MPI_Status st;
 
     thrust::host_vector<FieldType> sendFieldUp(mPIInfo.buffer * localSizeX), sendFieldDown(mPIInfo.buffer * localSizeX);
@@ -92,22 +92,22 @@ void sendrecv_field_y(thrust::device_vector<FieldType>& field, MPIInfo& mPIInfo)
 
     for (int i = 0; i < localSizeX; i++) {
         for (int j = 0; j < mPIInfo.buffer; j++) {
-            sendFieldDown[j + i * mPIInfo.buffer] = field[j + localNy        + i * localSizeY];
-            sendFieldUp[  j + i * mPIInfo.buffer] = field[j + mPIInfo.buffer + i * localSizeY];
+            sendFieldUp[j + i * mPIInfo.buffer] = field[j + localNy        + i * localSizeY];
+            sendFieldDown[  j + i * mPIInfo.buffer] = field[j + mPIInfo.buffer + i * localSizeY];
         }
     }
 
-    MPI_Sendrecv(thrust::raw_pointer_cast(sendFieldDown.data()), sendFieldDown.size(), mPIInfo.mpi_field_type, down, 0, 
-                 thrust::raw_pointer_cast(recvFieldUp.data()),   recvFieldUp.size(),   mPIInfo.mpi_field_type, up,   0, 
-                 MPI_COMM_WORLD, &st);
     MPI_Sendrecv(thrust::raw_pointer_cast(sendFieldUp.data()),   sendFieldUp.size(),   mPIInfo.mpi_field_type, up,   0, 
                  thrust::raw_pointer_cast(recvFieldDown.data()), recvFieldDown.size(), mPIInfo.mpi_field_type, down, 0, 
+                 MPI_COMM_WORLD, &st);
+    MPI_Sendrecv(thrust::raw_pointer_cast(sendFieldDown.data()), sendFieldDown.size(), mPIInfo.mpi_field_type, down, 0, 
+                 thrust::raw_pointer_cast(recvFieldUp.data()),   recvFieldUp.size(),   mPIInfo.mpi_field_type, up,   0, 
                  MPI_COMM_WORLD, &st);
 
     for (int i = 0; i < localSizeX; i++) {
         for (int j = 0; j < mPIInfo.buffer; j++) {
-            field[j                            + i * localSizeY] = recvFieldUp[  j + i * mPIInfo.buffer];
-            field[j + localNy + mPIInfo.buffer + i * localSizeY] = recvFieldDown[j + i * mPIInfo.buffer];
+            field[j                            + i * localSizeY] = recvFieldDown[  j + i * mPIInfo.buffer];
+            field[j + localNy + mPIInfo.buffer + i * localSizeY] = recvFieldUp[j + i * mPIInfo.buffer];
         }
     }
 }

@@ -15,7 +15,7 @@ std::ofstream mpifile("/cfca-work/akutagawakt/PIC_multiGPU/results_two_stream/mp
 
 const int buffer = 2;
 
-const int totalStep = 10000;
+const int totalStep = 10;
 const int fieldRecordStep = 100;
 const bool isParticleRecord = true;
 const int particleRecordStep = 1000000;
@@ -30,7 +30,7 @@ const float EPS = 1.0e-10f;
 const int numberDensityIon = 100;
 const int numberDensityElectron = 100;
 
-const float B0 = sqrt(static_cast<double>(numberDensityElectron)) / 10.0;
+const float B0 = sqrt(static_cast<double>(numberDensityElectron)) / 10.0f;
 
 const float mRatio = 100.0f;
 const float mElectron = 1.0f;
@@ -73,6 +73,11 @@ unsigned long long existNumElectronPerProcs;
 unsigned long long totalNumIonPerProcs;
 unsigned long long totalNumElectronPerProcs;
 
+float xminForProcs;
+float xmaxForProcs;
+float yminForProcs;
+float ymaxForProcs;
+
 const float vThIon = sqrt(2.0f * tIon / mIon);
 const float vThElectron = sqrt(2.0f * tElectron / mElectron);
 const float bulkVxIon = 0.0f;
@@ -103,6 +108,11 @@ __device__ unsigned long long device_existNumIonPerProcs;
 __device__ unsigned long long device_existNumElectronPerProcs;
 __device__ unsigned long long device_totalNumIonPerProcs;
 __device__ unsigned long long device_totalNumElectronPerProcs;
+
+__device__ float device_xminForProcs;
+__device__ float device_xmaxForProcs;
+__device__ float device_yminForProcs;
+__device__ float device_ymaxForProcs;
 
 __constant__ float device_B0;
 
