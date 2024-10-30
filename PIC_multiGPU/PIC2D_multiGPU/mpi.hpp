@@ -38,15 +38,6 @@ void setupInfo(MPIInfo& mPIInfo, int buffer);
 
 
 template <typename FieldType>
-struct is_nan {
-    __host__ __device__
-    bool operator()(const FieldType& x) const {
-        return isnan(x);  // isnanはCUDAでサポートされています
-    }
-};
-
-
-template <typename FieldType>
 void sendrecv_field_x(thrust::device_vector<FieldType>& field, MPIInfo& mPIInfo)
 {
     int localNx = mPIInfo.localNx;
