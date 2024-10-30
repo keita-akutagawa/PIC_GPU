@@ -34,7 +34,7 @@ Boundary::Boundary(MPIInfo& mPIInfo)
 struct IsExistTransform
 {
     __host__ __device__
-    int operator()(const Particle& p) const {
+    unsigned long long operator()(const Particle& p) const {
         return p.isExist ? 1 : 0;
     }
 };
@@ -222,13 +222,13 @@ void Boundary::periodicBoundaryParticleXY(
 {
     MPI_Barrier(MPI_COMM_WORLD);
 
-    periodicBoundaryParticleOfOneSpeciesX(particlesIon, mPIInfo.existNumIonPerProcs);
-    periodicBoundaryParticleOfOneSpeciesX(particlesElectron, mPIInfo.existNumElectronPerProcs);
+    periodicBoundaryParticleOfOneSpeciesX(particlesIon, existNumIonPerProcs);
+    periodicBoundaryParticleOfOneSpeciesX(particlesElectron, existNumElectronPerProcs);
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-    periodicBoundaryParticleOfOneSpeciesY(particlesIon, mPIInfo.existNumIonPerProcs);
-    periodicBoundaryParticleOfOneSpeciesY(particlesElectron, mPIInfo.existNumElectronPerProcs);
+    periodicBoundaryParticleOfOneSpeciesY(particlesIon, existNumIonPerProcs);
+    periodicBoundaryParticleOfOneSpeciesY(particlesElectron, existNumElectronPerProcs);
 
     MPI_Barrier(MPI_COMM_WORLD);
 }

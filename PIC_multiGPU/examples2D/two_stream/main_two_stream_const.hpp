@@ -54,19 +54,24 @@ const float ionInertialLength = c / omegaPi;
 
 const int nx = 512;
 const float dx = 1.0f;
-const float xmin = EPS; 
-const float xmax = nx * dx - EPS;
+const float xmin = 0.0f; 
+const float xmax = nx * dx - 0.0f;
 
-const int ny = 4;
+const int ny = 8;
 const float dy = 1.0f;
-const float ymin = EPS; 
-const float ymax = ny * dy - EPS;
+const float ymin = 0.0f; 
+const float ymax = ny * dy - 0.0f;
 
 float dt = 0.5f;
 
 const unsigned long long totalNumIon = numberDensityIon * nx * ny;
 const unsigned long long totalNumElectron = numberDensityElectron * nx * ny;
 const unsigned long long totalNumParticles = totalNumIon + totalNumElectron;
+
+unsigned long long existNumIonPerProcs;
+unsigned long long existNumElectronPerProcs;
+unsigned long long totalNumIonPerProcs;
+unsigned long long totalNumElectronPerProcs;
 
 const float vThIon = sqrt(2.0f * tIon / mIon);
 const float vThElectron = sqrt(2.0f * tElectron / mElectron);
@@ -89,6 +94,15 @@ __constant__ float device_EPS;
 
 __constant__ int device_numberDensityIon;
 __constant__ int device_numberDensityElectron;
+
+__constant__ unsigned long long device_totalNumIon;
+__constant__ unsigned long long device_totalNumElectron;
+__constant__ unsigned long long device_totalNumParticles;
+
+__device__ unsigned long long device_existNumIonPerProcs;
+__device__ unsigned long long device_existNumElectronPerProcs;
+__device__ unsigned long long device_totalNumIonPerProcs;
+__device__ unsigned long long device_totalNumElectronPerProcs;
 
 __constant__ float device_B0;
 
@@ -123,10 +137,6 @@ __constant__ float device_ymin;
 __constant__ float device_ymax;
 
 __device__ float device_dt;
-
-__constant__ unsigned long long device_totalNumIon;
-__constant__ unsigned long long device_totalNumElectron;
-__constant__ unsigned long long device_totalNumParticles;
 
 __constant__ float device_vThIon;
 __constant__ float device_vThElectron;

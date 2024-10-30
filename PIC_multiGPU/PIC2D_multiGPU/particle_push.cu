@@ -17,11 +17,11 @@ void ParticlePush::pushVelocity(
 {
     pushVelocityOfOneSpecies(
         particlesIon, B, E, qIon, mIon, 
-        mPIInfo.existNumIonPerProcs, dt
+        existNumIonPerProcs, dt
     );
     pushVelocityOfOneSpecies(
         particlesElectron, B, E, qElectron, mElectron, 
-        mPIInfo.existNumElectronPerProcs, dt
+        existNumElectronPerProcs, dt
     );
 }
 
@@ -33,10 +33,10 @@ void ParticlePush::pushPosition(
 )
 {
     pushPositionOfOneSpecies(
-        particlesIon, mPIInfo.existNumIonPerProcs, dt
+        particlesIon, existNumIonPerProcs, dt
     );
     pushPositionOfOneSpecies(
-        particlesElectron, mPIInfo.existNumElectronPerProcs, dt
+        particlesElectron, existNumElectronPerProcs, dt
     );
 }
 

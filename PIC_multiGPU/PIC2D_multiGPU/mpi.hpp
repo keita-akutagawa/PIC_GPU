@@ -17,12 +17,7 @@ struct MPIInfo
     int localGridX, localGridY;
     int localNx, localNy; 
     int buffer;
-    int localSizeX, localSizeY; 
-    
-    unsigned long long existNumIonPerProcs = 0;
-    unsigned long long existNumElectronPerProcs = 0;
-    unsigned long long totalNumIonPerProcs = 0;
-    unsigned long long totalNumElectronPerProcs = 0;
+    int localSizeX, localSizeY;
 
     MPI_Datatype mpi_particle_type;
     MPI_Datatype mpi_field_type;

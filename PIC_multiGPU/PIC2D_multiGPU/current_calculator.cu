@@ -24,10 +24,10 @@ void CurrentCalculator::calculateCurrent(
 )
 {
     calculateCurrentOfOneSpecies(
-        current, particlesIon, qIon, mPIInfo.existNumIonPerProcs
+        current, particlesIon, qIon, existNumIonPerProcs
     );
     calculateCurrentOfOneSpecies(
-        current, particlesElectron, qElectron, mPIInfo.existNumElectronPerProcs
+        current, particlesElectron, qElectron, existNumElectronPerProcs
     );
 }
 

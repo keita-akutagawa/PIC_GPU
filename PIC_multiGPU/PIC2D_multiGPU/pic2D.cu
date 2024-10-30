@@ -4,8 +4,8 @@
 PIC2D::PIC2D(MPIInfo& mPIInfo)
     : mPIInfo(mPIInfo), 
 
-      particlesIon     (mPIInfo.totalNumIonPerProcs), 
-      particlesElectron(mPIInfo.totalNumElectronPerProcs),
+      particlesIon     (totalNumIonPerProcs), 
+      particlesElectron(totalNumElectronPerProcs),
       E                   (mPIInfo.localSizeX * mPIInfo.localSizeY), 
       tmpE                (mPIInfo.localSizeX * mPIInfo.localSizeY), 
       B                   (mPIInfo.localSizeX * mPIInfo.localSizeY), 
@@ -19,8 +19,8 @@ PIC2D::PIC2D(MPIInfo& mPIInfo)
       secondMomentIon     (mPIInfo.localSizeX * mPIInfo.localSizeY), 
       secondMomentElectron(mPIInfo.localSizeX * mPIInfo.localSizeY), 
 
-      host_particlesIon     (mPIInfo.totalNumIonPerProcs), 
-      host_particlesElectron(mPIInfo.totalNumElectronPerProcs), 
+      host_particlesIon     (totalNumIonPerProcs), 
+      host_particlesElectron(totalNumElectronPerProcs), 
       host_E                   (mPIInfo.localSizeX * mPIInfo.localSizeY),  
       host_B                   (mPIInfo.localSizeX * mPIInfo.localSizeY),  
       host_current             (mPIInfo.localSizeX * mPIInfo.localSizeY),  
@@ -157,6 +157,8 @@ void PIC2D::oneStepPeriodicXY()
     boundary.periodicBoundaryParticleXY(
         particlesIon, particlesElectron
     );
+
+    
 }
 
 
@@ -260,10 +262,10 @@ void PIC2D::calculateFullMoments()
 void PIC2D::calculateZerothMoments()
 {
     momentCalculater.calculateZerothMomentOfOneSpecies(
-        zerothMomentIon, particlesIon, mPIInfo.existNumIonPerProcs
+        zerothMomentIon, particlesIon, existNumIonPerProcs
     );
     momentCalculater.calculateZerothMomentOfOneSpecies(
-        zerothMomentElectron, particlesElectron, mPIInfo.existNumElectronPerProcs
+        zerothMomentElectron, particlesElectron, existNumElectronPerProcs
     );
 }
 
@@ -271,10 +273,10 @@ void PIC2D::calculateZerothMoments()
 void PIC2D::calculateFirstMoments()
 {
     momentCalculater.calculateFirstMomentOfOneSpecies(
-        firstMomentIon, particlesIon, mPIInfo.existNumIonPerProcs
+        firstMomentIon, particlesIon, existNumIonPerProcs
     );
     momentCalculater.calculateFirstMomentOfOneSpecies(
-        firstMomentElectron, particlesElectron, mPIInfo.existNumElectronPerProcs
+        firstMomentElectron, particlesElectron, existNumElectronPerProcs
     );
 }
 
@@ -282,10 +284,10 @@ void PIC2D::calculateFirstMoments()
 void PIC2D::calculateSecondMoments()
 {
     momentCalculater.calculateSecondMomentOfOneSpecies(
-        secondMomentIon, particlesIon, mPIInfo.existNumIonPerProcs
+        secondMomentIon, particlesIon, existNumIonPerProcs
     );
     momentCalculater.calculateSecondMomentOfOneSpecies(
-        secondMomentElectron, particlesElectron, mPIInfo.existNumElectronPerProcs
+        secondMomentElectron, particlesElectron, existNumElectronPerProcs
     );
 }
 
@@ -538,7 +540,7 @@ void PIC2D::saveParticle(
     ofsXIon << std::fixed << std::setprecision(6);
     std::ofstream ofsVIon(filenameVIon, std::ios::binary);
     ofsVIon << std::fixed << std::setprecision(6);
-    for (unsigned long long i = 0; i < mPIInfo.existNumIonPerProcs; i++) {
+    for (unsigned long long i = 0; i < existNumIonPerProcs; i++) {
         x = host_particlesIon[i].x;
         y = host_particlesIon[i].y;
         z = host_particlesIon[i].z;
@@ -563,7 +565,7 @@ void PIC2D::saveParticle(
     ofsXElectron << std::fixed << std::setprecision(6);
     std::ofstream ofsVElectron(filenameVElectron, std::ios::binary);
     ofsVElectron << std::fixed << std::setprecision(6);
-    for (unsigned long long i = 0; i < mPIInfo.existNumElectronPerProcs; i++) {
+    for (unsigned long long i = 0; i < existNumElectronPerProcs; i++) {
         x = host_particlesElectron[i].x;
         y = host_particlesElectron[i].y;
         z = host_particlesElectron[i].z;

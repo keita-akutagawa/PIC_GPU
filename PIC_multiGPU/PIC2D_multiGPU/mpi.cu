@@ -152,7 +152,7 @@ void sendrecv_particle_x(
         left, 0, 
         MPI_COMM_WORLD, &st
     );
-    
+
     MPI_Sendrecv(
         thrust::raw_pointer_cast(sendParticlesSpeciesLeftToRight.data()), 
         countForSendSpeciesLeftToRight, 

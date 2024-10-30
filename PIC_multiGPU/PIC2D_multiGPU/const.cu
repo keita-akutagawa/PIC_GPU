@@ -28,6 +28,11 @@ void initializeDeviceConstants()
     cudaMemcpyToSymbol(device_totalNumElectron, &totalNumElectron, sizeof(unsigned long long));
     cudaMemcpyToSymbol(device_totalNumParticles, &totalNumParticles, sizeof(unsigned long long));
 
+    cudaMemcpyToSymbol(device_existNumIonPerProcs, &existNumIonPerProcs, sizeof(unsigned long long));
+    cudaMemcpyToSymbol(device_existNumElectronPerProcs, &existNumElectronPerProcs, sizeof(unsigned long long));
+    cudaMemcpyToSymbol(device_totalNumIonPerProcs, &totalNumIonPerProcs, sizeof(unsigned long long));
+    cudaMemcpyToSymbol(device_totalNumElectronPerProcs, &totalNumElectronPerProcs, sizeof(unsigned long long));
+
     cudaMemcpyToSymbol(device_B0, &B0, sizeof(float));
 
     cudaMemcpyToSymbol(device_mRatio, &mRatio, sizeof(float));
