@@ -98,7 +98,6 @@ void PIC2D::oneStepPeriodicXY()
     sendrecv_field(B, mPIInfo);
     boundary.periodicBoundaryBX(B);
     boundary.periodicBoundaryBY(B);
-    std::cout << "AAA" << std::endl;
     
     getCenterBE_kernel<<<blocksPerGrid, threadsPerBlock>>>(
         thrust::raw_pointer_cast(tmpB.data()), 
@@ -114,21 +113,17 @@ void PIC2D::oneStepPeriodicXY()
     boundary.periodicBoundaryBY(tmpB);
     boundary.periodicBoundaryEX(tmpE);
     boundary.periodicBoundaryEY(tmpE);
-    std::cout << "BBB" << std::endl;
 
     particlePush.pushVelocity(
         particlesIon, particlesElectron, tmpB, tmpE, dt
     );
-    std::cout << "CCC" << std::endl;
 
     particlePush.pushPosition(
         particlesIon, particlesElectron, dt / 2.0f
     );
-    std::cout << "CD" << std::endl;
     boundary.periodicBoundaryParticleXY(
         particlesIon, particlesElectron
     );
-    std::cout << "DDD" << std::endl;
 
     currentCalculator.resetCurrent(tmpCurrent);
     currentCalculator.calculateCurrent(
@@ -145,19 +140,16 @@ void PIC2D::oneStepPeriodicXY()
     sendrecv_field(current, mPIInfo);
     boundary.periodicBoundaryCurrentX(current);
     boundary.periodicBoundaryCurrentY(current);
-    std::cout << "EEE" << std::endl;
 
     fieldSolver.timeEvolutionB(B, E, dt / 2.0f);
     sendrecv_field(B, mPIInfo);
     boundary.periodicBoundaryBX(B);
     boundary.periodicBoundaryBY(B);
-    std::cout << "FFF" << std::endl;
 
     fieldSolver.timeEvolutionE(E, B, current, dt);
     sendrecv_field(E, mPIInfo);
     boundary.periodicBoundaryEX(E);
     boundary.periodicBoundaryEY(E);
-    std::cout << "GGG" << std::endl;
 
     particlePush.pushPosition(
         particlesIon, particlesElectron, dt / 2.0f
@@ -165,10 +157,6 @@ void PIC2D::oneStepPeriodicXY()
     boundary.periodicBoundaryParticleXY(
         particlesIon, particlesElectron
     );
-    std::cout << "done" << std::endl;
-
-    Particle a = particlesElectron[existNumElectronPerProcs + 1];
-    if (a.isExist == true) printf("BUG!\n");
 }
 
 
