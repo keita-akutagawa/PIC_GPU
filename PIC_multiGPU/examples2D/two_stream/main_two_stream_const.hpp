@@ -15,7 +15,7 @@ std::ofstream mpifile("/cfca-work/akutagawakt/PIC_multiGPU/results_two_stream/mp
 
 const int buffer = 2;
 
-const int totalStep = 10;
+const int totalStep = 10000;
 const int fieldRecordStep = 100;
 const bool isParticleRecord = true;
 const int particleRecordStep = 1000000;

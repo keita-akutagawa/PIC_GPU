@@ -141,7 +141,7 @@ int main(int argc, char** argv)
                 << "omega_pe * t = " << totalStep * dt * omegaPe << std::endl;
     }
 
-
+    MPI_Barrier(MPI_COMM_WORLD);
     for (int step = 0; step < totalStep + 1; step++) {
         MPI_Barrier(MPI_COMM_WORLD);
 
