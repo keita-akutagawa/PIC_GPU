@@ -71,10 +71,12 @@ __global__ void calculateZerothMomentOfOneSpecies_kernel(
 
         xIndex1 = floorf(xOverDx);
         xIndex1 = (xIndex1 < 0) ? 0 : xIndex1;
+        xIndex1 = (xIndex1 >= localSizeX) ? localSizeX - 1 : xIndex1;
         xIndex2 = xIndex1 + 1;
         xIndex2 = (xIndex2 >= localSizeX) ? 0 : xIndex2;
         yIndex1 = floorf(yOverDy);
         yIndex1 = (yIndex1 < 0) ? 0 : yIndex1;
+        yIndex1 = (yIndex1 >= localSizeY) ? localSizeY - 1 : yIndex1;
         yIndex2 = yIndex1 + 1;
         yIndex2 = (yIndex2 >= localSizeY) ? 0 : yIndex2;
 
@@ -142,10 +144,12 @@ __global__ void calculateFirstMomentOfOneSpecies_kernel(
 
         xIndex1 = floorf(xOverDx);
         xIndex1 = (xIndex1 < 0) ? 0 : xIndex1;
+        xIndex1 = (xIndex1 >= localSizeX) ? localSizeX - 1 : xIndex1;
         xIndex2 = xIndex1 + 1;
         xIndex2 = (xIndex2 >= localSizeX) ? 0 : xIndex2;
         yIndex1 = floorf(yOverDy);
         yIndex1 = (yIndex1 < 0) ? 0 : yIndex1;
+        yIndex1 = (yIndex1 >= localSizeY) ? localSizeY - 1 : yIndex1;
         yIndex2 = yIndex1 + 1;
         yIndex2 = (yIndex2 >= localSizeY) ? 0 : yIndex2;
 
@@ -226,10 +230,12 @@ __global__ void calculateSecondMomentOfOneSpecies_kernel(
 
         xIndex1 = floorf(xOverDx);
         xIndex1 = (xIndex1 < 0) ? 0 : xIndex1;
+        xIndex1 = (xIndex1 >= localSizeX) ? localSizeX - 1 : xIndex1;
         xIndex2 = xIndex1 + 1;
         xIndex2 = (xIndex2 >= localSizeX) ? 0 : xIndex2;
         yIndex1 = floorf(yOverDy);
         yIndex1 = (yIndex1 < 0) ? 0 : yIndex1;
+        yIndex1 = (yIndex1 >= localSizeY) ? localSizeY - 1 : yIndex1;
         yIndex2 = yIndex1 + 1;
         yIndex2 = (yIndex2 >= localSizeY) ? 0 : yIndex2;
 

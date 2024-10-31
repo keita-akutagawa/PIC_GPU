@@ -72,10 +72,12 @@ ParticleField getParticleFields(
 
     xIndex1 = floorf(xOverDx);
     xIndex1 = (xIndex1 < 0) ? 0 : xIndex1;
+    xIndex1 = (xIndex1 >= localSizeX) ? localSizeX - 1 : xIndex1;
     xIndex2 = xIndex1 + 1;
     xIndex2 = (xIndex2 >= localSizeX) ? 0 : xIndex2;
     yIndex1 = floorf(yOverDy);
     yIndex1 = (yIndex1 < 0) ? 0 : yIndex1;
+    yIndex1 = (yIndex1 >= localSizeY) ? localSizeY - 1 : yIndex1;
     yIndex2 = yIndex1 + 1;
     yIndex2 = (yIndex2 >= localSizeY) ? 0 : yIndex2;
 
@@ -144,7 +146,6 @@ __global__ void pushVelocityOfOneSpecies_kernel(
 
         qOverMTimesDtOver2 = q / m * dt / 2.0f;
         tmp1OverC2 = 1.0f / (device_c * device_c);
-
 
         vx = particlesSpecies[i].vx;
         vy = particlesSpecies[i].vy;
@@ -221,7 +222,6 @@ void ParticlePush::pushVelocityOfOneSpecies(
         mPIInfo.localSizeX, mPIInfo.localSizeY, 
         xminForProcs, xmaxForProcs, yminForProcs, ymaxForProcs
     );
-    cudaDeviceSynchronize();
 }
 
 
@@ -299,7 +299,6 @@ void ParticlePush::pushPositionOfOneSpecies(
         yminForProcs, ymaxForProcs, 
         mPIInfo.buffer
     );
-    cudaDeviceSynchronize();
 }
 
 
