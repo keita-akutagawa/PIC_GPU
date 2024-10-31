@@ -51,7 +51,7 @@ __device__
 ParticleField getParticleFields(
     const MagneticField* B,
     const ElectricField* E, 
-    const Particle& particle, 
+    Particle& particle, 
     const int localNx, const int localNy, const int buffer, 
     const int localSizeX, const int localSizeY, 
     const float xminForProcs, const float xmaxForProcs, 
@@ -71,15 +71,19 @@ ParticleField getParticleFields(
     yOverDy = (particle.y - yminForProcs + buffer * device_dy) / device_dy;
 
     xIndex1 = floorf(xOverDx);
-    xIndex1 = (xIndex1 < 0) ? 0 : xIndex1;
-    xIndex1 = (xIndex1 >= localSizeX) ? localSizeX - 1 : xIndex1;
     xIndex2 = xIndex1 + 1;
-    xIndex2 = (xIndex2 >= localSizeX) ? 0 : xIndex2;
+    xIndex2 = (xIndex2 == localSizeX) ? 0 : xIndex2;
     yIndex1 = floorf(yOverDy);
-    yIndex1 = (yIndex1 < 0) ? 0 : yIndex1;
-    yIndex1 = (yIndex1 >= localSizeY) ? localSizeY - 1 : yIndex1;
     yIndex2 = yIndex1 + 1;
-    yIndex2 = (yIndex2 >= localSizeY) ? 0 : yIndex2;
+    yIndex2 = (yIndex2 == localSizeY) ? 0 : yIndex2;
+    if (xIndex1 < 0 || xIndex1 >= localSizeX) {
+        particle.isExist = false;
+        return;
+    }
+    if (yIndex1 < 0 || yIndex1 >= localSizeY) {
+        particle.isExist = false;
+        return;
+    }
 
     cx1 = xOverDx - xIndex1;
     cx2 = 1.0f - cx1;
@@ -159,6 +163,7 @@ __global__ void pushVelocityOfOneSpecies_kernel(
             xminForProcs, xmaxForProcs, 
             yminForProcs, ymaxForProcs
         );
+        if (particlesSpecies[i].isExist == false) return;
 
         bx = particleField.bX;
         by = particleField.bY;

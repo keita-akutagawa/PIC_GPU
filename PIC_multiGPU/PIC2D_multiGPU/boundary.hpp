@@ -20,6 +20,16 @@ private:
     thrust::device_vector<Particle> recvParticlesSpeciesUpToDown;
     thrust::device_vector<Particle> recvParticlesSpeciesDownToUp;
 
+    thrust::host_vector<Particle> host_sendParticlesSpeciesLeftToRight;
+    thrust::host_vector<Particle> host_sendParticlesSpeciesRightToLeft;
+    thrust::host_vector<Particle> host_recvParticlesSpeciesLeftToRight;
+    thrust::host_vector<Particle> host_recvParticlesSpeciesRightToLeft;
+
+    thrust::host_vector<Particle> host_sendParticlesSpeciesUpToDown;
+    thrust::host_vector<Particle> host_sendParticlesSpeciesDownToUp;
+    thrust::host_vector<Particle> host_recvParticlesSpeciesUpToDown;
+    thrust::host_vector<Particle> host_recvParticlesSpeciesDownToUp;
+
     thrust::device_vector<unsigned long long> device_countForSendSpeciesLeftToRight;
     thrust::device_vector<unsigned long long> device_countForSendSpeciesRightToLeft;
     unsigned long long countForSendSpeciesLeftToRight;

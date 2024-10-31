@@ -122,10 +122,10 @@ void sendrecv_field(thrust::device_vector<FieldType>& field, MPIInfo& mPIInfo)
 
 
 void sendrecv_particle_x(
-    thrust::device_vector<Particle>& sendParticlesSpeciesLeftToRight,
-    thrust::device_vector<Particle>& sendParticlesSpeciesRightToLeft,  
-    thrust::device_vector<Particle>& recvParticlesSpeciesLeftToRight,
-    thrust::device_vector<Particle>& recvParticlesSpeciesRightToLeft, 
+    thrust::host_vector<Particle>& host_sendParticlesSpeciesLeftToRight,
+    thrust::host_vector<Particle>& host_sendParticlesSpeciesRightToLeft,  
+    thrust::host_vector<Particle>& host_recvParticlesSpeciesLeftToRight,
+    thrust::host_vector<Particle>& host_recvParticlesSpeciesRightToLeft, 
     const unsigned long long& countForSendSpeciesLeftToRight, 
     const unsigned long long& countForSendSpeciesRightToLeft, 
     unsigned long long& countForRecvSpeciesLeftToRight, 
@@ -135,10 +135,10 @@ void sendrecv_particle_x(
 
 
 void sendrecv_particle_y(
-    thrust::device_vector<Particle>& sendParticlesSpeciesUpToDown,
-    thrust::device_vector<Particle>& sendParticlesSpeciesDownToUp,  
-    thrust::device_vector<Particle>& recvParticlesSpeciesUpToDown,
-    thrust::device_vector<Particle>& recvParticlesSpeciesDownToUp, 
+    thrust::host_vector<Particle>& host_sendParticlesSpeciesUpToDown,
+    thrust::host_vector<Particle>& host_sendParticlesSpeciesDownToUp,  
+    thrust::host_vector<Particle>& host_recvParticlesSpeciesUpToDown,
+    thrust::host_vector<Particle>& host_recvParticlesSpeciesDownToUp, 
     const unsigned long long& countForSendSpeciesUpToDown, 
     const unsigned long long& countForSendSpeciesDownToUp, 
     unsigned long long& countForRecvSpeciesUpToDown, 

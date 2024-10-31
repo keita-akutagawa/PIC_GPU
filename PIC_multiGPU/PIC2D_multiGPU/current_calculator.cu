@@ -58,15 +58,13 @@ __global__ void calculateCurrentOfOneSpecies_kernel(
         yOverDy = (particlesSpecies[i].y - yminForProcs + buffer * device_dy) / device_dy;
 
         xIndex1 = floorf(xOverDx);
-        xIndex1 = (xIndex1 < 0) ? 0 : xIndex1;
-        xIndex1 = (xIndex1 >= localSizeX) ? localSizeX - 1 : xIndex1;
         xIndex2 = xIndex1 + 1;
-        xIndex2 = (xIndex2 >= localSizeX) ? 0 : xIndex2;
+        xIndex2 = (xIndex2 == localSizeX) ? 0 : xIndex2;
         yIndex1 = floorf(yOverDy);
-        yIndex1 = (yIndex1 < 0) ? 0 : yIndex1;
-        yIndex1 = (yIndex1 >= localSizeY) ? localSizeY - 1 : yIndex1;
         yIndex2 = yIndex1 + 1;
-        yIndex2 = (yIndex2 >= localSizeY) ? 0 : yIndex2;
+        yIndex2 = (yIndex2 == localSizeY) ? 0 : yIndex2;
+        if (xIndex1 < 0 || xIndex1 >= localSizeX) return;
+        if (yIndex1 < 0 || yIndex1 >= localSizeY) return;
         
         cx1 = xOverDx - xIndex1;
         cx2 = 1.0f - cx1;

@@ -14,6 +14,16 @@ Boundary::Boundary(MPIInfo& mPIInfo)
       recvParticlesSpeciesUpToDown(numberDensityIon * mPIInfo.localSizeX * 10), 
       recvParticlesSpeciesDownToUp(numberDensityIon * mPIInfo.localSizeX * 10), 
 
+      host_sendParticlesSpeciesLeftToRight(numberDensityIon * 10 * mPIInfo.localSizeY), 
+      host_sendParticlesSpeciesRightToLeft(numberDensityIon * 10 * mPIInfo.localSizeY), 
+      host_recvParticlesSpeciesLeftToRight(numberDensityIon * 10 * mPIInfo.localSizeY), 
+      host_recvParticlesSpeciesRightToLeft(numberDensityIon * 10 * mPIInfo.localSizeY), 
+
+      host_sendParticlesSpeciesUpToDown(numberDensityIon * mPIInfo.localSizeX * 10), 
+      host_sendParticlesSpeciesDownToUp(numberDensityIon * mPIInfo.localSizeX * 10), 
+      host_recvParticlesSpeciesUpToDown(numberDensityIon * mPIInfo.localSizeX * 10), 
+      host_recvParticlesSpeciesDownToUp(numberDensityIon * mPIInfo.localSizeX * 10), 
+
       device_countForSendSpeciesLeftToRight(1, 0), 
       device_countForSendSpeciesRightToLeft(1, 0), 
       countForSendSpeciesLeftToRight(0),
@@ -142,14 +152,16 @@ void Boundary::boundaryForInitialize(
     );
     cudaDeviceSynchronize();
 
+    host_sendParticlesSpeciesLeftToRight = sendParticlesSpeciesLeftToRight;
+    host_sendParticlesSpeciesRightToLeft = sendParticlesSpeciesRightToLeft;
     countForSendSpeciesLeftToRight = device_countForSendSpeciesLeftToRight[0];
     countForSendSpeciesRightToLeft = device_countForSendSpeciesRightToLeft[0];
 
     sendrecv_particle_x(
-        sendParticlesSpeciesLeftToRight, 
-        sendParticlesSpeciesRightToLeft, 
-        recvParticlesSpeciesLeftToRight, 
-        recvParticlesSpeciesRightToLeft, 
+        host_sendParticlesSpeciesLeftToRight, 
+        host_sendParticlesSpeciesRightToLeft, 
+        host_recvParticlesSpeciesLeftToRight, 
+        host_recvParticlesSpeciesRightToLeft, 
         countForSendSpeciesLeftToRight, 
         countForSendSpeciesRightToLeft, 
         countForRecvSpeciesLeftToRight, 
@@ -158,11 +170,11 @@ void Boundary::boundaryForInitialize(
     );
 
     for (unsigned long long i = 0; i < countForRecvSpeciesLeftToRight; i++) {
-        particlesSpecies[existNumSpecies + i] = recvParticlesSpeciesLeftToRight[i];
+        particlesSpecies[existNumSpecies + i] = host_recvParticlesSpeciesLeftToRight[i];
     }
     existNumSpecies += countForRecvSpeciesLeftToRight;
     for (unsigned long long i = 0; i < countForRecvSpeciesRightToLeft; i++) {
-        particlesSpecies[existNumSpecies + i] = recvParticlesSpeciesRightToLeft[i];
+        particlesSpecies[existNumSpecies + i] = host_recvParticlesSpeciesRightToLeft[i];
     }
     existNumSpecies += countForRecvSpeciesRightToLeft;
 
@@ -184,14 +196,16 @@ void Boundary::boundaryForInitialize(
     );
     cudaDeviceSynchronize();
 
+    host_sendParticlesSpeciesUpToDown = sendParticlesSpeciesUpToDown;
+    host_sendParticlesSpeciesDownToUp = sendParticlesSpeciesDownToUp;
     countForSendSpeciesUpToDown = device_countForSendSpeciesUpToDown[0];
     countForSendSpeciesDownToUp = device_countForSendSpeciesDownToUp[0];
 
     sendrecv_particle_y(
-        sendParticlesSpeciesUpToDown, 
-        sendParticlesSpeciesDownToUp, 
-        recvParticlesSpeciesUpToDown, 
-        recvParticlesSpeciesDownToUp, 
+        host_sendParticlesSpeciesUpToDown, 
+        host_sendParticlesSpeciesDownToUp, 
+        host_recvParticlesSpeciesUpToDown, 
+        host_recvParticlesSpeciesDownToUp, 
         countForSendSpeciesUpToDown, 
         countForSendSpeciesDownToUp, 
         countForRecvSpeciesUpToDown, 
@@ -200,11 +214,11 @@ void Boundary::boundaryForInitialize(
     );
 
     for (unsigned long long i = 0; i < countForRecvSpeciesUpToDown; i++) {
-        particlesSpecies[existNumSpecies + i] = recvParticlesSpeciesUpToDown[i];
+        particlesSpecies[existNumSpecies + i] = host_recvParticlesSpeciesUpToDown[i];
     }
     existNumSpecies += countForRecvSpeciesUpToDown;
     for (unsigned long long i = 0; i < countForRecvSpeciesDownToUp; i++) {
-        particlesSpecies[existNumSpecies + i] = recvParticlesSpeciesDownToUp[i];
+        particlesSpecies[existNumSpecies + i] = host_recvParticlesSpeciesDownToUp[i];
     }
     existNumSpecies += countForRecvSpeciesDownToUp;
 }
@@ -313,20 +327,25 @@ void Boundary::periodicBoundaryParticleOfOneSpeciesX(
     );
     cudaDeviceSynchronize();
 
+    host_sendParticlesSpeciesLeftToRight = sendParticlesSpeciesLeftToRight;
+    host_sendParticlesSpeciesRightToLeft = sendParticlesSpeciesRightToLeft;
     countForSendSpeciesLeftToRight = device_countForSendSpeciesLeftToRight[0];
     countForSendSpeciesRightToLeft = device_countForSendSpeciesRightToLeft[0];
 
     sendrecv_particle_x(
-        sendParticlesSpeciesLeftToRight, 
-        sendParticlesSpeciesRightToLeft, 
-        recvParticlesSpeciesLeftToRight, 
-        recvParticlesSpeciesRightToLeft, 
+        host_sendParticlesSpeciesLeftToRight, 
+        host_sendParticlesSpeciesRightToLeft, 
+        host_recvParticlesSpeciesLeftToRight, 
+        host_recvParticlesSpeciesRightToLeft, 
         countForSendSpeciesLeftToRight, 
         countForSendSpeciesRightToLeft, 
         countForRecvSpeciesLeftToRight, 
         countForRecvSpeciesRightToLeft, 
         mPIInfo
     );
+
+    recvParticlesSpeciesLeftToRight = host_recvParticlesSpeciesLeftToRight;
+    recvParticlesSpeciesRightToLeft = host_recvParticlesSpeciesRightToLeft;
 
     for (unsigned long long i = 0; i < countForRecvSpeciesLeftToRight; i++) {
         particlesSpecies[existNumSpecies + i] = recvParticlesSpeciesLeftToRight[i];
@@ -425,20 +444,25 @@ void Boundary::periodicBoundaryParticleOfOneSpeciesY(
     );
     cudaDeviceSynchronize();
 
+    host_sendParticlesSpeciesUpToDown = sendParticlesSpeciesUpToDown;
+    host_sendParticlesSpeciesDownToUp = sendParticlesSpeciesDownToUp;
     countForSendSpeciesUpToDown = device_countForSendSpeciesUpToDown[0];
     countForSendSpeciesDownToUp = device_countForSendSpeciesDownToUp[0];
 
     sendrecv_particle_y(
-        sendParticlesSpeciesUpToDown, 
-        sendParticlesSpeciesDownToUp, 
-        recvParticlesSpeciesUpToDown, 
-        recvParticlesSpeciesDownToUp, 
+        host_sendParticlesSpeciesUpToDown, 
+        host_sendParticlesSpeciesDownToUp, 
+        host_recvParticlesSpeciesUpToDown, 
+        host_recvParticlesSpeciesDownToUp, 
         countForSendSpeciesUpToDown, 
         countForSendSpeciesDownToUp, 
         countForRecvSpeciesUpToDown, 
         countForRecvSpeciesDownToUp, 
         mPIInfo
     );
+
+    recvParticlesSpeciesUpToDown = host_recvParticlesSpeciesUpToDown;
+    recvParticlesSpeciesDownToUp = host_recvParticlesSpeciesDownToUp;
 
     for (unsigned long long i = 0; i < countForRecvSpeciesUpToDown; i++) {
         particlesSpecies[existNumSpecies + i] = recvParticlesSpeciesUpToDown[i];

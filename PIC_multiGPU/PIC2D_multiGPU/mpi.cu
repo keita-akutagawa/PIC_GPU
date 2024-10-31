@@ -102,10 +102,10 @@ void setupInfo(MPIInfo& mPIInfo, int buffer)
 
 
 void sendrecv_particle_x(
-    thrust::device_vector<Particle>& sendParticlesSpeciesLeftToRight, 
-    thrust::device_vector<Particle>& sendParticlesSpeciesRightToLeft, 
-    thrust::device_vector<Particle>& recvParticlesSpeciesLeftToRight, 
-    thrust::device_vector<Particle>& recvParticlesSpeciesRightToLeft, 
+    thrust::host_vector<Particle>& sendParticlesSpeciesLeftToRight, 
+    thrust::host_vector<Particle>& sendParticlesSpeciesRightToLeft, 
+    thrust::host_vector<Particle>& recvParticlesSpeciesLeftToRight, 
+    thrust::host_vector<Particle>& recvParticlesSpeciesRightToLeft, 
     const unsigned long long& countForSendSpeciesLeftToRight, 
     const unsigned long long& countForSendSpeciesRightToLeft, 
     unsigned long long& countForRecvSpeciesLeftToRight, 
@@ -168,10 +168,10 @@ void sendrecv_particle_x(
 
 
 void sendrecv_particle_y(
-    thrust::device_vector<Particle>& sendParticlesSpeciesUpToDown, 
-    thrust::device_vector<Particle>& sendParticlesSpeciesDownToUp, 
-    thrust::device_vector<Particle>& recvParticlesSpeciesUpToDown, 
-    thrust::device_vector<Particle>& recvParticlesSpeciesDownToUp, 
+    thrust::host_vector<Particle>& sendParticlesSpeciesUpToDown, 
+    thrust::host_vector<Particle>& sendParticlesSpeciesDownToUp, 
+    thrust::host_vector<Particle>& recvParticlesSpeciesUpToDown, 
+    thrust::host_vector<Particle>& recvParticlesSpeciesDownToUp, 
     const unsigned long long& countForSendSpeciesUpToDown, 
     const unsigned long long& countForSendSpeciesDownToUp, 
     unsigned long long& countForRecvSpeciesUpToDown, 
@@ -179,8 +179,8 @@ void sendrecv_particle_y(
     MPIInfo& mPIInfo
 )
 {
-    int down = mPIInfo.getRank(0, -1);
-    int up   = mPIInfo.getRank(0, 1);   
+    int down = mPIInfo.getRank(0, -1); 
+    int up   = mPIInfo.getRank(0, 1); 
     MPI_Status st;
 
     MPI_Sendrecv(

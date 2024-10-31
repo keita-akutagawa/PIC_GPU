@@ -9,7 +9,7 @@
 module load nvhpc
 
 export OMPI_MCA_orte_base_help_aggregate=0
-export OMPI_MCA_opal_cuda_support=1
+export OMPI_MCA_opal_cuda_support=0
 
 mpiexec -n 2 ./program
 
