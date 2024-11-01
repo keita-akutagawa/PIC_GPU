@@ -9,7 +9,7 @@
 class ParticlePush
 {
 private: 
-    MPIInfo& mPIInfo; 
+    MPIInfo mPIInfo; 
 
 public:
     ParticlePush(MPIInfo& mPIInfo); 

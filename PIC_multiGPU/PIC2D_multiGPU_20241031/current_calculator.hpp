@@ -8,7 +8,7 @@
 class CurrentCalculator
 {
 private: 
-    MPIInfo& mPIInfo; 
+    MPIInfo mPIInfo; 
 
 public: 
     CurrentCalculator(MPIInfo& mPIInfo);

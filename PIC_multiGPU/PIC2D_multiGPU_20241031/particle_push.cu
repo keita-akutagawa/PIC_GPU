@@ -18,11 +18,11 @@ void ParticlePush::pushVelocity(
     MPI_Barrier(MPI_COMM_WORLD);
     pushVelocityOfOneSpecies(
         particlesIon, B, E, qIon, mIon, 
-        mPIInfo.existNumIonPerProcs, dt
+        existNumIonPerProcs, dt
     );
     pushVelocityOfOneSpecies(
         particlesElectron, B, E, qElectron, mElectron, 
-        mPIInfo.existNumElectronPerProcs, dt
+        existNumElectronPerProcs, dt
     );
     MPI_Barrier(MPI_COMM_WORLD);
 }
@@ -36,10 +36,10 @@ void ParticlePush::pushPosition(
 {
     MPI_Barrier(MPI_COMM_WORLD);
     pushPositionOfOneSpecies(
-        particlesIon, mPIInfo.existNumIonPerProcs, dt
+        particlesIon, existNumIonPerProcs, dt
     );
     pushPositionOfOneSpecies(
-        particlesElectron, mPIInfo.existNumElectronPerProcs, dt
+        particlesElectron, existNumElectronPerProcs, dt
     );
     MPI_Barrier(MPI_COMM_WORLD);
 }
@@ -225,8 +225,7 @@ void ParticlePush::pushVelocityOfOneSpecies(
         q, m, existNumSpecies, dt, 
         mPIInfo.localNx, mPIInfo.localNy, mPIInfo.buffer, 
         mPIInfo.localSizeX, mPIInfo.localSizeY, 
-        mPIInfo.xminForProcs, mPIInfo.xmaxForProcs, 
-        mPIInfo.yminForProcs, mPIInfo.ymaxForProcs
+        xminForProcs, xmaxForProcs, yminForProcs, ymaxForProcs
     );
 }
 
@@ -301,8 +300,8 @@ void ParticlePush::pushPositionOfOneSpecies(
     pushPositionOfOneSpecies_kernel<<<blocksPerGrid, threadsPerBlock>>>(
         thrust::raw_pointer_cast(particlesSpecies.data()), 
         existNumSpecies, dt, 
-        mPIInfo.xminForProcs, mPIInfo.xmaxForProcs, 
-        mPIInfo.yminForProcs, mPIInfo.ymaxForProcs, 
+        xminForProcs, xmaxForProcs, 
+        yminForProcs, ymaxForProcs, 
         mPIInfo.buffer
     );
 }

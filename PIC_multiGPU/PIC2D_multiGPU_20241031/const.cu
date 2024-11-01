@@ -24,6 +24,20 @@ void initializeDeviceConstants()
     cudaMemcpyToSymbol(device_numberDensityIon, &numberDensityIon, sizeof(int));
     cudaMemcpyToSymbol(device_numberDensityElectron, &numberDensityElectron, sizeof(int));
 
+    cudaMemcpyToSymbol(device_totalNumIon, &totalNumIon, sizeof(unsigned long long));
+    cudaMemcpyToSymbol(device_totalNumElectron, &totalNumElectron, sizeof(unsigned long long));
+    cudaMemcpyToSymbol(device_totalNumParticles, &totalNumParticles, sizeof(unsigned long long));
+
+    cudaMemcpyToSymbol(device_existNumIonPerProcs, &existNumIonPerProcs, sizeof(unsigned long long));
+    cudaMemcpyToSymbol(device_existNumElectronPerProcs, &existNumElectronPerProcs, sizeof(unsigned long long));
+    cudaMemcpyToSymbol(device_totalNumIonPerProcs, &totalNumIonPerProcs, sizeof(unsigned long long));
+    cudaMemcpyToSymbol(device_totalNumElectronPerProcs, &totalNumElectronPerProcs, sizeof(unsigned long long));
+
+    cudaMemcpyToSymbol(device_xminForProcs, &xminForProcs, sizeof(float));
+    cudaMemcpyToSymbol(device_xmaxForProcs, &xmaxForProcs, sizeof(float));
+    cudaMemcpyToSymbol(device_yminForProcs, &yminForProcs, sizeof(float));
+    cudaMemcpyToSymbol(device_ymaxForProcs, &ymaxForProcs, sizeof(float));
+
     cudaMemcpyToSymbol(device_B0, &B0, sizeof(float));
 
     cudaMemcpyToSymbol(device_mRatio, &mRatio, sizeof(float));

@@ -8,7 +8,7 @@
 class Boundary
 {
 private:
-    MPIInfo& mPIInfo; 
+    MPIInfo mPIInfo; 
 
     thrust::device_vector<Particle> sendParticlesSpeciesLeftToRight;
     thrust::device_vector<Particle> sendParticlesSpeciesRightToLeft;
@@ -30,49 +30,39 @@ private:
     thrust::host_vector<Particle> host_recvParticlesSpeciesUpToDown;
     thrust::host_vector<Particle> host_recvParticlesSpeciesDownToUp;
 
+    thrust::device_vector<unsigned long long> device_countForSendSpeciesLeftToRight;
+    thrust::device_vector<unsigned long long> device_countForSendSpeciesRightToLeft;
+    unsigned long long countForSendSpeciesLeftToRight;
+    unsigned long long countForSendSpeciesRightToLeft;
+    unsigned long long countForRecvSpeciesLeftToRight;
+    unsigned long long countForRecvSpeciesRightToLeft;
+
+    thrust::device_vector<unsigned long long> device_countForSendSpeciesUpToDown;
+    thrust::device_vector<unsigned long long> device_countForSendSpeciesDownToUp;
+    unsigned long long countForSendSpeciesUpToDown;
+    unsigned long long countForSendSpeciesDownToUp;
+    unsigned long long countForRecvSpeciesUpToDown;
+    unsigned long long countForRecvSpeciesDownToUp;
+
 public:
     Boundary(MPIInfo& mPIInfo);
 
-    void boundaryForInitializeParticle(
-        thrust::device_vector<Particle>& particlesIon, 
-        thrust::device_vector<Particle>& particlesElectron
-    );
-    void boundaryForInitializeParticleOfOneSpeciesX(
-        thrust::device_vector<Particle>& particlesSpecies, 
-        unsigned long long& existNumSpecies, 
-        unsigned long long& countForSendSpeciesLeftToRight, 
-        unsigned long long& countForSendSpeciesRightToLeft, 
-        unsigned long long& countForRecvSpeciesLeftToRight, 
-        unsigned long long& countForRecvSpeciesRightToLeft
-    );
-    void boundaryForInitializeParticleOfOneSpeciesY(
-        thrust::device_vector<Particle>& particlesSpecies, 
-        unsigned long long& existNumSpecies, 
-        unsigned long long& countForSendSpeciesDownToUp, 
-        unsigned long long& countForSendSpeciesUpToDown, 
-        unsigned long long& countForRecvSpeciesDownToUp, 
-        unsigned long long& countForRecvSpeciesUpToDown
+    void boundaryForInitialize(
+        thrust::device_vector<Particle>& particlesSpecies,
+        unsigned long long& existNumSpecies
     );
 
     void periodicBoundaryParticleXY(
         thrust::device_vector<Particle>& particlesIon, 
-        thrust::device_vector<Particle>& particlesElectron
+        thrust::device_vector<Particle>& particesElectron
     );
     void periodicBoundaryParticleOfOneSpeciesX(
         thrust::device_vector<Particle>& particlesSpecies, 
-        unsigned long long& existNumSpecies, 
-        unsigned long long& countForSendSpeciesLeftToRight, 
-        unsigned long long& countForSendSpeciesRightToLeft, 
-        unsigned long long& countForRecvSpeciesLeftToRight, 
-        unsigned long long& countForRecvSpeciesRightToLeft
+        unsigned long long& existNumSpecies
     );
     void periodicBoundaryParticleOfOneSpeciesY(
         thrust::device_vector<Particle>& particlesSpecies, 
-        unsigned long long& existNumSpecies, 
-        unsigned long long& countForSendSpeciesDownToUp, 
-        unsigned long long& countForSendSpeciesUpToDown, 
-        unsigned long long& countForRecvSpeciesDownToUp, 
-        unsigned long long& countForRecvSpeciesUpToDown
+        unsigned long long& existNumSpecies
     );
 
     void periodicBoundaryBX(

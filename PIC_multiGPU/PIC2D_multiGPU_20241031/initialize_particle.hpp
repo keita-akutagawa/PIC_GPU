@@ -8,7 +8,7 @@
 class InitializeParticle
 {
 private:
-    MPIInfo& mPIInfo;
+    MPIInfo mPIInfo;
 
 public:
     InitializeParticle(MPIInfo& mPIInfo);

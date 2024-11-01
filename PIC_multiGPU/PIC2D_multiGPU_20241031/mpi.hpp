@@ -11,43 +11,13 @@
 
 struct MPIInfo
 {
-    int rank = 0;
-    int procs = 0;
-    int gridX, gridY = 0;
-    int localGridX, localGridY = 0;
-    int localNx = 0, localNy = 0; 
-    int buffer = 0;
-    int localSizeX = 0, localSizeY = 0;
-
-    unsigned long long existNumIonPerProcs = 0;
-    unsigned long long existNumElectronPerProcs = 0;
-    unsigned long long totalNumIonPerProcs = 0;
-    unsigned long long totalNumElectronPerProcs = 0;
-
-    float xminForProcs = 0.0f;
-    float xmaxForProcs = 0.0f;
-    float yminForProcs = 0.0f;
-    float ymaxForProcs = 0.0f; 
-
-    unsigned long long countForSendIonLeftToRight = 0;
-    unsigned long long countForSendIonRightToLeft = 0;
-    unsigned long long countForRecvIonLeftToRight = 0;
-    unsigned long long countForRecvIonRightToLeft = 0;
-
-    unsigned long long countForSendIonDownToUp = 0;
-    unsigned long long countForSendIonUpToDown = 0;
-    unsigned long long countForRecvIonDownToUp = 0;
-    unsigned long long countForRecvIonUpToDown = 0;
-
-    unsigned long long countForSendElectronLeftToRight = 0;
-    unsigned long long countForSendElectronRightToLeft = 0;
-    unsigned long long countForRecvElectronLeftToRight = 0;
-    unsigned long long countForRecvElectronRightToLeft = 0;
-
-    unsigned long long countForSendElectronDownToUp = 0;
-    unsigned long long countForSendElectronUpToDown = 0;
-    unsigned long long countForRecvElectronDownToUp = 0;
-    unsigned long long countForRecvElectronUpToDown = 0;
+    int rank;
+    int procs;
+    int gridX, gridY;
+    int localGridX, localGridY;
+    int localNx, localNy; 
+    int buffer;
+    int localSizeX, localSizeY;
 
     MPI_Datatype mpi_particle_type;
     MPI_Datatype mpi_field_type;

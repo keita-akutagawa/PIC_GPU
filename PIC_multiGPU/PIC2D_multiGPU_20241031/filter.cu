@@ -4,8 +4,8 @@
 
 Filter::Filter(MPIInfo& mPIInfo)
     : mPIInfo(mPIInfo), 
-      rho(mPIInfo.localSizeX * mPIInfo.localSizeY), 
-      F(mPIInfo.localSizeX * mPIInfo.localSizeY)
+      rho(nx * ny), 
+      F(nx * ny)
 {
 }
 
@@ -154,8 +154,7 @@ void Filter::calculateRhoOfOneSpecies(
         q, existNumSpecies, 
         mPIInfo.localNx, mPIInfo.localNy, mPIInfo.buffer, 
         mPIInfo.localSizeX, mPIInfo.localSizeY, 
-        mPIInfo.xminForProcs, mPIInfo.xmaxForProcs, 
-        mPIInfo.yminForProcs, mPIInfo.ymaxForProcs
+        xminForProcs, xmaxForProcs, yminForProcs, ymaxForProcs
     );
     cudaDeviceSynchronize();
 }

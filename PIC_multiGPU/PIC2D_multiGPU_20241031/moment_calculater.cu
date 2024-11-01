@@ -108,8 +108,7 @@ void MomentCalculater::calculateZerothMomentOfOneSpecies(
         existNumSpecies, 
         mPIInfo.localNx, mPIInfo.localNy, mPIInfo.buffer, 
         mPIInfo.localSizeX, mPIInfo.localSizeY, 
-        mPIInfo.xminForProcs, mPIInfo.xmaxForProcs, 
-        mPIInfo.yminForProcs, mPIInfo.ymaxForProcs
+        xminForProcs, xmaxForProcs, yminForProcs, ymaxForProcs
     );
     cudaDeviceSynchronize();
 }
@@ -194,8 +193,7 @@ void MomentCalculater::calculateFirstMomentOfOneSpecies(
         existNumSpecies, 
         mPIInfo.localNx, mPIInfo.localNy, mPIInfo.buffer, 
         mPIInfo.localSizeX, mPIInfo.localSizeY, 
-        mPIInfo.xminForProcs, mPIInfo.xmaxForProcs, 
-        mPIInfo.yminForProcs, mPIInfo.ymaxForProcs
+        xminForProcs, xmaxForProcs, yminForProcs, ymaxForProcs
     );
     cudaDeviceSynchronize();
 }
@@ -294,8 +292,7 @@ void MomentCalculater::calculateSecondMomentOfOneSpecies(
         existNumSpecies, 
         mPIInfo.localNx, mPIInfo.localNy, mPIInfo.buffer, 
         mPIInfo.localSizeX, mPIInfo.localSizeY, 
-        mPIInfo.xminForProcs, mPIInfo.xmaxForProcs, 
-        mPIInfo.yminForProcs, mPIInfo.ymaxForProcs
+        xminForProcs, xmaxForProcs, yminForProcs, ymaxForProcs
     );
     cudaDeviceSynchronize();
 }

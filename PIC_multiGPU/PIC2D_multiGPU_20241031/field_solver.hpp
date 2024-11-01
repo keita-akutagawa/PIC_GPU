@@ -7,7 +7,7 @@
 class FieldSolver
 {
 private:
-    MPIInfo& mPIInfo; 
+    MPIInfo mPIInfo; 
 
 public:
     FieldSolver(MPIInfo& mPIInfo);

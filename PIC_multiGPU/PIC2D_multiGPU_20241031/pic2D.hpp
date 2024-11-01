@@ -22,7 +22,7 @@
 class PIC2D
 {
 private:
-    MPIInfo& mPIInfo;
+    MPIInfo mPIInfo;
     MPIInfo* device_mPIInfo;
 
     thrust::device_vector<Particle> particlesIon;

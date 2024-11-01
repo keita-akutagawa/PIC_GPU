@@ -24,10 +24,10 @@ void CurrentCalculator::calculateCurrent(
 )
 {
     calculateCurrentOfOneSpecies(
-        current, particlesIon, qIon, mPIInfo.existNumIonPerProcs
+        current, particlesIon, qIon, existNumIonPerProcs
     );
     calculateCurrentOfOneSpecies(
-        current, particlesElectron, qElectron, mPIInfo.existNumElectronPerProcs
+        current, particlesElectron, qElectron, existNumElectronPerProcs
     );
 }
 
@@ -109,8 +109,7 @@ void CurrentCalculator::calculateCurrentOfOneSpecies(
         q, existNumSpecies, 
         mPIInfo.localNx, mPIInfo.localNy, mPIInfo.buffer, 
         mPIInfo.localSizeX, mPIInfo.localSizeY, 
-        mPIInfo.xminForProcs, mPIInfo.xmaxForProcs, 
-        mPIInfo.yminForProcs, mPIInfo.ymaxForProcs
+        xminForProcs, xmaxForProcs, yminForProcs, ymaxForProcs
     );
     cudaDeviceSynchronize();
 }

@@ -9,7 +9,7 @@
 class MomentCalculater
 {
 private:
-    MPIInfo& mPIInfo;
+    MPIInfo mPIInfo;
 
 public:
     MomentCalculater(MPIInfo& mPIInfo);

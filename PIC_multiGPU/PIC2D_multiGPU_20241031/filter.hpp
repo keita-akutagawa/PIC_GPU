@@ -8,7 +8,7 @@
 class Filter
 {
 private:
-    MPIInfo& mPIInfo;
+    MPIInfo mPIInfo;
 
     thrust::device_vector<RhoField> rho;
     thrust::device_vector<FilterField> F;

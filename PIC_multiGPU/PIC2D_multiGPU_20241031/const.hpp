@@ -27,6 +27,15 @@ extern const unsigned long long totalNumIon;
 extern const unsigned long long totalNumElectron;
 extern const unsigned long long totalNumParticles;
 
+extern unsigned long long existNumIonPerProcs;
+extern unsigned long long existNumElectronPerProcs;
+extern unsigned long long totalNumIonPerProcs;
+extern unsigned long long totalNumElectronPerProcs;
+
+extern float xminForProcs;
+extern float xmaxForProcs;
+extern float yminForProcs;
+extern float ymaxForProcs;
 
 extern const float B0;
 
@@ -82,6 +91,20 @@ extern __device__ float device_dt;
 
 extern __constant__ int device_numberDensityIon;
 extern __constant__ int device_numberDensityElectron;
+
+extern __constant__ unsigned long long device_totalNumIon;
+extern __constant__ unsigned long long device_totalNumElectron;
+extern __constant__ unsigned long long device_totalNumParticles;
+
+extern __device__ unsigned long long device_existNumIonPerProcs;
+extern __device__ unsigned long long device_existNumElectronPerProcs;
+extern __device__ unsigned long long device_totalNumIonPerProcs;
+extern __device__ unsigned long long device_totalNumElectronPerProcs;
+
+extern __device__ float device_xminForProcs;
+extern __device__ float device_xmaxForProcs;
+extern __device__ float device_yminForProcs;
+extern __device__ float device_ymaxForProcs;
 
 extern __constant__ float device_B0;
 
