@@ -29,25 +29,25 @@ struct MPIInfo
     float yminForProcs = 0.0f;
     float ymaxForProcs = 0.0f; 
 
-    unsigned long long countForSendIonLeftToRight = 0;
-    unsigned long long countForSendIonRightToLeft = 0;
-    unsigned long long countForRecvIonLeftToRight = 0;
-    unsigned long long countForRecvIonRightToLeft = 0;
+    unsigned int numForSendParticlesIonLeftward = 0;
+    unsigned int numForSendParticlesIonRightward = 0;
+    unsigned int numForRecvParticlesIonLeftward = 0;
+    unsigned int numForRecvParticlesIonRightward = 0;
 
-    unsigned long long countForSendIonDownToUp = 0;
-    unsigned long long countForSendIonUpToDown = 0;
-    unsigned long long countForRecvIonDownToUp = 0;
-    unsigned long long countForRecvIonUpToDown = 0;
+    unsigned int numForSendParticlesIonDownward = 0;
+    unsigned int numForSendParticlesIonUpward = 0;
+    unsigned int numForRecvParticlesIonDownward = 0;
+    unsigned int numForRecvParticlesIonUpward = 0;
 
-    unsigned long long countForSendElectronLeftToRight = 0;
-    unsigned long long countForSendElectronRightToLeft = 0;
-    unsigned long long countForRecvElectronLeftToRight = 0;
-    unsigned long long countForRecvElectronRightToLeft = 0;
+    unsigned int numForSendParticlesElectronLeftward = 0;
+    unsigned int numForSendParticlesElectronRightward = 0;
+    unsigned int numForRecvParticlesElectronLeftward = 0;
+    unsigned int numForRecvParticlesElectronRightward = 0;
 
-    unsigned long long countForSendElectronDownToUp = 0;
-    unsigned long long countForSendElectronUpToDown = 0;
-    unsigned long long countForRecvElectronDownToUp = 0;
-    unsigned long long countForRecvElectronUpToDown = 0;
+    unsigned int numForSendParticlesElectronDownward = 0;
+    unsigned int numForSendParticlesElectronUpward = 0;
+    unsigned int numForRecvParticlesElectronDownward = 0;
+    unsigned int numForRecvParticlesElectronUpward = 0;
 
     MPI_Datatype mpi_particle_type;
     MPI_Datatype mpi_field_type;
@@ -84,8 +84,8 @@ void sendrecv_field_x(thrust::device_vector<FieldType>& field, MPIInfo& mPIInfo)
 
     for (int i = 0; i < mPIInfo.buffer; i++) {
         for (int j = 0; j < localNy; j++) {
-            sendFieldRight[j + i * localNy] = field[j + mPIInfo.buffer + (localNx + i)        * localSizeY];
             sendFieldLeft[ j + i * localNy] = field[j + mPIInfo.buffer + (mPIInfo.buffer + i) * localSizeY];
+            sendFieldRight[j + i * localNy] = field[j + mPIInfo.buffer + (localNx + i)        * localSizeY];
         }
     }
 
@@ -151,31 +151,38 @@ void sendrecv_field(thrust::device_vector<FieldType>& field, MPIInfo& mPIInfo)
 }
 
 
-void sendrecv_particle_x(
-    thrust::host_vector<Particle>& host_sendParticlesSpeciesLeftToRight,
-    thrust::host_vector<Particle>& host_sendParticlesSpeciesRightToLeft,  
-    thrust::host_vector<Particle>& host_recvParticlesSpeciesLeftToRight,
-    thrust::host_vector<Particle>& host_recvParticlesSpeciesRightToLeft, 
-    const unsigned long long& countForSendSpeciesLeftToRight, 
-    const unsigned long long& countForSendSpeciesRightToLeft, 
-    unsigned long long& countForRecvSpeciesLeftToRight, 
-    unsigned long long& countForRecvSpeciesRightToLeft, 
+void sendrecv_num_particle_x(
+    const unsigned int& numForSendParticlesSpeciesLeft, 
+    const unsigned int& numForSendParticlesSpeciesRight, 
+    unsigned int& numForRecvParticlesSpeciesLeft, 
+    unsigned int& numForRecvParticlesSpeciesRight, 
     MPIInfo& mPIInfo
 );
 
+void sendrecv_num_particle_y(
+    const unsigned int& numForSendParticlesSpeciesDown, 
+    const unsigned int& numForSendParticlesSpeciesUp, 
+    unsigned int& numForRecvParticlesSpeciesDown, 
+    unsigned int& numForRecvParticlesSpeciesUp, 
+    MPIInfo& mPIInfo
+);
+
+
+void sendrecv_particle_x(
+    thrust::host_vector<Particle>& host_sendParticlesSpeciesLeft,
+    thrust::host_vector<Particle>& host_sendParticlesSpeciesRight,  
+    thrust::host_vector<Particle>& host_recvParticlesSpeciesLeft,
+    thrust::host_vector<Particle>& host_recvParticlesSpeciesRight,
+    MPIInfo& mPIInfo
+);
 
 void sendrecv_particle_y(
-    thrust::host_vector<Particle>& host_sendParticlesSpeciesUpToDown,
-    thrust::host_vector<Particle>& host_sendParticlesSpeciesDownToUp,  
-    thrust::host_vector<Particle>& host_recvParticlesSpeciesUpToDown,
-    thrust::host_vector<Particle>& host_recvParticlesSpeciesDownToUp, 
-    const unsigned long long& countForSendSpeciesUpToDown, 
-    const unsigned long long& countForSendSpeciesDownToUp, 
-    unsigned long long& countForRecvSpeciesUpToDown, 
-    unsigned long long& countForRecvSpeciesDownToUp, 
+    thrust::host_vector<Particle>& host_sendParticlesSpeciesDown,
+    thrust::host_vector<Particle>& host_sendParticlesSpeciesUp,  
+    thrust::host_vector<Particle>& host_recvParticlesSpeciesDown,
+    thrust::host_vector<Particle>& host_recvParticlesSpeciesUp,
     MPIInfo& mPIInfo
 );
-
 
 #endif
 

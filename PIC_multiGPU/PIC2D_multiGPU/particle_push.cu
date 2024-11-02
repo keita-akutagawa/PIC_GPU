@@ -31,15 +31,25 @@ void ParticlePush::pushVelocity(
 void ParticlePush::pushPosition(
     thrust::device_vector<Particle>& particlesIon, 
     thrust::device_vector<Particle>& particlesElectron, 
-    float dt
+    const float dt
 )
 {
     MPI_Barrier(MPI_COMM_WORLD);
     pushPositionOfOneSpecies(
-        particlesIon, mPIInfo.existNumIonPerProcs, dt
+        particlesIon, mPIInfo.existNumIonPerProcs, 
+        mPIInfo.numForSendParticlesIonLeftward, 
+        mPIInfo.numForSendParticlesIonRightward, 
+        mPIInfo.numForSendParticlesIonDownward, 
+        mPIInfo.numForSendParticlesIonUpward, 
+        dt
     );
     pushPositionOfOneSpecies(
-        particlesElectron, mPIInfo.existNumElectronPerProcs, dt
+        particlesElectron, mPIInfo.existNumElectronPerProcs, 
+        mPIInfo.numForSendParticlesElectronLeftward, 
+        mPIInfo.numForSendParticlesElectronRightward, 
+        mPIInfo.numForSendParticlesElectronDownward, 
+        mPIInfo.numForSendParticlesElectronUpward, 
+        dt
     );
     MPI_Barrier(MPI_COMM_WORLD);
 }
@@ -211,8 +221,8 @@ void ParticlePush::pushVelocityOfOneSpecies(
     thrust::device_vector<Particle>& particlesSpecies, 
     const thrust::device_vector<MagneticField>& B,
     const thrust::device_vector<ElectricField>& E, 
-    float q, float m, unsigned long long existNumSpecies, 
-    float dt
+    const float q, const float m, const unsigned long long existNumSpecies, 
+    const float dt
 )
 {
     dim3 threadsPerBlock(256);
@@ -237,6 +247,10 @@ __global__
 void pushPositionOfOneSpecies_kernel(
     Particle* particlesSpecies, const unsigned long long existNumSpecies, 
     const float dt, 
+    unsigned int* numForSendParticlesSpeciesLeftward, 
+    unsigned int* numForSendParticlesSpeciesRightward, 
+    unsigned int* numForSendParticlesSpeciesDownward, 
+    unsigned int* numForSendParticlesSpeciesUpward, 
     const float xminForProcs, const float xmaxForProcs, 
     const float yminForProcs, const float ymaxForProcs, 
     const int buffer
@@ -267,23 +281,28 @@ void pushPositionOfOneSpecies_kernel(
         particlesSpecies[i].y = y;
         particlesSpecies[i].z = z;
 
+        // left, right, up, down in simulation box. 
+        // different from particles which need MPI_SendRecv.
         float boundaryLeft  = xminForProcs + buffer * device_dx; 
         float boundaryRight = xmaxForProcs - buffer * device_dx; 
         float boundaryDown  = yminForProcs + buffer * device_dy; 
         float boundaryUp    = ymaxForProcs - buffer * device_dy; 
         
-
         if (xPast > boundaryLeft && x < boundaryLeft) {
-            particlesSpecies[i].isMPISendLeftToRight = true;
+            particlesSpecies[i].isMPISendLeftward = true;
+            atomicAdd(&(numForSendParticlesSpeciesLeftward[0]), 1);
         }   
         if (xPast < boundaryRight && x > boundaryRight) {
-            particlesSpecies[i].isMPISendRightToLeft = true;
+            particlesSpecies[i].isMPISendRightward = true;
+            atomicAdd(&(numForSendParticlesSpeciesRightward[0]), 1);
         }
         if (yPast > boundaryDown && y < boundaryDown) {
-            particlesSpecies[i].isMPISendDownToUp = true;
+            particlesSpecies[i].isMPISendDownward = true;
+            atomicAdd(&(numForSendParticlesSpeciesDownward[0]), 1);
         }   
         if (yPast < boundaryUp && y > boundaryUp) {
-            particlesSpecies[i].isMPISendUpToDown = true;
+            particlesSpecies[i].isMPISendUpward = true;
+            atomicAdd(&(numForSendParticlesSpeciesUpward[0]), 1);
         }
     }
 }
@@ -291,20 +310,38 @@ void pushPositionOfOneSpecies_kernel(
 
 void ParticlePush::pushPositionOfOneSpecies(
     thrust::device_vector<Particle>& particlesSpecies, 
-    unsigned long long existNumSpecies, 
-    float dt
+    const unsigned long long existNumSpecies, 
+    unsigned int& numForSendParticlesSpeciesLeftward, 
+    unsigned int& numForSendParticlesSpeciesRightward, 
+    unsigned int& numForSendParticlesSpeciesDownward, 
+    unsigned int& numForSendParticlesSpeciesUpward, 
+    const float dt
 )
 {
+    thrust::device_vector<unsigned int> countForSendParticlesSpeciesLeftward(1, 0); 
+    thrust::device_vector<unsigned int> countForSendParticlesSpeciesRightward(1, 0); 
+    thrust::device_vector<unsigned int> countForSendParticlesSpeciesDownward(1, 0); 
+    thrust::device_vector<unsigned int> countForSendParticlesSpeciesUpward(1, 0); 
+
     dim3 threadsPerBlock(256);
     dim3 blocksPerGrid((existNumSpecies + threadsPerBlock.x - 1) / threadsPerBlock.x);
 
     pushPositionOfOneSpecies_kernel<<<blocksPerGrid, threadsPerBlock>>>(
         thrust::raw_pointer_cast(particlesSpecies.data()), 
         existNumSpecies, dt, 
+        thrust::raw_pointer_cast(countForSendParticlesSpeciesLeftward.data()), 
+        thrust::raw_pointer_cast(countForSendParticlesSpeciesRightward.data()),  
+        thrust::raw_pointer_cast(countForSendParticlesSpeciesDownward.data()),  
+        thrust::raw_pointer_cast(countForSendParticlesSpeciesUpward.data()),  
         mPIInfo.xminForProcs, mPIInfo.xmaxForProcs, 
         mPIInfo.yminForProcs, mPIInfo.ymaxForProcs, 
         mPIInfo.buffer
     );
+
+    numForSendParticlesSpeciesLeftward  = countForSendParticlesSpeciesLeftward[0];
+    numForSendParticlesSpeciesRightward = countForSendParticlesSpeciesRightward[0];
+    numForSendParticlesSpeciesDownward  = countForSendParticlesSpeciesDownward[0];
+    numForSendParticlesSpeciesUpward    = countForSendParticlesSpeciesUpward[0];
 }
 
 
