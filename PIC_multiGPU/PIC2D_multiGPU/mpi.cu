@@ -166,7 +166,7 @@ void sendrecv_particle_x(
     MPI_Allreduce(&maxNumSendRightRecvLeftForProcs, &maxNumSendRightRecvLeft, 1, MPI_UNSIGNED, MPI_MAX, MPI_COMM_WORLD);
     
     thrust::host_vector<Particle> sendbufLeft(maxNumSendLeftRecvRight);
-    thrust::host_vector<Particle> recvbufRight(maxNumsendLeftRecvRight);
+    thrust::host_vector<Particle> recvbufRight(maxNumSendLeftRecvRight);
     thrust::host_vector<Particle> sendbufRight(maxNumSendRightRecvLeft);
     thrust::host_vector<Particle> recvbufLeft(maxNumSendRightRecvLeft);
 
