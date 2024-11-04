@@ -1,5 +1,7 @@
 {
     "files.associations": {
-        "iomanip": "cpp"
+        "iomanip": "cpp",
+        "ios": "cpp",
+        "xiosbase": "cpp"
     }
 }

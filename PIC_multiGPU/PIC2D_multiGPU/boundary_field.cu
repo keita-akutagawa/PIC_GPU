@@ -4,7 +4,7 @@
 
 //////////
 
-void Boundary::periodicBoundaryBX(
+void Boundary::periodicBoundaryB_x(
     thrust::device_vector<MagneticField>& B
 )
 {
@@ -12,7 +12,7 @@ void Boundary::periodicBoundaryBX(
 }
 
 
-void Boundary::periodicBoundaryBY(
+void Boundary::periodicBoundaryB_y(
     thrust::device_vector<MagneticField>& B
 )
 {
@@ -21,7 +21,7 @@ void Boundary::periodicBoundaryBY(
 
 //////////
 
-void Boundary::periodicBoundaryEX(
+void Boundary::periodicBoundaryE_x(
     thrust::device_vector<ElectricField>& E
 )
 {
@@ -29,7 +29,7 @@ void Boundary::periodicBoundaryEX(
 }
 
 
-void Boundary::periodicBoundaryEY(
+void Boundary::periodicBoundaryE_y(
     thrust::device_vector<ElectricField>& E
 )
 {
@@ -38,7 +38,7 @@ void Boundary::periodicBoundaryEY(
 
 //////////
 
-void Boundary::periodicBoundaryCurrentX(
+void Boundary::periodicBoundaryCurrent_x(
     thrust::device_vector<CurrentField>& current
 )
 {
@@ -46,7 +46,7 @@ void Boundary::periodicBoundaryCurrentX(
 }
 
 
-void Boundary::periodicBoundaryCurrentY(
+void Boundary::periodicBoundaryCurrent_y(
     thrust::device_vector<CurrentField>& current
 )
 {

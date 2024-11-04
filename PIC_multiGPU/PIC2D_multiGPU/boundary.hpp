@@ -1,4 +1,6 @@
 #include <thrust/device_vector.h>
+#include <thrust/partition.h>
+#include <thrust/transform_reduce.h>
 #include "const.hpp"
 #include "particle_struct.hpp"
 #include "field_parameter_struct.hpp"
@@ -13,66 +15,80 @@ private:
 public:
     Boundary(MPIInfo& mPIInfo);
 
-    void boundaryForInitializeParticle(
+    void boundaryForInitializeParticle_xy(
         thrust::device_vector<Particle>& particlesIon, 
         thrust::device_vector<Particle>& particlesElectron
     );
-    void boundaryForInitializeParticleOfOneSpeciesX(
+    void boundaryForInitializeParticleOfOneSpecies_x(
         thrust::device_vector<Particle>& particlesSpecies, 
         unsigned long long& existNumSpecies, 
-        unsigned int& numForSendSpeciesLeftToRightward, 
-        unsigned int& numForSendSpeciesRightToLeftward, 
-        unsigned int& numForRecvSpeciesLeftToRightward, 
-        unsigned int& numForRecvSpeciesRightToLeftward
+        unsigned int& numForSendSpeciesLeftToRight, 
+        unsigned int& numForSendSpeciesRightToLeft, 
+        unsigned int& numForRecvSpeciesLeftToRight, 
+        unsigned int& numForRecvSpeciesRightToLeft
     );
-    void boundaryForInitializeParticleOfOneSpeciesY(
+    void boundaryForInitializeParticleOfOneSpecies_y(
         thrust::device_vector<Particle>& particlesSpecies, 
         unsigned long long& existNumSpecies, 
-        unsigned int& numForSendSpeciesDownToUpward, 
-        unsigned int& numForSendSpeciesUpToDownward, 
-        unsigned int& numForRecvSpeciesDownToUpward, 
-        unsigned int& numForRecvSpeciesUpToDownward
+        unsigned int& numForSendSpeciesDownToUp, 
+        unsigned int& numForSendSpeciesUpToDown, 
+        unsigned int& numForRecvSpeciesDownToUp, 
+        unsigned int& numForRecvSpeciesUpToDown
     );
 
-    void periodicBoundaryParticleXY(
+    void periodicBoundaryParticle_xy(
         thrust::device_vector<Particle>& particlesIon, 
         thrust::device_vector<Particle>& particlesElectron
     );
-    void periodicBoundaryParticleOfOneSpeciesX(
+    void periodicBoundaryParticleOfOneSpecies_x(
         thrust::device_vector<Particle>& particlesSpecies, 
         unsigned long long& existNumSpecies, 
-        unsigned int& numForSendSpeciesLeftward, 
-        unsigned int& numForSendSpeciesRightward, 
-        unsigned int& numForRecvSpeciesLeftward, 
-        unsigned int& numForRecvSpeciesRightward
+        unsigned int& numForSendSpeciesLeft, 
+        unsigned int& numForSendSpeciesRight, 
+        unsigned int& numForRecvSpeciesLeft, 
+        unsigned int& numForRecvSpeciesRight
     );
-    void periodicBoundaryParticleOfOneSpeciesY(
+    void periodicBoundaryParticleOfOneSpecies_y(
         thrust::device_vector<Particle>& particlesSpecies, 
         unsigned long long& existNumSpecies, 
-        unsigned int& numForSendSpeciesDownward, 
-        unsigned int& numForSendSpeciesUpward, 
-        unsigned int& numForRecvSpeciesDownward, 
-        unsigned int& numForRecvSpeciesUpward
+        unsigned int& numForSendSpeciesDown, 
+        unsigned int& numForSendSpeciesUp, 
+        unsigned int& numForRecvSpeciesDown, 
+        unsigned int& numForRecvSpeciesUp
     );
 
-    void periodicBoundaryBX(
+    void modifySendNumParticlesSpecies(
+        const unsigned int& numForSendParticlesSpeciesCornerLeftDown, 
+        const unsigned int& numForSendParticlesSpeciesCornerRightDown, 
+        const unsigned int& numForSendParticlesSpeciesCornerLeftUp, 
+        const unsigned int& numForSendParticlesSpeciesCornerRightUp, 
+        unsigned int& numForRecvParticlesSpeciesCornerLeftDown, 
+        unsigned int& numForRecvParticlesSpeciesCornerRightDown, 
+        unsigned int& numForRecvParticlesSpeciesCornerLeftUp, 
+        unsigned int& numForRecvParticlesSpeciesCornerRightUp, 
+        unsigned int& numForSendParticlesSpeciesDown, 
+        unsigned int& numForSendParticlesSpeciesUp
+    );
+    
+
+    void periodicBoundaryB_x(
         thrust::device_vector<MagneticField>& B
     );
-    void periodicBoundaryBY(
+    void periodicBoundaryB_y(
         thrust::device_vector<MagneticField>& B
     );
 
-    void periodicBoundaryEX(
+    void periodicBoundaryE_x(
         thrust::device_vector<ElectricField>& E
     );
-    void periodicBoundaryEY(
+    void periodicBoundaryE_y(
         thrust::device_vector<ElectricField>& E
     );
 
-    void periodicBoundaryCurrentX(
+    void periodicBoundaryCurrent_x(
         thrust::device_vector<CurrentField>& current
     );
-    void periodicBoundaryCurrentY(
+    void periodicBoundaryCurrent_y(
         thrust::device_vector<CurrentField>& current
     );
 

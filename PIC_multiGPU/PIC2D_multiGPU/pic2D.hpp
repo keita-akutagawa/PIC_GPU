@@ -65,7 +65,7 @@ public:
     
     virtual void initialize();
     
-    void oneStepPeriodicXY();
+    void oneStep_periodicXY();
 
     void saveFields(
         std::string directoryname, 

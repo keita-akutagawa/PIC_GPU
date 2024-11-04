@@ -29,25 +29,44 @@ struct MPIInfo
     float yminForProcs = 0.0f;
     float ymaxForProcs = 0.0f; 
 
-    unsigned int numForSendParticlesIonLeftward = 0;
-    unsigned int numForSendParticlesIonRightward = 0;
-    unsigned int numForRecvParticlesIonLeftward = 0;
-    unsigned int numForRecvParticlesIonRightward = 0;
+    unsigned int numForSendParticlesIonLeft = 0;
+    unsigned int numForSendParticlesIonRight = 0;
+    unsigned int numForRecvParticlesIonLeft = 0;
+    unsigned int numForRecvParticlesIonRight = 0;
 
-    unsigned int numForSendParticlesIonDownward = 0;
-    unsigned int numForSendParticlesIonUpward = 0;
-    unsigned int numForRecvParticlesIonDownward = 0;
-    unsigned int numForRecvParticlesIonUpward = 0;
+    unsigned int numForSendParticlesIonCornerLeftDown = 0;
+    unsigned int numForSendParticlesIonCornerRightDown = 0;
+    unsigned int numForSendParticlesIonCornerLeftUp = 0;
+    unsigned int numForSendParticlesIonCornerRightUp = 0;
+    unsigned int numForRecvParticlesIonCornerLeftDown = 0;
+    unsigned int numForRecvParticlesIonCornerRightDown = 0;
+    unsigned int numForRecvParticlesIonCornerLeftUp = 0;
+    unsigned int numForRecvParticlesIonCornerRightUp = 0;
 
-    unsigned int numForSendParticlesElectronLeftward = 0;
-    unsigned int numForSendParticlesElectronRightward = 0;
-    unsigned int numForRecvParticlesElectronLeftward = 0;
-    unsigned int numForRecvParticlesElectronRightward = 0;
+    unsigned int numForSendParticlesIonDown = 0;
+    unsigned int numForSendParticlesIonUp = 0;
+    unsigned int numForRecvParticlesIonDown = 0;
+    unsigned int numForRecvParticlesIonUp = 0;
 
-    unsigned int numForSendParticlesElectronDownward = 0;
-    unsigned int numForSendParticlesElectronUpward = 0;
-    unsigned int numForRecvParticlesElectronDownward = 0;
-    unsigned int numForRecvParticlesElectronUpward = 0;
+
+    unsigned int numForSendParticlesElectronLeft = 0;
+    unsigned int numForSendParticlesElectronRight = 0;
+    unsigned int numForRecvParticlesElectronLeft = 0;
+    unsigned int numForRecvParticlesElectronRight = 0;
+
+    unsigned int numForSendParticlesElectronCornerLeftDown = 0;
+    unsigned int numForSendParticlesElectronCornerRightDown = 0;
+    unsigned int numForSendParticlesElectronCornerLeftUp = 0;
+    unsigned int numForSendParticlesElectronCornerRightUp = 0;
+    unsigned int numForRecvParticlesElectronCornerLeftDown = 0;
+    unsigned int numForRecvParticlesElectronCornerRightDown = 0;
+    unsigned int numForRecvParticlesElectronCornerLeftUp = 0;
+    unsigned int numForRecvParticlesElectronCornerRightUp = 0;
+
+    unsigned int numForSendParticlesElectronDown = 0;
+    unsigned int numForSendParticlesElectronUp = 0;
+    unsigned int numForRecvParticlesElectronDown = 0;
+    unsigned int numForRecvParticlesElectronUp = 0;
 
     MPI_Datatype mpi_particle_type;
     MPI_Datatype mpi_field_type;
@@ -122,16 +141,16 @@ void sendrecv_field_y(thrust::device_vector<FieldType>& field, MPIInfo& mPIInfo)
 
     for (int i = 0; i < localSizeX; i++) {
         for (int j = 0; j < mPIInfo.buffer; j++) {
-            sendFieldUp[j + i * mPIInfo.buffer] = field[j + localNy        + i * localSizeY];
             sendFieldDown[  j + i * mPIInfo.buffer] = field[j + mPIInfo.buffer + i * localSizeY];
+            sendFieldUp[j + i * mPIInfo.buffer] = field[j + localNy        + i * localSizeY];
         }
     }
 
-    MPI_Sendrecv(thrust::raw_pointer_cast(sendFieldUp.data()),   sendFieldUp.size(),   mPIInfo.mpi_field_type, up,   0, 
-                 thrust::raw_pointer_cast(recvFieldDown.data()), recvFieldDown.size(), mPIInfo.mpi_field_type, down, 0, 
-                 MPI_COMM_WORLD, &st);
     MPI_Sendrecv(thrust::raw_pointer_cast(sendFieldDown.data()), sendFieldDown.size(), mPIInfo.mpi_field_type, down, 0, 
                  thrust::raw_pointer_cast(recvFieldUp.data()),   recvFieldUp.size(),   mPIInfo.mpi_field_type, up,   0, 
+                 MPI_COMM_WORLD, &st);
+    MPI_Sendrecv(thrust::raw_pointer_cast(sendFieldUp.data()),   sendFieldUp.size(),   mPIInfo.mpi_field_type, up,   0, 
+                 thrust::raw_pointer_cast(recvFieldDown.data()), recvFieldDown.size(), mPIInfo.mpi_field_type, down, 0, 
                  MPI_COMM_WORLD, &st);
 
     for (int i = 0; i < localSizeX; i++) {
@@ -151,7 +170,7 @@ void sendrecv_field(thrust::device_vector<FieldType>& field, MPIInfo& mPIInfo)
 }
 
 
-void sendrecv_num_particle_x(
+void sendrecv_numParticle_x(
     const unsigned int& numForSendParticlesSpeciesLeft, 
     const unsigned int& numForSendParticlesSpeciesRight, 
     unsigned int& numForRecvParticlesSpeciesLeft, 
@@ -159,7 +178,19 @@ void sendrecv_num_particle_x(
     MPIInfo& mPIInfo
 );
 
-void sendrecv_num_particle_y(
+void sendrecv_numParticle_corner(
+    const unsigned int& numForSendParticlesSpeciesCornerLeftDown, 
+    const unsigned int& numForSendParticlesSpeciesCornerRightDown, 
+    const unsigned int& numForSendParticlesSpeciesCornerLeftUp, 
+    const unsigned int& numForSendParticlesSpeciesCornerRightUp, 
+    unsigned int& numForRecvParticlesSpeciesCornerLeftDown, 
+    unsigned int& numForRecvParticlesSpeciesCornerRightDown, 
+    unsigned int& numForRecvParticlesSpeciesDown, 
+    unsigned int& numForRecvParticlesSpeciesUp, 
+    MPIInfo& mPIInfo
+);
+
+void sendrecv_numParticle_y(
     const unsigned int& numForSendParticlesSpeciesDown, 
     const unsigned int& numForSendParticlesSpeciesUp, 
     unsigned int& numForRecvParticlesSpeciesDown, 

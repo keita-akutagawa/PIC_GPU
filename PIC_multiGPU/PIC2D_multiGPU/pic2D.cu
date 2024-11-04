@@ -86,7 +86,7 @@ __global__ void getHalfCurrent_kernel(
 }
 
 
-void PIC2D::oneStepPeriodicXY()
+void PIC2D::oneStep_periodicXY()
 {
     MPI_Barrier(MPI_COMM_WORLD);
     
@@ -96,8 +96,8 @@ void PIC2D::oneStepPeriodicXY()
                        
     fieldSolver.timeEvolutionB(B, E, dt / 2.0f);
     sendrecv_field(B, mPIInfo);
-    boundary.periodicBoundaryBX(B);
-    boundary.periodicBoundaryBY(B);
+    boundary.periodicBoundaryB_x(B);
+    boundary.periodicBoundaryB_y(B);
     
     getCenterBE_kernel<<<blocksPerGrid, threadsPerBlock>>>(
         thrust::raw_pointer_cast(tmpB.data()), 
@@ -109,10 +109,10 @@ void PIC2D::oneStepPeriodicXY()
     cudaDeviceSynchronize();
     sendrecv_field(tmpB, mPIInfo);
     sendrecv_field(tmpE, mPIInfo);
-    boundary.periodicBoundaryBX(tmpB);
-    boundary.periodicBoundaryBY(tmpB);
-    boundary.periodicBoundaryEX(tmpE);
-    boundary.periodicBoundaryEY(tmpE);
+    boundary.periodicBoundaryB_x(tmpB);
+    boundary.periodicBoundaryB_y(tmpB);
+    boundary.periodicBoundaryE_x(tmpE);
+    boundary.periodicBoundaryE_y(tmpE);
 
     particlePush.pushVelocity(
         particlesIon, particlesElectron, tmpB, tmpE, dt
@@ -121,7 +121,7 @@ void PIC2D::oneStepPeriodicXY()
     particlePush.pushPosition(
         particlesIon, particlesElectron, dt / 2.0f
     );
-    boundary.periodicBoundaryParticleXY(
+    boundary.periodicBoundaryParticle_xy(
         particlesIon, particlesElectron
     );
 
@@ -130,31 +130,31 @@ void PIC2D::oneStepPeriodicXY()
         tmpCurrent, particlesIon, particlesElectron
     );
     sendrecv_field(tmpCurrent, mPIInfo);
-    boundary.periodicBoundaryCurrentX(tmpCurrent);
-    boundary.periodicBoundaryCurrentY(tmpCurrent);
+    boundary.periodicBoundaryCurrent_x(tmpCurrent);
+    boundary.periodicBoundaryCurrent_y(tmpCurrent);
     getHalfCurrent_kernel<<<blocksPerGrid, threadsPerBlock>>>(
         thrust::raw_pointer_cast(current.data()), 
         thrust::raw_pointer_cast(tmpCurrent.data()), 
         mPIInfo.localSizeX, mPIInfo.localSizeY
     );
     sendrecv_field(current, mPIInfo);
-    boundary.periodicBoundaryCurrentX(current);
-    boundary.periodicBoundaryCurrentY(current);
+    boundary.periodicBoundaryCurrent_x(current);
+    boundary.periodicBoundaryCurrent_y(current);
 
     fieldSolver.timeEvolutionB(B, E, dt / 2.0f);
     sendrecv_field(B, mPIInfo);
-    boundary.periodicBoundaryBX(B);
-    boundary.periodicBoundaryBY(B);
+    boundary.periodicBoundaryB_x(B);
+    boundary.periodicBoundaryB_y(B);
 
     fieldSolver.timeEvolutionE(E, B, current, dt);
     sendrecv_field(E, mPIInfo);
-    boundary.periodicBoundaryEX(E);
-    boundary.periodicBoundaryEY(E);
+    boundary.periodicBoundaryE_x(E);
+    boundary.periodicBoundaryE_y(E);
 
     particlePush.pushPosition(
         particlesIon, particlesElectron, dt / 2.0f
     );
-    boundary.periodicBoundaryParticleXY(
+    boundary.periodicBoundaryParticle_xy(
         particlesIon, particlesElectron
     );
 }

@@ -12,7 +12,7 @@ InitializeParticle::InitializeParticle(MPIInfo& mPIInfo)
 }
 
 
-__global__ void uniformForPositionX_kernel(
+__global__ void uniformForPosition_x_kernel(
     Particle* particle, 
     const unsigned long long nStart, const unsigned long long nEnd, 
     const float xmin, const float xmax, 
@@ -30,7 +30,7 @@ __global__ void uniformForPositionX_kernel(
     }
 }
 
-void InitializeParticle::uniformForPositionX(
+void InitializeParticle::uniformForPosition_x(
     unsigned long long nStart, 
     unsigned long long nEnd, 
     float xmin, float xmax, 
@@ -41,7 +41,7 @@ void InitializeParticle::uniformForPositionX(
     dim3 threadsPerBlock(256);
     dim3 blocksPerGrid((nEnd - nStart + threadsPerBlock.x - 1) / threadsPerBlock.x);
 
-    uniformForPositionX_kernel<<<blocksPerGrid, threadsPerBlock>>>(
+    uniformForPosition_x_kernel<<<blocksPerGrid, threadsPerBlock>>>(
         thrust::raw_pointer_cast(particlesSpecies.data()), 
         nStart, nEnd,
         xmin, xmax, 
@@ -51,7 +51,7 @@ void InitializeParticle::uniformForPositionX(
 }
 
 
-__global__ void uniformForPositionY_kernel(
+__global__ void uniformForPosition_y_kernel(
     Particle* particle, 
     const unsigned long long nStart, const unsigned long long nEnd, 
     const float ymin, const float ymax, 
@@ -69,7 +69,7 @@ __global__ void uniformForPositionY_kernel(
     }
 }
 
-void InitializeParticle::uniformForPositionY(
+void InitializeParticle::uniformForPosition_y(
     unsigned long long nStart, 
     unsigned long long nEnd, 
     float ymin, float ymax, 
@@ -80,7 +80,7 @@ void InitializeParticle::uniformForPositionY(
     dim3 threadsPerBlock(256);
     dim3 blocksPerGrid((nEnd - nStart + threadsPerBlock.x - 1) / threadsPerBlock.x);
 
-    uniformForPositionY_kernel<<<blocksPerGrid, threadsPerBlock>>>(
+    uniformForPosition_y_kernel<<<blocksPerGrid, threadsPerBlock>>>(
         thrust::raw_pointer_cast(particlesSpecies.data()), 
         nStart, nEnd,
         ymin, ymax, 

@@ -11,10 +11,10 @@ struct Particle
     float vz;
     float gamma;
     bool isExist;
-    bool isMPISendLeftward;
-    bool isMPISendRightward; 
-    bool isMPISendUpward; 
-    bool isMPISendDownward;  
+    bool isMPISendLeft;
+    bool isMPISendRight; 
+    bool isMPISendDown;  
+    bool isMPISendUp; 
 
     __host__ __device__
     Particle() : 
@@ -26,10 +26,10 @@ struct Particle
         vz(0.0f), 
         gamma(0.0f), 
         isExist(false), 
-        isMPISendLeftward(false), 
-        isMPISendRightward(false), 
-        isMPISendUpward(false), 
-        isMPISendDownward(false)
+        isMPISendLeft(false), 
+        isMPISendRight(false), 
+        isMPISendDown(false), 
+        isMPISendUp(false)
         {}
     
     __host__ __device__
@@ -44,10 +44,10 @@ struct Particle
             vz = other.vz;
             gamma = other.gamma;
             isExist = other.isExist;
-            isMPISendLeftward = other.isMPISendLeftward;
-            isMPISendRightward = other.isMPISendRightward;
-            isMPISendUpward = other.isMPISendUpward;
-            isMPISendDownward = other.isMPISendDownward;
+            isMPISendLeft = other.isMPISendLeft;
+            isMPISendRight = other.isMPISendRight;
+            isMPISendDown = other.isMPISendDown;
+            isMPISendUp = other.isMPISendUp;
         }
         return *this;
     }

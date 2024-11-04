@@ -13,7 +13,7 @@ private:
 public:
     InitializeParticle(MPIInfo& mPIInfo);
 
-    void uniformForPositionX(
+    void uniformForPosition_x(
         unsigned long long nStart, 
         unsigned long long nEnd, 
         float xmin, 
@@ -22,7 +22,7 @@ public:
         thrust::device_vector<Particle>& particlesSpecies
     );
 
-    void uniformForPositionY(
+    void uniformForPosition_y(
         unsigned long long nStart, 
         unsigned long long nEnd, 
         float ymin, 

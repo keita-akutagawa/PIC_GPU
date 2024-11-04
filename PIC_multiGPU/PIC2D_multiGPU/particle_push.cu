@@ -37,18 +37,26 @@ void ParticlePush::pushPosition(
     MPI_Barrier(MPI_COMM_WORLD);
     pushPositionOfOneSpecies(
         particlesIon, mPIInfo.existNumIonPerProcs, 
-        mPIInfo.numForSendParticlesIonLeftward, 
-        mPIInfo.numForSendParticlesIonRightward, 
-        mPIInfo.numForSendParticlesIonDownward, 
-        mPIInfo.numForSendParticlesIonUpward, 
+        mPIInfo.numForSendParticlesIonLeft, 
+        mPIInfo.numForSendParticlesIonRight, 
+        mPIInfo.numForSendParticlesIonDown, 
+        mPIInfo.numForSendParticlesIonUp, 
+        mPIInfo.numForSendParticlesIonCornerLeftDown, 
+        mPIInfo.numForSendParticlesIonCornerRightDown, 
+        mPIInfo.numForSendParticlesIonCornerLeftUp, 
+        mPIInfo.numForSendParticlesIonCornerRightUp, 
         dt
     );
     pushPositionOfOneSpecies(
         particlesElectron, mPIInfo.existNumElectronPerProcs, 
-        mPIInfo.numForSendParticlesElectronLeftward, 
-        mPIInfo.numForSendParticlesElectronRightward, 
-        mPIInfo.numForSendParticlesElectronDownward, 
-        mPIInfo.numForSendParticlesElectronUpward, 
+        mPIInfo.numForSendParticlesElectronLeft, 
+        mPIInfo.numForSendParticlesElectronRight, 
+        mPIInfo.numForSendParticlesElectronDown, 
+        mPIInfo.numForSendParticlesElectronUp, 
+        mPIInfo.numForSendParticlesElectronCornerLeftDown, 
+        mPIInfo.numForSendParticlesElectronCornerRightDown, 
+        mPIInfo.numForSendParticlesElectronCornerLeftUp, 
+        mPIInfo.numForSendParticlesElectronCornerRightUp, 
         dt
     );
     MPI_Barrier(MPI_COMM_WORLD);
@@ -87,11 +95,11 @@ ParticleField getParticleFields(
     yIndex2 = yIndex1 + 1;
     yIndex2 = (yIndex2 == localSizeY) ? 0 : yIndex2;
     if (xIndex1 < 0 || xIndex1 >= localSizeX) {
-        particle.isExist = false;
+        printf("particle push ERROR %f %f \n", particle.x, particle.y);
         return;
     }
     if (yIndex1 < 0 || yIndex1 >= localSizeY) {
-        particle.isExist = false;
+        printf("particle push ERROR %f %f \n", particle.x, particle.y);
         return;
     }
 
@@ -247,10 +255,14 @@ __global__
 void pushPositionOfOneSpecies_kernel(
     Particle* particlesSpecies, const unsigned long long existNumSpecies, 
     const float dt, 
-    unsigned int* numForSendParticlesSpeciesLeftward, 
-    unsigned int* numForSendParticlesSpeciesRightward, 
-    unsigned int* numForSendParticlesSpeciesDownward, 
-    unsigned int* numForSendParticlesSpeciesUpward, 
+    unsigned int* numForSendParticlesSpeciesLeft, 
+    unsigned int* numForSendParticlesSpeciesRight, 
+    unsigned int* numForSendParticlesSpeciesDown, 
+    unsigned int* numForSendParticlesSpeciesUp, 
+    unsigned int* numForSendParticlesSpeciesCornerLeftDown, 
+    unsigned int* numForSendParticlesSpeciesCornerRightDown, 
+    unsigned int* numForSendParticlesSpeciesCornerLeftUp, 
+    unsigned int* numForSendParticlesSpeciesCornerRightUp, 
     const float xminForProcs, const float xmaxForProcs, 
     const float yminForProcs, const float ymaxForProcs, 
     const int buffer
@@ -281,28 +293,39 @@ void pushPositionOfOneSpecies_kernel(
         particlesSpecies[i].y = y;
         particlesSpecies[i].z = z;
 
-        // left, right, up, down in simulation box. 
-        // different from particles which need MPI_SendRecv.
         float boundaryLeft  = xminForProcs + buffer * device_dx; 
         float boundaryRight = xmaxForProcs - buffer * device_dx; 
         float boundaryDown  = yminForProcs + buffer * device_dy; 
         float boundaryUp    = ymaxForProcs - buffer * device_dy; 
         
         if (xPast > boundaryLeft && x < boundaryLeft) {
-            particlesSpecies[i].isMPISendLeftward = true;
-            atomicAdd(&(numForSendParticlesSpeciesLeftward[0]), 1);
+            particlesSpecies[i].isMPISendLeft = true;
+            atomicAdd(&(numForSendParticlesSpeciesLeft[0]), 1);
         }   
         if (xPast < boundaryRight && x > boundaryRight) {
-            particlesSpecies[i].isMPISendRightward = true;
-            atomicAdd(&(numForSendParticlesSpeciesRightward[0]), 1);
+            particlesSpecies[i].isMPISendRight = true;
+            atomicAdd(&(numForSendParticlesSpeciesRight[0]), 1);
         }
+
         if (yPast > boundaryDown && y < boundaryDown) {
-            particlesSpecies[i].isMPISendDownward = true;
-            atomicAdd(&(numForSendParticlesSpeciesDownward[0]), 1);
+            particlesSpecies[i].isMPISendDown = true;
+            atomicAdd(&(numForSendParticlesSpeciesDown[0]), 1);
+            if (particlesSpecies[i].isMPISendLeft) {
+                atomicAdd(&(numForSendParticlesSpeciesCornerLeftDown[0]), 1);
+            }
+            if (particlesSpecies[i].isMPISendRight) {
+                atomicAdd(&(numForSendParticlesSpeciesCornerRightDown[0]), 1);
+            }
         }   
         if (yPast < boundaryUp && y > boundaryUp) {
-            particlesSpecies[i].isMPISendUpward = true;
-            atomicAdd(&(numForSendParticlesSpeciesUpward[0]), 1);
+            particlesSpecies[i].isMPISendUp = true;
+            atomicAdd(&(numForSendParticlesSpeciesUp[0]), 1);
+            if (particlesSpecies[i].isMPISendLeft) {
+                atomicAdd(&(numForSendParticlesSpeciesCornerLeftUp[0]), 1);
+            }
+            if (particlesSpecies[i].isMPISendRight) {
+                atomicAdd(&(numForSendParticlesSpeciesCornerRightUp[0]), 1);
+            }
         }
     }
 }
@@ -311,17 +334,25 @@ void pushPositionOfOneSpecies_kernel(
 void ParticlePush::pushPositionOfOneSpecies(
     thrust::device_vector<Particle>& particlesSpecies, 
     const unsigned long long existNumSpecies, 
-    unsigned int& numForSendParticlesSpeciesLeftward, 
-    unsigned int& numForSendParticlesSpeciesRightward, 
-    unsigned int& numForSendParticlesSpeciesDownward, 
-    unsigned int& numForSendParticlesSpeciesUpward, 
+    unsigned int& numForSendParticlesSpeciesLeft, 
+    unsigned int& numForSendParticlesSpeciesRight, 
+    unsigned int& numForSendParticlesSpeciesDown, 
+    unsigned int& numForSendParticlesSpeciesUp, 
+    unsigned int& numForSendParticlesSpeciesCornerLeftDown, 
+    unsigned int& numForSendParticlesSpeciesCornerRightDown, 
+    unsigned int& numForSendParticlesSpeciesCornerLeftUp, 
+    unsigned int& numForSendParticlesSpeciesCornerRightUp, 
     const float dt
 )
 {
-    thrust::device_vector<unsigned int> countForSendParticlesSpeciesLeftward(1, 0); 
-    thrust::device_vector<unsigned int> countForSendParticlesSpeciesRightward(1, 0); 
-    thrust::device_vector<unsigned int> countForSendParticlesSpeciesDownward(1, 0); 
-    thrust::device_vector<unsigned int> countForSendParticlesSpeciesUpward(1, 0); 
+    thrust::device_vector<unsigned int> countForSendParticlesSpeciesLeft(1, 0); 
+    thrust::device_vector<unsigned int> countForSendParticlesSpeciesRight(1, 0); 
+    thrust::device_vector<unsigned int> countForSendParticlesSpeciesDown(1, 0); 
+    thrust::device_vector<unsigned int> countForSendParticlesSpeciesUp(1, 0); 
+    thrust::device_vector<unsigned int> countForSendParticlesSpeciesCornerLeftDown(1, 0); 
+    thrust::device_vector<unsigned int> countForSendParticlesSpeciesCornerRightDown(1, 0); 
+    thrust::device_vector<unsigned int> countForSendParticlesSpeciesCornerLeftUp(1, 0); 
+    thrust::device_vector<unsigned int> countForSendParticlesSpeciesCornerRightUp(1, 0); 
 
     dim3 threadsPerBlock(256);
     dim3 blocksPerGrid((existNumSpecies + threadsPerBlock.x - 1) / threadsPerBlock.x);
@@ -329,19 +360,27 @@ void ParticlePush::pushPositionOfOneSpecies(
     pushPositionOfOneSpecies_kernel<<<blocksPerGrid, threadsPerBlock>>>(
         thrust::raw_pointer_cast(particlesSpecies.data()), 
         existNumSpecies, dt, 
-        thrust::raw_pointer_cast(countForSendParticlesSpeciesLeftward.data()), 
-        thrust::raw_pointer_cast(countForSendParticlesSpeciesRightward.data()),  
-        thrust::raw_pointer_cast(countForSendParticlesSpeciesDownward.data()),  
-        thrust::raw_pointer_cast(countForSendParticlesSpeciesUpward.data()),  
+        thrust::raw_pointer_cast(countForSendParticlesSpeciesLeft.data()), 
+        thrust::raw_pointer_cast(countForSendParticlesSpeciesRight.data()),  
+        thrust::raw_pointer_cast(countForSendParticlesSpeciesDown.data()),  
+        thrust::raw_pointer_cast(countForSendParticlesSpeciesUp.data()),  
+        thrust::raw_pointer_cast(countForSendParticlesSpeciesCornerLeftDown.data()), 
+        thrust::raw_pointer_cast(countForSendParticlesSpeciesCornerRightDown.data()),  
+        thrust::raw_pointer_cast(countForSendParticlesSpeciesCornerLeftUp.data()),  
+        thrust::raw_pointer_cast(countForSendParticlesSpeciesCornerRightUp.data()),  
         mPIInfo.xminForProcs, mPIInfo.xmaxForProcs, 
         mPIInfo.yminForProcs, mPIInfo.ymaxForProcs, 
         mPIInfo.buffer
     );
 
-    numForSendParticlesSpeciesLeftward  = countForSendParticlesSpeciesLeftward[0];
-    numForSendParticlesSpeciesRightward = countForSendParticlesSpeciesRightward[0];
-    numForSendParticlesSpeciesDownward  = countForSendParticlesSpeciesDownward[0];
-    numForSendParticlesSpeciesUpward    = countForSendParticlesSpeciesUpward[0];
+    numForSendParticlesSpeciesLeft  = countForSendParticlesSpeciesLeft[0];
+    numForSendParticlesSpeciesRight = countForSendParticlesSpeciesRight[0];
+    numForSendParticlesSpeciesDown  = countForSendParticlesSpeciesDown[0];
+    numForSendParticlesSpeciesUp    = countForSendParticlesSpeciesUp[0];
+    numForSendParticlesSpeciesCornerLeftDown  = countForSendParticlesSpeciesCornerLeftDown[0];
+    numForSendParticlesSpeciesCornerRightDown = countForSendParticlesSpeciesCornerRightDown[0];
+    numForSendParticlesSpeciesCornerLeftUp    = countForSendParticlesSpeciesCornerLeftUp[0];
+    numForSendParticlesSpeciesCornerRightUp   = countForSendParticlesSpeciesCornerRightUp[0];
 }
 
 

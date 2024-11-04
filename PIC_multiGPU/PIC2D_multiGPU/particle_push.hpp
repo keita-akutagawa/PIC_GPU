@@ -40,10 +40,14 @@ private:
     void pushPositionOfOneSpecies(
         thrust::device_vector<Particle>& particlesSpecies, 
         const unsigned long long existNumSpecies, 
-        unsigned int& numForSendSpeciesLeftToRight, 
-        unsigned int& numForSendSpeciesRightToLeft, 
-        unsigned int& numForSendSpeciesDownToUp, 
-        unsigned int& numForSendSpeciesUpToDown, 
+        unsigned int& numForSendParticlesSpeciesLeft, 
+        unsigned int& numForSendParticlesSpeciesRight, 
+        unsigned int& numForSendParticlesSpeciesDown, 
+        unsigned int& numForSendParticlesSpeciesUp, 
+        unsigned int& numForSendParticlesSpeciesCornerLeftDown, 
+        unsigned int& numForSendParticlesSpeciesCornerRightDown, 
+        unsigned int& numForSendParticlesSpeciesCornerLeftUp, 
+        unsigned int& numForSendParticlesSpeciesCornerRightUp, 
         const float dt
     );
 };
