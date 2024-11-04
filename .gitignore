@@ -12,4 +12,5 @@ program
 log*
 googletest/
 *.bin
+.vscode
 
