@@ -108,11 +108,11 @@ void sendrecv_field_x(thrust::device_vector<FieldType>& field, MPIInfo& mPIInfo)
         }
     }
 
-    MPI_Sendrecv(thrust::raw_pointer_cast(sendFieldRight.data()), sendFieldRight.size(), mPIInfo.mpi_field_type, right, 0, 
-                 thrust::raw_pointer_cast(recvFieldLeft.data()),  recvFieldLeft.size(),  mPIInfo.mpi_field_type, left,  0, 
+    MPI_Sendrecv(sendFieldLeft.data(),  sendFieldLeft.size(),  mPIInfo.mpi_field_type, left,  0, 
+                 recvFieldRight.data(), recvFieldRight.size(), mPIInfo.mpi_field_type, right, 0, 
                  MPI_COMM_WORLD, &st);
-    MPI_Sendrecv(thrust::raw_pointer_cast(sendFieldLeft.data()),  sendFieldLeft.size(),  mPIInfo.mpi_field_type, left,  0, 
-                 thrust::raw_pointer_cast(recvFieldRight.data()), recvFieldRight.size(), mPIInfo.mpi_field_type, right, 0, 
+    MPI_Sendrecv(sendFieldRight.data(), sendFieldRight.size(), mPIInfo.mpi_field_type, right, 0, 
+                 recvFieldLeft.data(),  recvFieldLeft.size(),  mPIInfo.mpi_field_type, left,  0, 
                  MPI_COMM_WORLD, &st);
 
     for (int i = 0; i < mPIInfo.buffer; i++) {
@@ -146,11 +146,11 @@ void sendrecv_field_y(thrust::device_vector<FieldType>& field, MPIInfo& mPIInfo)
         }
     }
 
-    MPI_Sendrecv(thrust::raw_pointer_cast(sendFieldDown.data()), sendFieldDown.size(), mPIInfo.mpi_field_type, down, 0, 
-                 thrust::raw_pointer_cast(recvFieldUp.data()),   recvFieldUp.size(),   mPIInfo.mpi_field_type, up,   0, 
+    MPI_Sendrecv(sendFieldDown.data(), sendFieldDown.size(), mPIInfo.mpi_field_type, down, 0, 
+                 recvFieldUp.data(),   recvFieldUp.size(),   mPIInfo.mpi_field_type, up,   0, 
                  MPI_COMM_WORLD, &st);
-    MPI_Sendrecv(thrust::raw_pointer_cast(sendFieldUp.data()),   sendFieldUp.size(),   mPIInfo.mpi_field_type, up,   0, 
-                 thrust::raw_pointer_cast(recvFieldDown.data()), recvFieldDown.size(), mPIInfo.mpi_field_type, down, 0, 
+    MPI_Sendrecv(sendFieldUp.data(),   sendFieldUp.size(),   mPIInfo.mpi_field_type, up,   0, 
+                 recvFieldDown.data(), recvFieldDown.size(), mPIInfo.mpi_field_type, down, 0, 
                  MPI_COMM_WORLD, &st);
 
     for (int i = 0; i < localSizeX; i++) {

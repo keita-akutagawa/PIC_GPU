@@ -114,26 +114,26 @@ void sendrecv_numParticle_x(
     MPI_Status st;
 
     MPI_Sendrecv(
-        &(numForSendParticlesSpeciesRight), 
-        1, 
-        MPI_UNSIGNED, 
-        right, 0, 
-        &(numForRecvParticlesSpeciesRight), 
-        1, 
-        MPI_UNSIGNED, 
-        left, 0, 
-        MPI_COMM_WORLD, &st
-    );
-
-    MPI_Sendrecv(
         &(numForSendParticlesSpeciesLeft), 
         1, 
         MPI_UNSIGNED,  
         left, 0, 
-        &(numForRecvParticlesSpeciesLeft), 
+        &(numForRecvParticlesSpeciesRight), 
         1, 
         MPI_UNSIGNED, 
         right, 0, 
+        MPI_COMM_WORLD, &st
+    );
+
+    MPI_Sendrecv(
+        &(numForSendParticlesSpeciesRight), 
+        1, 
+        MPI_UNSIGNED, 
+        right, 0, 
+        &(numForRecvParticlesSpeciesLeft), 
+        1, 
+        MPI_UNSIGNED, 
+        left, 0, 
         MPI_COMM_WORLD, &st
     );
 }
@@ -152,23 +152,23 @@ void sendrecv_particle_x(
     MPI_Status st;
 
 
-    unsigned int maxNumLeftForProcs = max(
+    unsigned int maxNumSendLeftRecvRightForProcs = max(
         host_sendParticlesSpeciesLeft.size(), 
-        host_recvParticlesSpeciesLeft.size()
-    );
-    unsigned int maxNumRightForProcs = max(
-        host_sendParticlesSpeciesRight.size(), 
         host_recvParticlesSpeciesRight.size()
     );
+    unsigned int maxNumSendRightRecvLeftForProcs = max(
+        host_sendParticlesSpeciesRight.size(), 
+        host_recvParticlesSpeciesLeft.size()
+    );
 
-    unsigned int maxNumLeft = 0, maxNumRight = 0;
-    MPI_Allreduce(&maxNumLeftForProcs, &maxNumLeft, 1, MPI_UNSIGNED, MPI_MAX, MPI_COMM_WORLD);
-    MPI_Allreduce(&maxNumRightForProcs, &maxNumRight, 1, MPI_UNSIGNED, MPI_MAX, MPI_COMM_WORLD);
+    unsigned int maxNumSendLeftRecvRight = 0, maxNumSendRightRecvLeft = 0;
+    MPI_Allreduce(&maxNumSendLeftRecvRightForProcs, &maxNumSendLeftRecvRight, 1, MPI_UNSIGNED, MPI_MAX, MPI_COMM_WORLD);
+    MPI_Allreduce(&maxNumSendRightRecvLeftForProcs, &maxNumSendRightRecvLeft, 1, MPI_UNSIGNED, MPI_MAX, MPI_COMM_WORLD);
     
-    thrust::host_vector<Particle> sendbufLeft(maxNumLeft);
-    thrust::host_vector<Particle> sendbufRight(maxNumRight);
-    thrust::host_vector<Particle> recvbufLeft(maxNumLeft);
-    thrust::host_vector<Particle> recvbufRight(maxNumRight);
+    thrust::host_vector<Particle> sendbufLeft(maxNumSendLeftRecvRight);
+    thrust::host_vector<Particle> recvbufRight(maxNumsendLeftRecvRight);
+    thrust::host_vector<Particle> sendbufRight(maxNumSendRightRecvLeft);
+    thrust::host_vector<Particle> recvbufLeft(maxNumSendRightRecvLeft);
 
     for (unsigned int i = 0; i < host_sendParticlesSpeciesLeft.size(); i++) {
         sendbufLeft[i] = host_sendParticlesSpeciesLeft[i];
@@ -179,26 +179,26 @@ void sendrecv_particle_x(
     
 
     MPI_Sendrecv(
-        thrust::raw_pointer_cast(sendbufRight.data()), 
-        sendbufRight.size(), 
-        mPIInfo.mpi_particle_type, 
-        right, 0, 
-        thrust::raw_pointer_cast(recvbufRight.data()),
-        recvbufRight.size(), 
-        mPIInfo.mpi_particle_type, 
-        left, 0, 
-        MPI_COMM_WORLD, &st
-    );
-
-    MPI_Sendrecv(
         thrust::raw_pointer_cast(sendbufLeft.data()), 
         sendbufLeft.size(), 
         mPIInfo.mpi_particle_type, 
         left, 0, 
-        thrust::raw_pointer_cast(recvbufLeft.data()), 
-        recvbufLeft.size(), 
+        thrust::raw_pointer_cast(recvbufRight.data()), 
+        recvbufRight.size(), 
         mPIInfo.mpi_particle_type, 
         right, 0, 
+        MPI_COMM_WORLD, &st
+    );
+
+    MPI_Sendrecv(
+        thrust::raw_pointer_cast(sendbufRight.data()), 
+        sendbufRight.size(), 
+        mPIInfo.mpi_particle_type, 
+        right, 0, 
+        thrust::raw_pointer_cast(recvbufLeft.data()),
+        recvbufLeft.size(), 
+        mPIInfo.mpi_particle_type, 
+        left, 0, 
         MPI_COMM_WORLD, &st
     );
 
@@ -290,27 +290,28 @@ void sendrecv_numParticle_y(
     int up   = mPIInfo.getRank(0, 1);
     MPI_Status st;
 
-    MPI_Sendrecv(
-        &(numForSendParticlesSpeciesUp), 
-        1, 
-        MPI_UNSIGNED, 
-        up, 0, 
-        &(numForRecvParticlesSpeciesUp), 
-        1, 
-        MPI_UNSIGNED, 
-        down, 0, 
-        MPI_COMM_WORLD, &st
-    );
 
     MPI_Sendrecv(
         &(numForSendParticlesSpeciesDown), 
         1, 
         MPI_UNSIGNED,  
         down, 0, 
-        &(numForRecvParticlesSpeciesDown), 
+        &(numForRecvParticlesSpeciesUp), 
         1, 
         MPI_UNSIGNED, 
         up, 0, 
+        MPI_COMM_WORLD, &st
+    );
+
+    MPI_Sendrecv(
+        &(numForSendParticlesSpeciesUp), 
+        1, 
+        MPI_UNSIGNED, 
+        up, 0, 
+        &(numForRecvParticlesSpeciesDown), 
+        1, 
+        MPI_UNSIGNED, 
+        down, 0, 
         MPI_COMM_WORLD, &st
     );
 }
@@ -329,24 +330,25 @@ void sendrecv_particle_y(
     MPI_Status st;
 
 
-    unsigned int maxNumDownForProcs = max(
+    unsigned int maxNumSendDownRecvUpForProcs = max(
         host_sendParticlesSpeciesDown.size(), 
-        host_recvParticlesSpeciesDown.size()
-    );
-    unsigned int maxNumUpForProcs = max(
-        host_sendParticlesSpeciesUp.size(), 
         host_recvParticlesSpeciesUp.size()
     );
+    unsigned int maxNumSendUpRecvDownForProcs = max(
+        host_sendParticlesSpeciesUp.size(), 
+        host_recvParticlesSpeciesDown.size()
+    );
 
-    unsigned int maxNumDown = 0, maxNumUp = 0;
-    MPI_Allreduce(&maxNumDownForProcs, &maxNumDown, 1, MPI_UNSIGNED, MPI_MAX, MPI_COMM_WORLD);
-    MPI_Allreduce(&maxNumUpForProcs, &maxNumUp, 1, MPI_UNSIGNED, MPI_MAX, MPI_COMM_WORLD);
+    unsigned int maxNumSendDownRecvUp = 0, maxNumSendUpRecvDown = 0;
+    MPI_Allreduce(&maxNumSendDownRecvUpForProcs, &maxNumSendDownRecvUp, 1, MPI_UNSIGNED, MPI_MAX, MPI_COMM_WORLD);
+    MPI_Allreduce(&maxNumSendUpRecvDownForProcs, &maxNumSendUpRecvDown, 1, MPI_UNSIGNED, MPI_MAX, MPI_COMM_WORLD);
    
 
-    thrust::host_vector<Particle> sendbufDown(maxNumDown);
-    thrust::host_vector<Particle> sendbufUp(maxNumUp);
-    thrust::host_vector<Particle> recvbufDown(maxNumDown);
-    thrust::host_vector<Particle> recvbufUp(maxNumUp);
+    thrust::host_vector<Particle> sendbufDown(maxNumSendDownRecvUp);
+    thrust::host_vector<Particle> recvbufUp(maxNumSendDownRecvUp);
+    thrust::host_vector<Particle> sendbufUp(maxNumSendUpRecvDown);
+    thrust::host_vector<Particle> recvbufDown(maxNumSendUpRecvDown);
+    
 
     for (unsigned int i = 0; i < host_sendParticlesSpeciesDown.size(); i++) {
         sendbufDown[i] = host_sendParticlesSpeciesDown[i];
@@ -361,8 +363,8 @@ void sendrecv_particle_y(
         sendbufDown.size(), 
         mPIInfo.mpi_particle_type, 
         down, 0, 
-        thrust::raw_pointer_cast(recvbufDown.data()), 
-        recvbufDown.size(), 
+        thrust::raw_pointer_cast(recvbufUp.data()), 
+        recvbufUp.size(), 
         mPIInfo.mpi_particle_type, 
         up, 0, 
         MPI_COMM_WORLD, &st
@@ -373,8 +375,8 @@ void sendrecv_particle_y(
         sendbufUp.size(), 
         mPIInfo.mpi_particle_type, 
         up, 0, 
-        thrust::raw_pointer_cast(recvbufUp.data()),
-        recvbufUp.size(), 
+        thrust::raw_pointer_cast(recvbufDown.data()),
+        recvbufDown.size(), 
         mPIInfo.mpi_particle_type, 
         down, 0, 
         MPI_COMM_WORLD, &st

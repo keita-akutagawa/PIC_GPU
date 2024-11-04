@@ -63,6 +63,7 @@ void Boundary::periodicBoundaryParticle_xy(
         mPIInfo.numForSendParticlesElectronDown, 
         mPIInfo.numForSendParticlesElectronUp
     );
+    MPI_Barrier(MPI_COMM_WORLD);
 
     periodicBoundaryParticleOfOneSpecies_y(
         particlesIon,
