@@ -21,33 +21,6 @@ void Boundary::boundaryForInitializeParticle_xy(
         mPIInfo.numForSendParticlesElectronRight, 
         mPIInfo.numForRecvParticlesElectronLeft, 
         mPIInfo.numForRecvParticlesElectronRight
-    ); 
-
-    MPI_Barrier(MPI_COMM_WORLD);
-
-    modifySendNumParticlesSpecies(
-        mPIInfo.numForSendParticlesIonCornerLeftDown, 
-        mPIInfo.numForSendParticlesIonCornerRightDown, 
-        mPIInfo.numForSendParticlesIonCornerLeftUp, 
-        mPIInfo.numForSendParticlesIonCornerRightUp, 
-        mPIInfo.numForRecvParticlesIonCornerLeftDown, 
-        mPIInfo.numForRecvParticlesIonCornerRightDown, 
-        mPIInfo.numForRecvParticlesIonCornerLeftUp, 
-        mPIInfo.numForRecvParticlesIonCornerRightUp, 
-        mPIInfo.numForSendParticlesIonDown, 
-        mPIInfo.numForSendParticlesIonUp
-    );
-    modifySendNumParticlesSpecies(
-        mPIInfo.numForSendParticlesElectronCornerLeftDown, 
-        mPIInfo.numForSendParticlesElectronCornerRightDown, 
-        mPIInfo.numForSendParticlesElectronCornerLeftUp, 
-        mPIInfo.numForSendParticlesElectronCornerRightUp, 
-        mPIInfo.numForRecvParticlesElectronCornerLeftDown, 
-        mPIInfo.numForRecvParticlesElectronCornerRightDown, 
-        mPIInfo.numForRecvParticlesElectronCornerLeftUp, 
-        mPIInfo.numForRecvParticlesElectronCornerRightUp, 
-        mPIInfo.numForSendParticlesElectronDown, 
-        mPIInfo.numForSendParticlesElectronUp
     );
     MPI_Barrier(MPI_COMM_WORLD);
 
@@ -66,8 +39,7 @@ void Boundary::boundaryForInitializeParticle_xy(
         mPIInfo.numForSendParticlesElectronUp, 
         mPIInfo.numForRecvParticlesElectronDown, 
         mPIInfo.numForRecvParticlesElectronUp
-    ); 
-
+    );
     MPI_Barrier(MPI_COMM_WORLD);
 }
 
