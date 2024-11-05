@@ -27,8 +27,6 @@ public:
         const float dt
     );
 
-private:
-
     void pushVelocityOfOneSpecies(
         thrust::device_vector<Particle>& particlesSpecies, 
         const thrust::device_vector<MagneticField>& B,
@@ -39,7 +37,7 @@ private:
 
     void pushPositionOfOneSpecies(
         thrust::device_vector<Particle>& particlesSpecies, 
-        const unsigned long long existNumSpecies, 
+        unsigned long long& existNumSpecies, 
         unsigned int& numForSendParticlesSpeciesLeft, 
         unsigned int& numForSendParticlesSpeciesRight, 
         unsigned int& numForSendParticlesSpeciesDown, 
@@ -50,6 +48,9 @@ private:
         unsigned int& numForSendParticlesSpeciesCornerRightUp, 
         const float dt
     );
+
+private:
+
 };
 
 

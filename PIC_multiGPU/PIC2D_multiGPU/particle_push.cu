@@ -94,14 +94,6 @@ ParticleField getParticleFields(
     yIndex1 = floorf(yOverDy);
     yIndex2 = yIndex1 + 1;
     yIndex2 = (yIndex2 == localSizeY) ? 0 : yIndex2;
-    if (xIndex1 < 0 || xIndex1 >= localSizeX) {
-        printf("particle push ERROR %f %f \n", particle.x, particle.y);
-        return;
-    }
-    if (yIndex1 < 0 || yIndex1 >= localSizeY) {
-        printf("particle push ERROR %f %f \n", particle.x, particle.y);
-        return;
-    }
 
     cx1 = xOverDx - xIndex1;
     cx2 = 1.0f - cx1;
@@ -251,10 +243,18 @@ void ParticlePush::pushVelocityOfOneSpecies(
 
 //////////
 
+struct IsExistTransform
+{
+    __host__ __device__
+    unsigned int operator()(const Particle& p) const {
+        return p.isExist ? 1 : 0;
+    }
+};
+
 __global__
 void pushPositionOfOneSpecies_kernel(
-    Particle* particlesSpecies, const unsigned long long existNumSpecies, 
-    const float dt, 
+    Particle* particlesSpecies, 
+    const unsigned long long existNumSpecies, 
     unsigned int* numForSendParticlesSpeciesLeft, 
     unsigned int* numForSendParticlesSpeciesRight, 
     unsigned int* numForSendParticlesSpeciesDown, 
@@ -263,6 +263,7 @@ void pushPositionOfOneSpecies_kernel(
     unsigned int* numForSendParticlesSpeciesCornerRightDown, 
     unsigned int* numForSendParticlesSpeciesCornerLeftUp, 
     unsigned int* numForSendParticlesSpeciesCornerRightUp, 
+    const float dt, 
     const float xminForProcs, const float xmaxForProcs, 
     const float yminForProcs, const float ymaxForProcs, 
     const int buffer
@@ -271,6 +272,7 @@ void pushPositionOfOneSpecies_kernel(
     unsigned long long i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (i < existNumSpecies) {
+
         float vx, vy, vz, gamma;
         float xPast, yPast, zPast;
         float x, y, z;
@@ -293,21 +295,44 @@ void pushPositionOfOneSpecies_kernel(
         particlesSpecies[i].y = y;
         particlesSpecies[i].z = z;
 
-        float boundaryLeft  = xminForProcs + buffer * device_dx; 
-        float boundaryRight = xmaxForProcs - buffer * device_dx; 
-        float boundaryDown  = yminForProcs + buffer * device_dy; 
-        float boundaryUp    = ymaxForProcs - buffer * device_dy; 
+        float boundaryDeleteLeft  = xminForProcs - buffer * device_dx + device_EPS; 
+        float boundaryDeleteRight = xmaxForProcs + buffer * device_dx - device_EPS; 
+        float boundaryDeleteDown  = yminForProcs - buffer * device_dy + device_EPS; 
+        float boundaryDeleteUp    = ymaxForProcs + buffer * device_dy - device_EPS;
+
+        if (x < boundaryDeleteLeft) {
+            particlesSpecies[i].isExist = false;
+            return;
+        }
+        if (x > boundaryDeleteRight) {
+            particlesSpecies[i].isExist = false;
+            return;
+        }
+        if (y < boundaryDeleteDown) {
+            particlesSpecies[i].isExist = false;
+            return;
+        }
+        if (y > boundaryDeleteUp) {
+            particlesSpecies[i].isExist = false;
+            return;
+        }
+
+
+        float boundaryMPISendLeft  = xminForProcs + buffer * device_dx; 
+        float boundaryMPISendRight = xmaxForProcs - buffer * device_dx; 
+        float boundaryMPISendDown  = yminForProcs + buffer * device_dy; 
+        float boundaryMPISendUp    = ymaxForProcs - buffer * device_dy; 
         
-        if (xPast > boundaryLeft && x < boundaryLeft) {
+        if (xPast > boundaryMPISendLeft && x < boundaryMPISendLeft) {
             particlesSpecies[i].isMPISendLeft = true;
             atomicAdd(&(numForSendParticlesSpeciesLeft[0]), 1);
         }   
-        if (xPast < boundaryRight && x > boundaryRight) {
+        if (xPast < boundaryMPISendRight && x > boundaryMPISendRight) {
             particlesSpecies[i].isMPISendRight = true;
             atomicAdd(&(numForSendParticlesSpeciesRight[0]), 1);
         }
 
-        if (yPast > boundaryDown && y < boundaryDown) {
+        if (yPast > boundaryMPISendDown && y < boundaryMPISendDown) {
             particlesSpecies[i].isMPISendDown = true;
             atomicAdd(&(numForSendParticlesSpeciesDown[0]), 1);
             if (particlesSpecies[i].isMPISendLeft) {
@@ -317,7 +342,7 @@ void pushPositionOfOneSpecies_kernel(
                 atomicAdd(&(numForSendParticlesSpeciesCornerRightDown[0]), 1);
             }
         }   
-        if (yPast < boundaryUp && y > boundaryUp) {
+        if (yPast < boundaryMPISendUp && y > boundaryMPISendUp) {
             particlesSpecies[i].isMPISendUp = true;
             atomicAdd(&(numForSendParticlesSpeciesUp[0]), 1);
             if (particlesSpecies[i].isMPISendLeft) {
@@ -333,7 +358,7 @@ void pushPositionOfOneSpecies_kernel(
 
 void ParticlePush::pushPositionOfOneSpecies(
     thrust::device_vector<Particle>& particlesSpecies, 
-    const unsigned long long existNumSpecies, 
+    unsigned long long& existNumSpecies, 
     unsigned int& numForSendParticlesSpeciesLeft, 
     unsigned int& numForSendParticlesSpeciesRight, 
     unsigned int& numForSendParticlesSpeciesDown, 
@@ -359,7 +384,7 @@ void ParticlePush::pushPositionOfOneSpecies(
 
     pushPositionOfOneSpecies_kernel<<<blocksPerGrid, threadsPerBlock>>>(
         thrust::raw_pointer_cast(particlesSpecies.data()), 
-        existNumSpecies, dt, 
+        existNumSpecies, 
         thrust::raw_pointer_cast(countForSendParticlesSpeciesLeft.data()), 
         thrust::raw_pointer_cast(countForSendParticlesSpeciesRight.data()),  
         thrust::raw_pointer_cast(countForSendParticlesSpeciesDown.data()),  
@@ -367,11 +392,28 @@ void ParticlePush::pushPositionOfOneSpecies(
         thrust::raw_pointer_cast(countForSendParticlesSpeciesCornerLeftDown.data()), 
         thrust::raw_pointer_cast(countForSendParticlesSpeciesCornerRightDown.data()),  
         thrust::raw_pointer_cast(countForSendParticlesSpeciesCornerLeftUp.data()),  
-        thrust::raw_pointer_cast(countForSendParticlesSpeciesCornerRightUp.data()),  
+        thrust::raw_pointer_cast(countForSendParticlesSpeciesCornerRightUp.data()), 
+        dt, 
         mPIInfo.xminForProcs, mPIInfo.xmaxForProcs, 
         mPIInfo.yminForProcs, mPIInfo.ymaxForProcs, 
         mPIInfo.buffer
     );
+    cudaDeviceSynchronize();
+
+    existNumSpecies = thrust::transform_reduce(
+        particlesSpecies.begin(),
+        particlesSpecies.end(),
+        IsExistTransform(), 
+        0,               
+        thrust::plus<unsigned long long>()
+    );
+    cudaDeviceSynchronize();
+
+    thrust::partition(
+        particlesSpecies.begin(), particlesSpecies.end(), 
+        [] __device__ (const Particle& p) { return p.isExist; }
+    );
+    cudaDeviceSynchronize();
 
     numForSendParticlesSpeciesLeft  = countForSendParticlesSpeciesLeft[0];
     numForSendParticlesSpeciesRight = countForSendParticlesSpeciesRight[0];

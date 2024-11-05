@@ -7,15 +7,6 @@ Boundary::Boundary(MPIInfo& mPIInfo)
 }
 
 
-struct IsExistTransform
-{
-    __host__ __device__
-    unsigned int operator()(const Particle& p) const {
-        return p.isExist ? 1 : 0;
-    }
-};
-
-
 void Boundary::periodicBoundaryParticle_xy(
     thrust::device_vector<Particle>& particlesIon, 
     thrust::device_vector<Particle>& particlesElectron
@@ -99,19 +90,11 @@ __global__ void periodicBoundaryParticle_x_kernel(
     unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (i < existNumSpecies) {
-        if (particlesSpecies[i].x - (xminForProcs - buffer * device_dx) < device_EPS) {
-            particlesSpecies[i].isExist = false;
-        }
-
-        if (particlesSpecies[i].x - (xmaxForProcs + buffer * device_dx) > -device_EPS) {
-            particlesSpecies[i].isExist = false;
-        }
-
         if (particlesSpecies[i].isMPISendRight) {
             unsigned int particleIndex = atomicAdd(&(countForSendParticlesSpeciesRight[0]), 1);
             particlesSpecies[i].isMPISendRight = false;
             Particle sendParticle = particlesSpecies[i];
-            if (sendParticle.x > device_xmax - buffer * device_dx) {
+            if (sendParticle.x > device_xmax - buffer * device_dx + device_EPS) {
                 sendParticle.x = sendParticle.x - device_xmax + device_EPS;
             }
             sendParticlesSpeciesRight[particleIndex] = sendParticle;
@@ -121,7 +104,7 @@ __global__ void periodicBoundaryParticle_x_kernel(
             unsigned int particleIndex = atomicAdd(&(countForSendParticlesSpeciesLeft[0]), 1);
             particlesSpecies[i].isMPISendLeft = false;
             Particle sendParticle = particlesSpecies[i];
-            if (sendParticle.x < device_xmin + buffer * device_dx) {
+            if (sendParticle.x < device_xmin + buffer * device_dx - device_EPS) {
                 sendParticle.x = sendParticle.x + device_xmax - device_EPS;
             }
             sendParticlesSpeciesLeft[particleIndex] = sendParticle;
@@ -157,34 +140,11 @@ void Boundary::periodicBoundaryParticleOfOneSpecies_x(
         mPIInfo.buffer
     );
     cudaDeviceSynchronize();
-    if (numForSendParticlesSpeciesLeft - countForSendParticlesSpeciesLeft[0] != 0) {
-        std::cout << "Left number of send particles is wrong!" << std::endl;
-    }
-    if (numForSendParticlesSpeciesRight - countForSendParticlesSpeciesRight[0] != 0) {
-        std::cout << "Right number of send particles is wrong!" << std::endl;
-    }
-
-    existNumSpecies = thrust::transform_reduce(
-        particlesSpecies.begin(),
-        particlesSpecies.end(),
-        IsExistTransform(), 
-        0,               
-        thrust::plus<unsigned long long>()
-    );
-    cudaDeviceSynchronize();
-
-    thrust::partition(
-        particlesSpecies.begin(), particlesSpecies.end(), 
-        [] __device__ (const Particle& p) { return p.isExist; }
-    );
-    cudaDeviceSynchronize();
 
     thrust::host_vector<Particle> host_sendParticlesSpeciesLeft(numForSendParticlesSpeciesLeft);
     thrust::host_vector<Particle> host_sendParticlesSpeciesRight(numForSendParticlesSpeciesRight);
     host_sendParticlesSpeciesLeft = sendParticlesSpeciesLeft;
     host_sendParticlesSpeciesRight = sendParticlesSpeciesRight;
-    numForSendParticlesSpeciesLeft = countForSendParticlesSpeciesLeft[0];
-    numForSendParticlesSpeciesRight = countForSendParticlesSpeciesRight[0];
 
     sendrecv_numParticle_x(
         numForSendParticlesSpeciesLeft, 
@@ -263,19 +223,11 @@ __global__ void periodicBoundaryParticle_y_kernel(
     unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (i < existNumSpecies) {
-        if (particlesSpecies[i].y - (yminForProcs - buffer * device_dy) < device_EPS) {
-            particlesSpecies[i].isExist = false;
-        }
-
-        if (particlesSpecies[i].y - (ymaxForProcs + buffer * device_dy) > -device_EPS) {
-            particlesSpecies[i].isExist = false;
-        }
-
         if (particlesSpecies[i].isMPISendUp) {
             unsigned int particleIndex = atomicAdd(&(countForSendParticlesSpeciesUp[0]), 1);
             particlesSpecies[i].isMPISendUp = false;
             Particle sendParticle = particlesSpecies[i];
-            if (sendParticle.y > device_ymax - buffer * device_dy) {
+            if (sendParticle.y > device_ymax - buffer * device_dy + device_EPS) {
                 sendParticle.y = sendParticle.y - device_ymax + device_EPS;
             }
             sendParticlesSpeciesUp[particleIndex] = sendParticle;
@@ -285,7 +237,7 @@ __global__ void periodicBoundaryParticle_y_kernel(
             unsigned int particleIndex = atomicAdd(&(countForSendParticlesSpeciesDown[0]), 1);
             particlesSpecies[i].isMPISendDown = false;
             Particle sendParticle = particlesSpecies[i];
-            if (sendParticle.y < device_ymin + buffer * device_dy) {
+            if (sendParticle.y < device_ymin + buffer * device_dy - device_EPS) {
                 sendParticle.y = sendParticle.y + device_ymax - device_EPS;
             }
             sendParticlesSpeciesDown[particleIndex] = sendParticle;
@@ -321,34 +273,11 @@ void Boundary::periodicBoundaryParticleOfOneSpecies_y(
         mPIInfo.buffer
     );
     cudaDeviceSynchronize();
-    if (numForSendParticlesSpeciesDown - countForSendParticlesSpeciesDown[0] != 0) {
-        std::cout << "Down number of send particles is wrong!" << std::endl;
-    }
-    if (numForSendParticlesSpeciesUp - countForSendParticlesSpeciesUp[0] != 0) {
-        std::cout << "Up number of send particles is wrong!" << std::endl;
-    }
-
-    existNumSpecies = thrust::transform_reduce(
-        particlesSpecies.begin(),
-        particlesSpecies.end(),
-        IsExistTransform(), 
-        0,               
-        thrust::plus<unsigned long long>()
-    );
-    cudaDeviceSynchronize();
-
-    thrust::partition(
-        particlesSpecies.begin(), particlesSpecies.end(), 
-        [] __device__ (const Particle& p) { return p.isExist; }
-    );
-    cudaDeviceSynchronize();
 
     thrust::host_vector<Particle> host_sendParticlesSpeciesDown(numForSendParticlesSpeciesDown);
     thrust::host_vector<Particle> host_sendParticlesSpeciesUp(numForSendParticlesSpeciesUp);
     host_sendParticlesSpeciesDown = sendParticlesSpeciesDown;
     host_sendParticlesSpeciesUp = sendParticlesSpeciesUp;
-    numForSendParticlesSpeciesDown = countForSendParticlesSpeciesDown[0];
-    numForSendParticlesSpeciesUp = countForSendParticlesSpeciesUp[0];
 
     sendrecv_numParticle_y(
         numForSendParticlesSpeciesDown, 
