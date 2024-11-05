@@ -25,41 +25,41 @@ __global__ void initializeField_kernel(
 
 void PIC2D::initialize()
 {
-    initializeParticle.uniformForPositionX(
-        0, existNumIonPerProcs, 
-        xminForProcs, xmaxForProcs, 
-        0, particlesIon
+    initializeParticle.uniformForPosition_x(
+        0, mPIInfo.existNumIonPerProcs, 
+        mPIInfo.xminForProcs, mPIInfo.xmaxForProcs, 
+        0 + mPIInfo.rank, particlesIon
     );
-    initializeParticle.uniformForPositionX(
-        0, existNumElectronPerProcs, 
-        xminForProcs, xmaxForProcs, 
-        100, particlesElectron
+    initializeParticle.uniformForPosition_x(
+        0, mPIInfo.existNumElectronPerProcs, 
+        mPIInfo.xminForProcs, mPIInfo.xmaxForProcs, 
+        100 + mPIInfo.rank, particlesElectron
     );
-    initializeParticle.uniformForPositionY(
-        0, existNumIonPerProcs, 
-        yminForProcs, ymaxForProcs, 
-        200, particlesIon
+    initializeParticle.uniformForPosition_y(
+        0, mPIInfo.existNumIonPerProcs, 
+        mPIInfo.yminForProcs, mPIInfo.ymaxForProcs, 
+        200 + mPIInfo.rank, particlesIon
     );
-    initializeParticle.uniformForPositionY(
-        0, existNumElectronPerProcs, 
-        yminForProcs, ymaxForProcs, 
-        300, particlesElectron
+    initializeParticle.uniformForPosition_y(
+        0, mPIInfo.existNumElectronPerProcs, 
+        mPIInfo.yminForProcs, mPIInfo.ymaxForProcs, 
+        300 + mPIInfo.rank, particlesElectron
     );
 
     initializeParticle.maxwellDistributionForVelocity(
         0.0f, 0.0f, 0.0f, 
         vThIon, vThIon, vThIon, 
-        0, existNumIonPerProcs, 400, particlesIon
+        0, mPIInfo.existNumIonPerProcs, 400 + mPIInfo.rank, particlesIon
     );
     initializeParticle.maxwellDistributionForVelocity(
         -10.0f * vThIon, 0.0f, 0.0f, 
         vThElectron, vThElectron, vThElectron, 
-        0, existNumElectronPerProcs / 2, 500, particlesElectron
+        0, mPIInfo.existNumElectronPerProcs / 2, 500 + mPIInfo.rank, particlesElectron
     );
     initializeParticle.maxwellDistributionForVelocity(
         +10.0f * vThIon, 0.0f, 0.0f,  
         vThElectron, vThElectron, vThElectron, 
-        existNumElectronPerProcs / 2, existNumElectronPerProcs, 600, particlesElectron
+        mPIInfo.existNumElectronPerProcs / 2, mPIInfo.existNumElectronPerProcs, 600 + mPIInfo.rank, particlesElectron
     );
 
     dim3 threadsPerBlock(16, 16);
@@ -78,14 +78,13 @@ void PIC2D::initialize()
     sendrecv_field(E, mPIInfo);
     sendrecv_field(current, mPIInfo);
 
-    boundary.periodicBoundaryBX(B);
-    boundary.periodicBoundaryBY(B);
-    boundary.periodicBoundaryEX(E);
-    boundary.periodicBoundaryEY(E);
-    boundary.periodicBoundaryCurrentX(current);
-    boundary.periodicBoundaryCurrentY(current);
-    boundary.boundaryForInitialize(particlesIon, existNumIonPerProcs);
-    boundary.boundaryForInitialize(particlesElectron, existNumElectronPerProcs);
+    boundary.periodicBoundaryB_x(B);
+    boundary.periodicBoundaryB_y(B);
+    boundary.periodicBoundaryE_x(E);
+    boundary.periodicBoundaryE_y(E);
+    boundary.periodicBoundaryCurrent_x(current);
+    boundary.periodicBoundaryCurrent_y(current);
+    boundary.boundaryForInitializeParticle_xy(particlesIon, particlesElectron);
     
     MPI_Barrier(MPI_COMM_WORLD);
 }
@@ -107,17 +106,17 @@ int main(int argc, char** argv)
 
     initializeDeviceConstants();
 
-    existNumIonPerProcs = int(totalNumIon / mPIInfo.procs);
-    existNumElectronPerProcs = int(totalNumElectron / mPIInfo.procs);
-    totalNumIonPerProcs = existNumIonPerProcs
+    mPIInfo.existNumIonPerProcs = int(totalNumIon / mPIInfo.procs);
+    mPIInfo.existNumElectronPerProcs = int(totalNumElectron / mPIInfo.procs);
+    mPIInfo.totalNumIonPerProcs = mPIInfo.existNumIonPerProcs
                                 + numberDensityIon * (mPIInfo.localSizeX + mPIInfo.localSizeY) * (2 * mPIInfo.buffer + 10);
-    totalNumElectronPerProcs = existNumElectronPerProcs
+    mPIInfo.totalNumElectronPerProcs = mPIInfo.existNumElectronPerProcs
                                      + numberDensityElectron * (mPIInfo.localSizeX + mPIInfo.localSizeY) * (2 * mPIInfo.buffer + 10);
 
-    xminForProcs = xmin + (xmax - xmin) / mPIInfo.gridX * mPIInfo.localGridX;
-    xmaxForProcs = xmin + (xmax - xmin) / mPIInfo.gridX * (mPIInfo.localGridX + 1);
-    yminForProcs = ymin + (ymax - ymin) / mPIInfo.gridY * mPIInfo.localGridY;
-    ymaxForProcs = ymin + (ymax - ymin) / mPIInfo.gridY * (mPIInfo.localGridY + 1);
+    mPIInfo.xminForProcs = xmin + (xmax - xmin) / mPIInfo.gridX * mPIInfo.localGridX;
+    mPIInfo.xmaxForProcs = xmin + (xmax - xmin) / mPIInfo.gridX * (mPIInfo.localGridX + 1);
+    mPIInfo.yminForProcs = ymin + (ymax - ymin) / mPIInfo.gridY * mPIInfo.localGridY;
+    mPIInfo.ymaxForProcs = ymin + (ymax - ymin) / mPIInfo.gridY * (mPIInfo.localGridY + 1);
 
     PIC2D pIC2D(mPIInfo);
 
@@ -132,10 +131,10 @@ int main(int argc, char** argv)
         std::cout << "Total memory: " << total_mem / (1024 * 1024) << " MB" << std::endl;
 
         std::cout << "exist number of partices is " 
-                  << mPIInfo.procs * (existNumIonPerProcs + existNumElectronPerProcs) 
+                  << mPIInfo.procs * (mPIInfo.existNumIonPerProcs + mPIInfo.existNumElectronPerProcs) 
                   << std::endl;
         std::cout << "exist number of partices + buffer particles is " 
-                  << mPIInfo.procs * (totalNumIonPerProcs + totalNumElectronPerProcs) 
+                  << mPIInfo.procs * (mPIInfo.totalNumIonPerProcs + mPIInfo.totalNumElectronPerProcs) 
                   << std::endl;
         std::cout << std::setprecision(4) 
                 << "omega_pe * t = " << totalStep * dt * omegaPe << std::endl;
@@ -160,7 +159,7 @@ int main(int argc, char** argv)
             );
         }
         
-        pIC2D.oneStepPeriodicXY();
+        pIC2D.oneStep_periodicXY();
 
         if (mPIInfo.rank == 0) {
             totalTime += dt;
