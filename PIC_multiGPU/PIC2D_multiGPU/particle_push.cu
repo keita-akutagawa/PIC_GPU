@@ -173,7 +173,6 @@ __global__ void pushVelocityOfOneSpecies_kernel(
             xminForProcs, xmaxForProcs, 
             yminForProcs, ymaxForProcs
         );
-        if (particlesSpecies[i].isExist == false) return;
 
         bx = particleField.bX;
         by = particleField.bY;
@@ -399,6 +398,7 @@ void ParticlePush::pushPositionOfOneSpecies(
         mPIInfo.buffer
     );
     cudaDeviceSynchronize();
+
 
     existNumSpecies = thrust::transform_reduce(
         particlesSpecies.begin(),

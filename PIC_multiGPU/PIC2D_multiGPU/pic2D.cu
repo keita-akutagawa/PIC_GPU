@@ -540,7 +540,7 @@ void PIC2D::saveParticle(
         vy = host_particlesIon[i].vy / host_particlesIon[i].gamma;
         vz = host_particlesIon[i].vz / host_particlesIon[i].gamma;
 
-        if (mPIInfo.xminForProcs < x && x < mPIInfo.xmaxForProcs && mPIInfo.yminForProcs < y && y < mPIInfo.ymaxForProcs) {
+        //if (mPIInfo.xminForProcs < x && x < mPIInfo.xmaxForProcs && mPIInfo.yminForProcs < y && y < mPIInfo.ymaxForProcs) {
             ofsXIon.write(reinterpret_cast<const char*>(&x), sizeof(float));
             ofsXIon.write(reinterpret_cast<const char*>(&y), sizeof(float));
             ofsXIon.write(reinterpret_cast<const char*>(&z), sizeof(float));
@@ -550,7 +550,7 @@ void PIC2D::saveParticle(
             ofsVIon.write(reinterpret_cast<const char*>(&vz), sizeof(float));
 
             KineticEnergy += (host_particlesIon[i].gamma - 1.0f) * mIon * pow(c, 2);
-        }
+        //}
     }
 
     std::ofstream ofsXElectron(filenameXElectron, std::ios::binary);
@@ -565,7 +565,7 @@ void PIC2D::saveParticle(
         vy = host_particlesElectron[i].vy / host_particlesElectron[i].gamma;
         vz = host_particlesElectron[i].vz / host_particlesElectron[i].gamma;
 
-        if (mPIInfo.xminForProcs < x && x < mPIInfo.xmaxForProcs && mPIInfo.yminForProcs < y && y < mPIInfo.ymaxForProcs) {
+        //if (mPIInfo.xminForProcs < x && x < mPIInfo.xmaxForProcs && mPIInfo.yminForProcs < y && y < mPIInfo.ymaxForProcs) {
             ofsXElectron.write(reinterpret_cast<const char*>(&x), sizeof(float));
             ofsXElectron.write(reinterpret_cast<const char*>(&y), sizeof(float));
             ofsXElectron.write(reinterpret_cast<const char*>(&z), sizeof(float));
@@ -575,7 +575,7 @@ void PIC2D::saveParticle(
             ofsVElectron.write(reinterpret_cast<const char*>(&vz), sizeof(float));
             
             KineticEnergy += (host_particlesElectron[i].gamma - 1.0f) * mElectron * pow(c, 2);
-        }
+        //}
     }
 
     std::ofstream ofsKineticEnergy(filenameKineticEnergy, std::ios::binary);

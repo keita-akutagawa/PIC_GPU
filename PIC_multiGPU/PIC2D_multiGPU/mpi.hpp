@@ -155,8 +155,8 @@ void sendrecv_field_y(thrust::device_vector<FieldType>& field, MPIInfo& mPIInfo)
 
     for (int i = 0; i < localSizeX; i++) {
         for (int j = 0; j < mPIInfo.buffer; j++) {
-            field[j                            + i * localSizeY] = recvFieldDown[  j + i * mPIInfo.buffer];
-            field[j + localNy + mPIInfo.buffer + i * localSizeY] = recvFieldUp[j + i * mPIInfo.buffer];
+            field[j                            + i * localSizeY] = recvFieldDown[j + i * mPIInfo.buffer];
+            field[j + localNy + mPIInfo.buffer + i * localSizeY] = recvFieldUp[  j + i * mPIInfo.buffer];
         }
     }
 }

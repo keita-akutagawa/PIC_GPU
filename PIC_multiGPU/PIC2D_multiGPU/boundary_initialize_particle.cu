@@ -21,7 +21,7 @@ void Boundary::boundaryForInitializeParticle_xy(
         mPIInfo.numForSendParticlesElectronRight, 
         mPIInfo.numForRecvParticlesElectronLeft, 
         mPIInfo.numForRecvParticlesElectronRight
-    );
+    ); 
     MPI_Barrier(MPI_COMM_WORLD);
 
     boundaryForInitializeParticleOfOneSpecies_y(
@@ -81,15 +81,6 @@ __global__ void boundaryForInitialize_x_kernel(
     unsigned long long i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (i < existNumSpecies) {
-        if (xmaxForProcs - buffer * device_dx < particlesSpecies[i].x && particlesSpecies[i].x < xmaxForProcs) {
-            unsigned long long particleIndex = atomicAdd(&(countForSendParticlesSpeciesRight[0]), 1);
-            Particle sendParticle = particlesSpecies[i];
-            if (device_xmax - buffer * device_dx < sendParticle.x) {
-                sendParticle.x = sendParticle.x - device_xmax + device_EPS;
-            }
-            sendParticlesSpeciesRight[particleIndex] = sendParticle;
-        }
-
         if (xminForProcs < particlesSpecies[i].x && particlesSpecies[i].x < xminForProcs + buffer * device_dx) {
             unsigned long long particleIndex = atomicAdd(&(countForSendParticlesSpeciesLeft[0]), 1);
             Particle sendParticle = particlesSpecies[i];
@@ -97,6 +88,15 @@ __global__ void boundaryForInitialize_x_kernel(
                 sendParticle.x = sendParticle.x + device_xmax - device_EPS;
             }
             sendParticlesSpeciesLeft[particleIndex] = sendParticle;
+        }
+
+        if (xmaxForProcs - buffer * device_dx < particlesSpecies[i].x && particlesSpecies[i].x < xmaxForProcs) {
+            unsigned long long particleIndex = atomicAdd(&(countForSendParticlesSpeciesRight[0]), 1);
+            Particle sendParticle = particlesSpecies[i];
+            if (device_xmax - buffer * device_dx < sendParticle.x) {
+                sendParticle.x = sendParticle.x - device_xmax + device_EPS;
+            }
+            sendParticlesSpeciesRight[particleIndex] = sendParticle;
         }
     }
 }
@@ -218,15 +218,6 @@ __global__ void boundaryForInitialize_y_kernel(
     unsigned long long i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (i < existNumSpecies) {
-        if (ymaxForProcs - buffer * device_dy < particlesSpecies[i].y && particlesSpecies[i].y < ymaxForProcs) {
-            unsigned long long particleIndex = atomicAdd(&(countForSendParticlesSpeciesUp[0]), 1);
-            Particle sendParticle = particlesSpecies[i];
-            if (device_ymax - buffer * device_dy < sendParticle.y) {
-                sendParticle.y = sendParticle.y - device_ymax + device_EPS;
-            }
-            sendParticlesSpeciesUp[particleIndex] = sendParticle;
-        }
-
         if (yminForProcs < particlesSpecies[i].y && particlesSpecies[i].y < yminForProcs + buffer * device_dy) {
             unsigned long long particleIndex = atomicAdd(&(countForSendParticlesSpeciesDown[0]), 1);
             Particle sendParticle = particlesSpecies[i];
@@ -234,6 +225,15 @@ __global__ void boundaryForInitialize_y_kernel(
                 sendParticle.y = sendParticle.y + device_ymax - device_EPS;
             }
             sendParticlesSpeciesDown[particleIndex] = sendParticle;
+        }
+
+        if (ymaxForProcs - buffer * device_dy < particlesSpecies[i].y && particlesSpecies[i].y < ymaxForProcs) {
+            unsigned long long particleIndex = atomicAdd(&(countForSendParticlesSpeciesUp[0]), 1);
+            Particle sendParticle = particlesSpecies[i];
+            if (device_ymax - buffer * device_dy < sendParticle.y) {
+                sendParticle.y = sendParticle.y - device_ymax + device_EPS;
+            }
+            sendParticlesSpeciesUp[particleIndex] = sendParticle;
         }
     }
 }
