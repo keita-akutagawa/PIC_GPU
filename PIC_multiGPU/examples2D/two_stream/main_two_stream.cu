@@ -106,8 +106,8 @@ int main(int argc, char** argv)
 
     initializeDeviceConstants();
 
-    mPIInfo.existNumIonPerProcs = int(totalNumIon / mPIInfo.procs);
-    mPIInfo.existNumElectronPerProcs = int(totalNumElectron / mPIInfo.procs);
+    mPIInfo.existNumIonPerProcs      = static_cast<unsigned long long>(totalNumIon / mPIInfo.procs);
+    mPIInfo.existNumElectronPerProcs = static_cast<unsigned long long>(totalNumElectron / mPIInfo.procs);
     mPIInfo.totalNumIonPerProcs = mPIInfo.existNumIonPerProcs
                                 + numberDensityIon * (mPIInfo.localSizeX + mPIInfo.localSizeY) * (2 * mPIInfo.buffer + 10);
     mPIInfo.totalNumElectronPerProcs = mPIInfo.existNumElectronPerProcs
