@@ -39,9 +39,9 @@ __global__ void correctE_kernel(
         int index = j + i * localSizeY;
 
         E[index].eX += device_dOfLangdonMarderTypeCorrection
-                     * (F[index + localSizeY].F - F[index].F) / device_dx * dt;
+                     * (F[index + localSizeY].F - F[index].F) / device_dx * device_dt;
         E[index].eY += device_dOfLangdonMarderTypeCorrection
-                     * (F[index + 1].F - F[index].F) / device_dy * dt;
+                     * (F[index + 1].F - F[index].F) / device_dy * device_dt;
     }
 }
 

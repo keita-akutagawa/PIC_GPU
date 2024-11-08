@@ -1,4 +1,6 @@
 #include <thrust/device_vector.h>
+#include <thrust/transform_reduce.h>
+#include <thrust/partition.h>
 #include <cmath>
 #include "particle_struct.hpp"
 #include "field_parameter_struct.hpp"
