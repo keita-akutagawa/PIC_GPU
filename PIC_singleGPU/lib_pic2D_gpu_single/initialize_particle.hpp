@@ -61,6 +61,15 @@ public:
         thrust::device_vector<Particle>& particlesSpecies
     );
 
+    void fadeevForPosition(
+        unsigned long long nStart, 
+        unsigned long long nEnd, 
+        int seed, 
+        float sheatThickness, float coefFadeev, 
+        float xmin, float xmax, 
+        thrust::device_vector<Particle>& particlesSpecies
+    );
+
 private:
 
 };

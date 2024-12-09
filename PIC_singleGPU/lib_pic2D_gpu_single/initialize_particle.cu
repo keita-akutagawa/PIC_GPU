@@ -261,3 +261,63 @@ void InitializeParticle::harrisBackgroundForPositionY(
     cudaDeviceSynchronize();
 }
 
+
+//rejection sampling 
+__global__ void fadeevForPosition_kernel(
+    Particle* particle, float sheatThickness, float coefFadeev, 
+    const unsigned long long nStart, const unsigned long long nEnd, const int seed, 
+    float xmin, float xmax
+)
+{
+    unsigned long long i = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (i < nEnd - nStart) {
+        curandState stateX; 
+        curandState stateY; 
+        curandState stateYForSample; 
+        curand_init(seed,           100 * i, 0, &stateX);
+        curand_init(seed + 1000000, 100 * i, 0, &stateY);
+        curand_init(seed + 2000000, 100 * i, 0, &stateY);
+
+        float yCenter = 0.5f * (device_ymax - device_ymin) + device_ymin;
+        float randomValue;
+        float yTarget, yProposed;
+
+        randomValue = curand_uniform(&stateX);
+        particle[i + nStart].x = xmin + randomValue * (xmax - xmin); 
+
+        while (true) {
+            randomValue = curand_uniform(&stateY);
+            yProposed = yCenter + 2.0f * (randomValue - 0.5f) * 10.0f * sheatThickness;
+            yTarget   = yCenter + 2.0f * sheatThickness / (coefFadeev * cos(xmin / sheatThickness) + sqrt(1.0 + pow(coefFadeev, 2)) * cosh(xmin / sheatThickness));
+
+            float sampledProbability = curand_uniform(&stateYForSample);
+            if (yTarget / yProposed > sampledProbability) break;
+        }
+        
+        particle[i + nStart].y = yProposed;
+    }
+}
+
+void InitializeParticle::fadeevForPosition(
+    unsigned long long nStart, 
+    unsigned long long nEnd, 
+    int seed, 
+    float sheatThickness, float coefFadeev, 
+    float xmin, float xmax, 
+    thrust::device_vector<Particle>& particlesSpecies
+)
+{
+    dim3 threadsPerBlock(256);
+    dim3 blocksPerGrid((nEnd - nStart + threadsPerBlock.x - 1) / threadsPerBlock.x);
+
+    fadeevForPosition_kernel<<<blocksPerGrid, threadsPerBlock>>>(
+        thrust::raw_pointer_cast(particlesSpecies.data()), 
+        sheatThickness, coefFadeev, 
+        nStart, nEnd, seed, 
+        xmin, xmax
+    );
+
+    cudaDeviceSynchronize();
+}
+
