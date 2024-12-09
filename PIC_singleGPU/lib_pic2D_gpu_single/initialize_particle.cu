@@ -276,10 +276,10 @@ __global__ void fadeevForPosition_kernel(
         curandState stateYForSample; 
         curand_init(seed,           100 * i, 0, &stateX);
         curand_init(seed + 1000000, 100 * i, 0, &stateY);
-        curand_init(seed + 2000000, 100 * i, 0, &stateY);
+        curand_init(seed + 2000000, 100 * i, 0, &stateYForSample);
 
         float yCenter = 0.5f * (device_ymax - device_ymin) + device_ymin;
-        float normalizedMaxWidth = 5.0f;
+        float normalizedMaxWidth = 3.0f;
         float x, y;
 
         while (true) {
@@ -287,7 +287,7 @@ __global__ void fadeevForPosition_kernel(
             x = device_xmin + randomValue * (device_xmax - device_xmin); 
 
             randomValue = curand_uniform(&stateY);
-            float yProposed = 2.0f * (randomValue - 1.0f) * normalizedMaxWidth;
+            float yProposed = 2.0f * (randomValue - 0.5f) * normalizedMaxWidth;
             y = yProposed * sheatThickness + yCenter; 
 
             float targetProbability  = 1.0f / (coefFadeev * cos(x / sheatThickness) + sqrt(1.0f + pow(coefFadeev, 2)) * cosh(yProposed));
