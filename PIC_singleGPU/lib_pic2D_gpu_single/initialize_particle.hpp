@@ -66,7 +66,6 @@ public:
         unsigned long long nEnd, 
         int seed, 
         float sheatThickness, float coefFadeev, 
-        float xmin, float xmax, 
         thrust::device_vector<Particle>& particlesSpecies
     );
 

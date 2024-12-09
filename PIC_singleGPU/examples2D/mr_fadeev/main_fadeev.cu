@@ -11,7 +11,7 @@ std::string directoryname = "/cfca-work/akutagawakt/PIC/results_mr_mr8_fadeev";
 std::string filenameWithoutStep = "mr";
 std::ofstream logfile("/cfca-work/akutagawakt/PIC/results_mr_mr8_fadeev/log_mr.txt");
 
-const int totalStep = 160 * 100 * 10;
+const int totalStep = 160 * 10 * 1;
 const int fieldRecordStep = 160 * 10;
 const bool isParticleRecord = false;
 const int particleRecordStep = 160 * 10;
@@ -207,22 +207,18 @@ void PIC2D::initialize()
     cudaMemcpyToSymbol(device_xPointPosition, &xPointPosition, sizeof(float));
     cudaMemcpyToSymbol(device_coefFadeev, &coefFadeev, sizeof(float));
 
-    for (int i = 0; i < nx; i++) {
-        initializeParticle.fadeevForPosition(
-            0, fadeevNumIon, 
-            0 + i * 100, 
-            sheatThickness, coefFadeev, 
-            i * dx, (i + 1) * dx, 
-            particlesIon
-        );
-        initializeParticle.fadeevForPosition(
-            0, fadeevNumElectron, 
-            100000 + i * 100, 
-            sheatThickness, coefFadeev, 
-            i * dx, (i + 1) * dx, 
-            particlesElectron
-        );
-    }
+    initializeParticle.fadeevForPosition(
+        0, fadeevNumIon, 
+        0, 
+        sheatThickness, coefFadeev, 
+        particlesIon
+    );
+    initializeParticle.fadeevForPosition(
+        0, fadeevNumElectron, 
+        10000, 
+        sheatThickness, coefFadeev,
+        particlesElectron
+    );
     initializeParticle.uniformForPositionX(
         fadeevNumIon, totalNumIon, 20000, particlesIon
     );

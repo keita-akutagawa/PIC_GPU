@@ -265,8 +265,7 @@ void InitializeParticle::harrisBackgroundForPositionY(
 //rejection sampling 
 __global__ void fadeevForPosition_kernel(
     Particle* particle, float sheatThickness, float coefFadeev, 
-    const unsigned long long nStart, const unsigned long long nEnd, const int seed, 
-    float xmin, float xmax
+    const unsigned long long nStart, const unsigned long long nEnd, const int seed
 )
 {
     unsigned long long i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -280,22 +279,25 @@ __global__ void fadeevForPosition_kernel(
         curand_init(seed + 2000000, 100 * i, 0, &stateY);
 
         float yCenter = 0.5f * (device_ymax - device_ymin) + device_ymin;
-        float randomValue;
-        float yTarget, yProposed;
-
-        randomValue = curand_uniform(&stateX);
-        particle[i + nStart].x = xmin + randomValue * (xmax - xmin); 
+        float normalizedMaxWidth = 5.0f;
+        float x, y;
 
         while (true) {
-            randomValue = curand_uniform(&stateY);
-            yProposed = yCenter + 2.0f * (randomValue - 0.5f) * 10.0f * sheatThickness;
-            yTarget   = yCenter + 2.0f * sheatThickness / (coefFadeev * cos(xmin / sheatThickness) + sqrt(1.0 + pow(coefFadeev, 2)) * cosh(xmin / sheatThickness));
+            float randomValue = curand_uniform(&stateX);
+            x = device_xmin + randomValue * (device_xmax - device_xmin); 
 
+            randomValue = curand_uniform(&stateY);
+            float yProposed = 2.0f * (randomValue - 1.0f) * normalizedMaxWidth;
+            y = yProposed * sheatThickness + yCenter; 
+
+            float targetProbability  = 1.0f / (coefFadeev * cos(x / sheatThickness) + sqrt(1.0f + pow(coefFadeev, 2)) * cosh(yProposed));
+            float targetMax          = 1.0f / (coefFadeev * cos(x / sheatThickness) + sqrt(1.0f + pow(coefFadeev, 2))) + device_EPS;
             float sampledProbability = curand_uniform(&stateYForSample);
-            if (yTarget / yProposed > sampledProbability) break;
+            if (targetProbability / targetMax > sampledProbability) break;
         }
         
-        particle[i + nStart].y = yProposed;
+        particle[i + nStart].x = x; 
+        particle[i + nStart].y = y;
     }
 }
 
@@ -304,7 +306,6 @@ void InitializeParticle::fadeevForPosition(
     unsigned long long nEnd, 
     int seed, 
     float sheatThickness, float coefFadeev, 
-    float xmin, float xmax, 
     thrust::device_vector<Particle>& particlesSpecies
 )
 {
@@ -314,8 +315,7 @@ void InitializeParticle::fadeevForPosition(
     fadeevForPosition_kernel<<<blocksPerGrid, threadsPerBlock>>>(
         thrust::raw_pointer_cast(particlesSpecies.data()), 
         sheatThickness, coefFadeev, 
-        nStart, nEnd, seed, 
-        xmin, xmax
+        nStart, nEnd, seed
     );
 
     cudaDeviceSynchronize();
