@@ -12,7 +12,7 @@ std::string filenameWithoutStep = "mr";
 std::ofstream logfile("/cfca-work/akutagawakt/PIC/results_mr_mr8_fadeev/log_mr.txt");
 
 const int totalStep = 160 * 10 * 1;
-const int fieldRecordStep = 160 * 10;
+const int fieldRecordStep = 160 * 1;
 const bool isParticleRecord = false;
 const int particleRecordStep = 160 * 10;
 const int particleRecordStepStart = -1;
@@ -23,9 +23,10 @@ const float epsilon0 = 1.0f;
 const float mu0 = 1.0f;
 const float dOfLangdonMarderTypeCorrection = 0.001f;
 const float EPS = 1.0e-20f;
+const float PI = 3.14159265358979; 
 
-const int numberDensityIon = 10;
-const int numberDensityElectron = 10;
+const int numberDensityIon = 50;
+const int numberDensityElectron = 50;
 
 const float B0 = sqrt(static_cast<float>(numberDensityElectron)) / 1.0f;
 
@@ -50,40 +51,38 @@ const float debyeLength = sqrt(epsilon0 * tElectron / static_cast<float>(numberD
 //追加
 const float ionInertialLength = c / omegaPi;
 
-const int nx = round(100.0f * ionInertialLength);
+//追加
+const float sheatThickness = 2.0f * ionInertialLength;
+
+const int nx = round(4.0f * PI * sheatThickness);
 const float dx = 1.0f;
 const float xmin = 0.0f * dx; 
 const float xmax = nx * dx - 0.0f * dx;
-//const float xmin = 0.5f * dx; 
-//const float xmax = nx * dx - 1.5f * dx;
 
-const int ny = round(50.0f * ionInertialLength);
+const int ny = round(4.0f * PI * sheatThickness * 2);
 const float dy = 1.0f;
 const float ymin = 1.0f * dy; 
 const float ymax = ny * dy - 1.5f * dy;
 
-const float dt = 0.5f;
-
-//追加
-const float sheatThickness = 2.0f * ionInertialLength;
 const float triggerRatio = 0.1f;
-const float xPointPosition = 50.0f * ionInertialLength;
-const float coefFadeev = 2.0f;  
+const float xPointPosition = 0.5f * nx * dx;
+const float coefFadeev = 1.0f; 
 
-//追加
-const unsigned long long fadeevNumIon = round(nx * numberDensityIon * 2.0f * sheatThickness);
-const unsigned long long backgroundNumIon = round(1.0f * nx * ny * numberDensityIon);
+unsigned long long fadeevNumIon = round(25.13f * pow(sheatThickness, 2) * numberDensityIon);
+unsigned long long fadeevNumElectron = round(25.13f * pow(sheatThickness, 2) * numberDensityElectron);
+unsigned long long backgroundNumIon = round(0.2f * nx * ny * numberDensityIon);
+unsigned long long backgroundNumElectron = round(0.2f * nx * ny * numberDensityElectron);
 const unsigned long long totalNumIon = fadeevNumIon + backgroundNumIon;
-const unsigned long long fadeevNumElectron = round(nx * numberDensityElectron * 2.0f * sheatThickness);
-const unsigned long long backgroundNumElectron = round(1.0f * nx * ny * numberDensityElectron);
 const unsigned long long totalNumElectron = fadeevNumElectron + backgroundNumElectron;
 const unsigned long long totalNumParticles = totalNumIon + totalNumElectron;
+
+const float dt = 0.5f;
 
 const float vThIon = sqrt(2.0f * tIon / mIon);
 const float vThElectron = sqrt(2.0f * tElectron / mElectron);
 const float bulkVxIon = 0.0f;
 const float bulkVyIon = 0.0f;
-const float bulkVzIon = B0 / mu0 / numberDensityIon / qIon / sheatThickness / (1.0f + 1.0f / tRatio);
+const float bulkVzIon = -B0 / mu0 / numberDensityIon / qIon / sheatThickness / (1.0f + 1.0f / tRatio);
 const float bulkVxElectron = -bulkVxIon / tRatio;
 const float bulkVyElectron = -bulkVyIon / tRatio;
 const float bulkVzElectron = -bulkVzIon / tRatio;
@@ -107,6 +106,7 @@ __constant__ float device_epsilon0;
 __constant__ float device_mu0;
 __constant__ float device_dOfLangdonMarderTypeCorrection;
 __constant__ float device_EPS;
+__constant__ float device_PI; 
 
 __constant__ int device_numberDensityIon;
 __constant__ int device_numberDensityElectron;
@@ -184,23 +184,31 @@ __global__ void initializeField_kernel(
     int j = blockIdx.y * blockDim.y + threadIdx.y;
 
     if (i < device_nx && j < device_ny) {
-        float yCenter = 0.5f * (device_ymax - device_ymin) + device_ymin;
+        float xCenter = 0.5f * (device_xmax - device_xmin) + device_xmin, yCenter = 0.5f * (device_ymax - device_ymin) + device_ymin;
         float x = i * device_dx, y = j * device_dy;
-        float phaseX = x / device_sheatThickness, phaseZ = (y - yCenter) / device_sheatThickness;;
+        float phaseX = x / device_sheatThickness, phaseY = (y - yCenter) / device_sheatThickness;
+        float VA = device_B0 / sqrt(device_mu0 * (device_mIon * device_numberDensityIon + device_mElectron * device_numberDensityElectron));
 
         E[j + device_ny * i].eX = 0.0f;
         E[j + device_ny * i].eY = 0.0f;
         E[j + device_ny * i].eZ = 0.0f; 
-        B[j + device_ny * i].bX = device_B0 * (sqrt(1.0f + pow(device_coefFadeev, 2)) * sinh(phaseZ))
-                                / pow(device_coefFadeev * cos(phaseX) + sqrt(1.0f + pow(device_coefFadeev, 2)) * cosh(phaseZ), 2);
+        B[j + device_ny * i].bX = device_B0 * sqrt(1.0f + pow(device_coefFadeev, 2)) * sinh(phaseY)
+                                / (-device_coefFadeev * cos(phaseX) + sqrt(1.0f + pow(device_coefFadeev, 2)) * cosh(phaseY))
+                                - device_B0 * device_triggerRatio * (y - yCenter) / device_sheatThickness
+                                * exp(-(pow((x - xCenter), 2) + pow((y - yCenter), 2))
+                                / pow(2.0f * device_sheatThickness, 2));
         B[j + device_ny * i].bY = device_B0 * device_coefFadeev * sin(phaseX)
-                                / pow(device_coefFadeev * cos(phaseX) + sqrt(1.0f + pow(device_coefFadeev, 2)) * cosh(phaseZ), 2);
+                                / (-device_coefFadeev * cos(phaseX) + sqrt(1.0f + pow(device_coefFadeev, 2)) * cosh(phaseY))
+                                + device_B0 * device_triggerRatio * (x - xCenter) / device_sheatThickness
+                                * exp(-(pow((x - xCenter), 2) + pow((y - yCenter), 2))
+                                / pow(2.0f * device_sheatThickness, 2)); 
         B[j + device_ny * i].bZ = 0.0f;
     }
 }
 
 void PIC2D::initialize()
 {
+    cudaMemcpyToSymbol(device_PI, &PI, sizeof(float));
     cudaMemcpyToSymbol(device_ionInertialLength, &ionInertialLength, sizeof(float));
     cudaMemcpyToSymbol(device_sheatThickness, &sheatThickness, sizeof(float));
     cudaMemcpyToSymbol(device_triggerRatio, &triggerRatio, sizeof(float));
@@ -219,13 +227,13 @@ void PIC2D::initialize()
         sheatThickness, coefFadeev,
         particlesElectron
     );
+
     initializeParticle.uniformForPositionX(
         fadeevNumIon, totalNumIon, 20000, particlesIon
     );
     initializeParticle.uniformForPositionX(
         fadeevNumElectron, totalNumElectron, 30000, particlesElectron
     );
-
     initializeParticle.uniformForPositionY(
         fadeevNumIon, totalNumIon, 40000, particlesIon
     );
@@ -268,6 +276,7 @@ void PIC2D::initialize()
 
 int main()
 {
+
     initializeDeviceConstants();
 
     std::cout << "total number of partices is " << totalNumParticles << std::endl;
