@@ -278,20 +278,21 @@ __global__ void fadeevForPosition_kernel(
         curand_init(seed + 1000000, 100 * i, 0, &stateY);
         curand_init(seed + 2000000, 100 * i, 0, &stateYForSample);
 
-        float yCenter = 0.5f * (device_ymax - device_ymin) + device_ymin;
+        float xCenter = 0.5f * (device_xmax - device_xmin) + device_xmin, yCenter = 0.5f * (device_ymax - device_ymin) + device_ymin;
         float normalizedMaxWidth = 5.0f;
+        float targetMax = (1.0f - pow(coefFadeev, 2)) / pow(1.0f - coefFadeev, 2) + device_EPS;
         float x, y;
 
         while (true) {
-            float randomValue = curand_uniform(&stateX);
-            x = device_xmin + randomValue * (device_xmax - device_xmin); 
+            float randomValueX = curand_uniform(&stateX);
+            float randomValueY = curand_uniform(&stateY);
 
-            randomValue = curand_uniform(&stateY);
-            float yProposed = 2.0f * (randomValue - 0.5f) * normalizedMaxWidth;
+            x = device_xmin + randomValueX * (device_xmax - device_xmin); 
+            float yProposed = 2.0f * (randomValueY - 0.5f) * normalizedMaxWidth;
             y = yProposed * sheatThickness + yCenter; 
 
-            float targetProbability  = (1.0f - pow(coefFadeev, 2)) / pow(cosh(yProposed) + coefFadeev * cos(x / sheatThickness), 2);
-            float targetMax          = (1.0f - pow(coefFadeev, 2)) / pow(1.0f + coefFadeev * cos(x / sheatThickness), 2) + device_EPS;
+            float targetProbability  = (1.0f - pow(coefFadeev, 2)) / pow(cosh((y - yCenter) / sheatThickness) + coefFadeev * cos((x - xCenter) / sheatThickness), 2);
+            
             float sampledProbability = curand_uniform(&stateYForSample);
             if (targetProbability / targetMax > sampledProbability) break;
         }

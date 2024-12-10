@@ -52,21 +52,21 @@ const float debyeLength = sqrt(epsilon0 * tElectron / static_cast<float>(numberD
 const float ionInertialLength = c / omegaPi;
 
 //追加
-const float sheatThickness = 0.5f * ionInertialLength;
+const float sheatThickness = 2.0f * ionInertialLength;
 
 const int nx = round(4.0f * PI * sheatThickness);
 const float dx = 1.0f;
 const float xmin = 0.0f * dx; 
 const float xmax = nx * dx - 0.0f * dx;
 
-const int ny = round(4.0f * PI * sheatThickness * 2);
+const int ny = round(4.0f * PI * sheatThickness);
 const float dy = 1.0f;
 const float ymin = 1.0f * dy; 
 const float ymax = ny * dy - 1.5f * dy;
 
-const float triggerRatio = 0.1f;
+const float triggerRatio = 0.01f;
 const float xPointPosition = 0.5f * nx * dx;
-const float coefFadeev = -0.4f; 
+const float coefFadeev = 0.4f; 
 
 unsigned long long fadeevNumIon = round(25.13f * pow(sheatThickness, 2) * numberDensityIon);
 unsigned long long fadeevNumElectron = round(25.13f * pow(sheatThickness, 2) * numberDensityElectron);
@@ -186,7 +186,7 @@ __global__ void initializeField_kernel(
     if (i < device_nx && j < device_ny) {
         float xCenter = 0.5f * (device_xmax - device_xmin) + device_xmin, yCenter = 0.5f * (device_ymax - device_ymin) + device_ymin;
         float x = i * device_dx, y = j * device_dy;
-        float phaseX = x / device_sheatThickness, phaseY = (y - yCenter) / device_sheatThickness;
+        float phaseX = (x - xCenter) / device_sheatThickness, phaseY = (y - yCenter) / device_sheatThickness;
         float VA = device_B0 / sqrt(device_mu0 * (device_mIon * device_numberDensityIon + device_mElectron * device_numberDensityElectron));
 
         E[j + device_ny * i].eX = 0.0f;
@@ -196,7 +196,7 @@ __global__ void initializeField_kernel(
                                 - device_B0 * device_triggerRatio * (y - yCenter) / device_sheatThickness
                                 * exp(-(pow((x - xCenter), 2) + pow((y - yCenter), 2))
                                 / pow(2.0f * device_sheatThickness, 2));
-        B[j + device_ny * i].bY = -device_B0 * device_coefFadeev * sin(phaseX) / (cosh(phaseY) + device_coefFadeev * cos(phaseX))
+        B[j + device_ny * i].bY = device_B0 * device_coefFadeev * sin(phaseX) / (cosh(phaseY) + device_coefFadeev * cos(phaseX))
                                 + device_B0 * device_triggerRatio * (x - xCenter) / device_sheatThickness
                                 * exp(-(pow((x - xCenter), 2) + pow((y - yCenter), 2))
                                 / pow(2.0f * device_sheatThickness, 2)); 
