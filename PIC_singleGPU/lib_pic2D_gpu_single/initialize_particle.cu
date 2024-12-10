@@ -290,8 +290,8 @@ __global__ void fadeevForPosition_kernel(
             float yProposed = 2.0f * (randomValue - 0.5f) * normalizedMaxWidth;
             y = yProposed * sheatThickness + yCenter; 
 
-            float targetProbability  = 1.0f / pow(-coefFadeev * cos(x / sheatThickness) + sqrt(1.0f + pow(coefFadeev, 2)) * cosh(yProposed), 2);
-            float targetMax          = 1.0f / pow(-coefFadeev * cos(x / sheatThickness) + sqrt(1.0f + pow(coefFadeev, 2)), 2) + device_EPS;
+            float targetProbability  = (1.0f - pow(coefFadeev, 2)) / pow(cosh(yProposed) + coefFadeev * cos(x / sheatThickness), 2);
+            float targetMax          = (1.0f - pow(coefFadeev, 2)) / pow(1.0f + coefFadeev * cos(x / sheatThickness), 2) + device_EPS;
             float sampledProbability = curand_uniform(&stateYForSample);
             if (targetProbability / targetMax > sampledProbability) break;
         }

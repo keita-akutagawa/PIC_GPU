@@ -11,8 +11,8 @@ std::string directoryname = "/cfca-work/akutagawakt/PIC/results_mr_mr8_fadeev";
 std::string filenameWithoutStep = "mr";
 std::ofstream logfile("/cfca-work/akutagawakt/PIC/results_mr_mr8_fadeev/log_mr.txt");
 
-const int totalStep = 160 * 10 * 1;
-const int fieldRecordStep = 160 * 1;
+const int totalStep = 160 * 10 * 10;
+const int fieldRecordStep = 160 * 10;
 const bool isParticleRecord = false;
 const int particleRecordStep = 160 * 10;
 const int particleRecordStepStart = -1;
@@ -52,7 +52,7 @@ const float debyeLength = sqrt(epsilon0 * tElectron / static_cast<float>(numberD
 const float ionInertialLength = c / omegaPi;
 
 //追加
-const float sheatThickness = 2.0f * ionInertialLength;
+const float sheatThickness = 0.5f * ionInertialLength;
 
 const int nx = round(4.0f * PI * sheatThickness);
 const float dx = 1.0f;
@@ -66,7 +66,7 @@ const float ymax = ny * dy - 1.5f * dy;
 
 const float triggerRatio = 0.1f;
 const float xPointPosition = 0.5f * nx * dx;
-const float coefFadeev = 1.0f; 
+const float coefFadeev = -0.4f; 
 
 unsigned long long fadeevNumIon = round(25.13f * pow(sheatThickness, 2) * numberDensityIon);
 unsigned long long fadeevNumElectron = round(25.13f * pow(sheatThickness, 2) * numberDensityElectron);
@@ -192,13 +192,11 @@ __global__ void initializeField_kernel(
         E[j + device_ny * i].eX = 0.0f;
         E[j + device_ny * i].eY = 0.0f;
         E[j + device_ny * i].eZ = 0.0f; 
-        B[j + device_ny * i].bX = device_B0 * sqrt(1.0f + pow(device_coefFadeev, 2)) * sinh(phaseY)
-                                / (-device_coefFadeev * cos(phaseX) + sqrt(1.0f + pow(device_coefFadeev, 2)) * cosh(phaseY))
+        B[j + device_ny * i].bX = device_B0 * sinh(phaseY) / (cosh(phaseY) + device_coefFadeev * cos(phaseX))
                                 - device_B0 * device_triggerRatio * (y - yCenter) / device_sheatThickness
                                 * exp(-(pow((x - xCenter), 2) + pow((y - yCenter), 2))
                                 / pow(2.0f * device_sheatThickness, 2));
-        B[j + device_ny * i].bY = device_B0 * device_coefFadeev * sin(phaseX)
-                                / (-device_coefFadeev * cos(phaseX) + sqrt(1.0f + pow(device_coefFadeev, 2)) * cosh(phaseY))
+        B[j + device_ny * i].bY = -device_B0 * device_coefFadeev * sin(phaseX) / (cosh(phaseY) + device_coefFadeev * cos(phaseX))
                                 + device_B0 * device_triggerRatio * (x - xCenter) / device_sheatThickness
                                 * exp(-(pow((x - xCenter), 2) + pow((y - yCenter), 2))
                                 / pow(2.0f * device_sheatThickness, 2)); 
@@ -279,6 +277,7 @@ int main()
 
     initializeDeviceConstants();
 
+    std::cout << "box size is " << nx << " X " << ny << std::endl;
     std::cout << "total number of partices is " << totalNumParticles << std::endl;
     std::cout << std::setprecision(4) 
               << "Omega_ci * t = " << totalStep * dt * omegaCi << std::endl;
