@@ -69,10 +69,6 @@ void PIC2D::initialize()
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-    sendrecv_field(B, mPIInfo);
-    sendrecv_field(E, mPIInfo);
-    sendrecv_field(current, mPIInfo);
-
     boundary.periodicBoundaryB_x(B);
     boundary.periodicBoundaryB_y(B);
     boundary.periodicBoundaryE_x(E);

@@ -98,8 +98,110 @@ void setupInfo(MPIInfo& mPIInfo, int buffer, int mpiBufNumParticles)
 
 //////////////////////////////////////////////////
 
-// sendrecv(field用)はヘッダーファイルにある。
-// templeteを使用したため
+void sendrecv_magneticField_x(
+    thrust::device_vector<MagneticField>& B, 
+    thrust::device_vector<MagneticField>& sendMagneticFieldLeft, 
+    thrust::device_vector<MagneticField>& sendMagneticFieldRight, 
+    thrust::device_vector<MagneticField>& recvMagneticFieldLeft, 
+    thrust::device_vector<MagneticField>& recvMagneticFieldRight, 
+    MPIInfo& mPIInfo
+)
+{
+    sendrecv_field_x(
+        B, 
+        sendMagneticFieldLeft, sendMagneticFieldRight, 
+        recvMagneticFieldLeft, recvMagneticFieldRight, 
+        mPIInfo
+    );
+}
+
+void sendrecv_magneticField_y(
+    thrust::device_vector<MagneticField>& B, 
+    thrust::device_vector<MagneticField>& sendMagneticFieldDown, 
+    thrust::device_vector<MagneticField>& sendMagneticFieldUp, 
+    thrust::device_vector<MagneticField>& recvMagneticFieldDown, 
+    thrust::device_vector<MagneticField>& recvMagneticFieldUp, 
+    MPIInfo& mPIInfo
+)
+{
+    sendrecv_field_y(
+        B, 
+        sendMagneticFieldDown, sendMagneticFieldUp, 
+        recvMagneticFieldDown, recvMagneticFieldUp, 
+        mPIInfo
+    );
+}
+
+
+void sendrecv_electricField_x(
+    thrust::device_vector<ElectricField>& E, 
+    thrust::device_vector<ElectricField>& sendElectricFieldLeft, 
+    thrust::device_vector<ElectricField>& sendElectricFieldRight, 
+    thrust::device_vector<ElectricField>& recvElectricFieldLeft, 
+    thrust::device_vector<ElectricField>& recvElectricFieldRight,
+    MPIInfo& mPIInfo
+)
+{
+    sendrecv_field_x(
+        E, 
+        sendElectricFieldLeft, sendElectricFieldRight, 
+        recvElectricFieldLeft, recvElectricFieldRight, 
+        mPIInfo
+    );
+}
+
+void sendrecv_electricField_y(
+    thrust::device_vector<ElectricField>& E, 
+    thrust::device_vector<ElectricField>& sendElectricFieldDown, 
+    thrust::device_vector<ElectricField>& sendElectricFieldUp, 
+    thrust::device_vector<ElectricField>& recvElectricFieldDown, 
+    thrust::device_vector<ElectricField>& recvElectricFieldUp, 
+    MPIInfo& mPIInfo
+)
+{
+    sendrecv_field_y(
+        E, 
+        sendElectricFieldDown, sendElectricFieldUp, 
+        recvElectricFieldDown, recvElectricFieldUp, 
+        mPIInfo
+    );
+}
+
+
+void sendrecv_currentField_x(
+    thrust::device_vector<CurrentField>& current,  
+    thrust::device_vector<CurrentField>& sendCurrentFieldLeft, 
+    thrust::device_vector<CurrentField>& sendCurrentFieldRight, 
+    thrust::device_vector<CurrentField>& recvCurrentFieldLeft, 
+    thrust::device_vector<CurrentField>& recvCurrentFieldRight, 
+    MPIInfo& mPIInfo
+)
+{
+    sendrecv_field_x(
+        current, 
+        sendCurrentFieldLeft, sendCurrentFieldRight, 
+        recvCurrentFieldLeft, recvCurrentFieldRight, 
+        mPIInfo
+    );
+}
+
+void sendrecv_currentField_y(
+    thrust::device_vector<CurrentField>& current,  
+    thrust::device_vector<CurrentField>& sendCurrentFieldDown, 
+    thrust::device_vector<CurrentField>& sendCurrentFieldUp, 
+    thrust::device_vector<CurrentField>& recvCurrentFieldDown, 
+    thrust::device_vector<CurrentField>& recvCurrentFieldUp, 
+    MPIInfo& mPIInfo
+)
+{
+    sendrecv_field_y(
+        current, 
+        sendCurrentFieldDown, sendCurrentFieldUp, 
+        recvCurrentFieldDown, recvCurrentFieldUp, 
+        mPIInfo
+    );
+}
+
 
 
 void sendrecv_numParticle_x(

@@ -1,21 +1,6 @@
 #include "boundary.hpp"
 
 
-Boundary::Boundary(MPIInfo& mPIInfo)
-    : mPIInfo(mPIInfo), 
-      sendParticlesSpeciesLeft(mPIInfo.mpiBufNumParticles), 
-      sendParticlesSpeciesRight(mPIInfo.mpiBufNumParticles), 
-      sendParticlesSpeciesDown(mPIInfo.mpiBufNumParticles), 
-      sendParticlesSpeciesUp(mPIInfo.mpiBufNumParticles), 
-      recvParticlesSpeciesLeft(mPIInfo.mpiBufNumParticles), 
-      recvParticlesSpeciesRight(mPIInfo.mpiBufNumParticles), 
-      recvParticlesSpeciesDown(mPIInfo.mpiBufNumParticles), 
-      recvParticlesSpeciesUp(mPIInfo.mpiBufNumParticles) 
-
-{
-}
-
-
 void Boundary::periodicBoundaryParticle_xy(
     thrust::device_vector<Particle>& particlesIon, 
     thrust::device_vector<Particle>& particlesElectron
